@@ -52,3 +52,10 @@
 - [x] Correct the missing marketplace `sort` parameter fallback.
 - [x] Validate both paths against the local PHP/MySQL test environment. The administrator register renders a migration notice without the table, then resumes normally after restoration; an empty marketplace filter resolves to `recent`.
 - [x] Commit and push the local XAMPP error repair: `fix: handle local XAMPP migration state`.
+
+## Attachment and Marketplace Discovery Improvements
+
+- [x] Add attachment-name search and inclusive date-range filters to the administrator attachment register.
+- [x] Add a clear category filter and asynchronous loading feedback to the local PHP marketplace.
+- [x] Validate the filtering and loading interactions. The local attachment register returns filtered results safely, and the category/sort endpoint returns successful JSON markup.
+- [ ] Commit and push the feature update.

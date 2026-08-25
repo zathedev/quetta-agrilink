@@ -47,8 +47,12 @@
       const resultTarget = document.querySelector('[data-marketplace-results]');
       const feedback = document.querySelector('[data-marketplace-feedback]');
       const submit = form.querySelector('[type="submit"]');
+      const loading = document.querySelector('[data-marketplace-loading]');
+      const resultWrap = resultTarget?.closest('.marketplace-result-wrap');
       const query = new URLSearchParams(new FormData(form));
       submit.disabled = true;
+      resultWrap?.classList.add('is-loading');
+      loading?.setAttribute('aria-hidden', 'false');
       if (feedback) feedback.textContent = 'Refreshing available produce…';
       try {
         const payload = await window.qliFetch(`${form.dataset.endpoint}?${query.toString()}`);
@@ -59,7 +63,13 @@
         if (feedback) feedback.textContent = error.message;
       } finally {
         submit.disabled = false;
+        resultWrap?.classList.remove('is-loading');
+        loading?.setAttribute('aria-hidden', 'true');
       }
+    });
+
+    form.addEventListener('change', (event) => {
+      if (event.target.matches('[name="category_id"], [name="sort"]')) form.requestSubmit();
     });
   });
 

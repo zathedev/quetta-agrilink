@@ -31,7 +31,35 @@ $records = [
     'vehicle' => fetch_all('SELECT id, CONCAT(vehicle_type, " · ", registration_number) AS label FROM vehicles ORDER BY id DESC LIMIT 50'),
     'market_price' => fetch_all('SELECT mp.id, CONCAT(pc.name, " · ", mp.price_date) AS label FROM market_prices mp JOIN produce_categories pc ON pc.id = mp.category_id ORDER BY mp.id DESC LIMIT 50'),
 ];
-$attachments = $attachmentMigrationReady ? fetch_all('SELECT ra.*, u.full_name FROM record_attachments ra JOIN users u ON u.id = ra.uploader_user_id ORDER BY ra.created_at DESC LIMIT 30') : [];
+$search = normalize_text($_GET['search'] ?? '', 120);
+$dateFrom = DateTimeImmutable::createFromFormat('!Y-m-d', (string) ($_GET['date_from'] ?? '')) ?: null;
+$dateTo = DateTimeImmutable::createFromFormat('!Y-m-d', (string) ($_GET['date_to'] ?? '')) ?: null;
+if ($dateFrom !== null && $dateTo !== null && $dateTo < $dateFrom) {
+    [$dateFrom, $dateTo] = [$dateTo, $dateFrom];
+}
+$attachmentWhere = [];
+$attachmentParams = [];
+if ($search !== '') {
+    $attachmentWhere[] = '(ra.original_name LIKE :search_name OR ra.entity_type LIKE :search_entity OR u.full_name LIKE :search_uploader)';
+    $searchTerm = '%' . $search . '%';
+    $attachmentParams['search_name'] = $searchTerm;
+    $attachmentParams['search_entity'] = $searchTerm;
+    $attachmentParams['search_uploader'] = $searchTerm;
+}
+if ($dateFrom !== null) {
+    $attachmentWhere[] = 'ra.created_at >= :date_from';
+    $attachmentParams['date_from'] = $dateFrom->format('Y-m-d');
+}
+if ($dateTo !== null) {
+    $attachmentWhere[] = 'ra.created_at < DATE_ADD(:date_to, INTERVAL 1 DAY)';
+    $attachmentParams['date_to'] = $dateTo->format('Y-m-d');
+}
+$attachmentSql = 'SELECT ra.*, u.full_name FROM record_attachments ra JOIN users u ON u.id = ra.uploader_user_id';
+if ($attachmentWhere !== []) {
+    $attachmentSql .= ' WHERE ' . implode(' AND ', $attachmentWhere);
+}
+$attachmentSql .= ' ORDER BY ra.created_at DESC LIMIT 30';
+$attachments = $attachmentMigrationReady ? fetch_all($attachmentSql, $attachmentParams) : [];
 workspace_open('Record attachments', 'attachments');
 ?>
 <section class="workspace-section attachment-layout">
@@ -48,5 +76,5 @@ workspace_open('Record attachments', 'attachments');
     </form>
     <?php endif; ?>
 </section>
-<section class="workspace-section"><div class="workspace-section-header"><div><h2>Recent attachment register</h2><p>Metadata is recorded with the administrator and linked operational record.</p></div></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>Record</th><th>Original file</th><th>Type</th><th>Size</th><th>Uploaded by</th><th>Date</th></tr></thead><tbody><?php if ($attachments === []): ?><tr><td colspan="6">No attachments have been stored.</td></tr><?php else: foreach ($attachments as $attachment): ?><tr><td><?= e($attachment['entity_type']) ?> #<?= e((string) $attachment['entity_id']) ?></td><td><?= e($attachment['original_name']) ?></td><td><?= e($attachment['mime_type']) ?></td><td><?= e(number_format((int) $attachment['file_size'] / 1024, 1)) ?> KB</td><td><?= e($attachment['full_name']) ?></td><td><?= e(date('j M Y H:i', strtotime($attachment['created_at']))) ?></td></tr><?php endforeach; endif; ?></tbody></table></div></section>
+<section class="workspace-section"><div class="workspace-section-header"><div><h2>Recent attachment register</h2><p>Search original file names or narrow records to a recorded date range.</p></div></div><?php if ($attachmentMigrationReady): ?><form class="attachment-filter" method="get"><div class="form-field"><label for="attachment-search">Search files or uploader</label><input id="attachment-search" name="search" type="search" value="<?= e($search) ?>" placeholder="Example: certificate.pdf"></div><div class="form-field"><label for="date-from">From date</label><input id="date-from" name="date_from" type="date" value="<?= e($dateFrom?->format('Y-m-d') ?? '') ?>"></div><div class="form-field"><label for="date-to">To date</label><input id="date-to" name="date_to" type="date" value="<?= e($dateTo?->format('Y-m-d') ?? '') ?>"></div><div class="form-actions"><a class="button button-outline" href="<?= e(app_url('admin/attachments.php')) ?>">Clear</a><button class="button button-primary" type="submit">Find files</button></div></form><?php endif; ?><p class="register-result-note"><?= count($attachments) ?> attachment<?= count($attachments) === 1 ? '' : 's' ?> shown.</p><div class="data-table-wrap"><table class="data-table"><thead><tr><th>Record</th><th>Original file</th><th>Type</th><th>Size</th><th>Uploaded by</th><th>Date</th></tr></thead><tbody><?php if ($attachments === []): ?><tr><td colspan="6">No attachment records match the current filter.</td></tr><?php else: foreach ($attachments as $attachment): ?><tr><td><?= e($attachment['entity_type']) ?> #<?= e((string) $attachment['entity_id']) ?></td><td><?= e($attachment['original_name']) ?></td><td><?= e($attachment['mime_type']) ?></td><td><?= e(number_format((int) $attachment['file_size'] / 1024, 1)) ?> KB</td><td><?= e($attachment['full_name']) ?></td><td><?= e(date('j M Y H:i', strtotime($attachment['created_at']))) ?></td></tr><?php endforeach; endif; ?></tbody></table></div></section>
 <?php workspace_close(); ?>
