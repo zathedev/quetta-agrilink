@@ -1,0 +1,13 @@
+Options -Indexes
+AddDefaultCharset UTF-8
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(config|database|includes)/ - [F,L]
+    RewriteRule ^uploads/.*\.(?:php|php[0-9]?|phtml|phar)$ - [F,L,NC]
+</IfModule>
+
+<FilesMatch "\.(env|ini|log|sql|md)$">
+    Require all denied
+</FilesMatch>
+
