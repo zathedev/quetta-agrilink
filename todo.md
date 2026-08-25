@@ -44,4 +44,4 @@
 - [x] Add a migration for attachment metadata and wire secure administrator record attachments.
 - [x] Document localhost/XAMPP setup, session, CSRF, database, and upload maintenance settings.
 - [x] Lint and test the PHP/MySQL package locally. Administrator authentication and a permitted PNG attachment were validated against MariaDB; the local test record was removed afterward.
-- [ ] Commit and push the XAMPP-readiness extension.
+- [x] Commit and push the XAMPP-readiness extension: `feat: add local XAMPP attachment workflow`.
