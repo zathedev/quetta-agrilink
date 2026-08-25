@@ -339,3 +339,104 @@ function generate_reference(string $prefix): string
     }
     throw new RuntimeException('A unique reference could not be generated.');
 }
+
+/**
+ * Store an administrator-supplied attachment outside executable paths and return verified metadata.
+ * The caller remains responsible for persisting the metadata in its database transaction.
+ */
+function validate_and_store_attachment(array $file, string $entityType, int $entityId): array
+{
+    $entityTables = [
+        'produce_listing' => 'produce_listings',
+        'storage_facility' => 'storage_facilities',
+        'vehicle' => 'vehicles',
+        'market_price' => 'market_prices',
+    ];
+    if (!isset($entityTables[$entityType]) || $entityId < 1) {
+        throw new RuntimeException('Select a valid record before attaching a file.');
+    }
+    $uploadError = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
+    if ($uploadError === UPLOAD_ERR_INI_SIZE || $uploadError === UPLOAD_ERR_FORM_SIZE) {
+        throw new RuntimeException('The file exceeds the PHP upload limit. Set upload_max_filesize to at least 6M and post_max_size to at least 8M, then restart Apache.');
+    }
+    if ($uploadError !== UPLOAD_ERR_OK) {
+        throw new RuntimeException('Choose a file to attach.');
+    }
+    if (!isset($file['tmp_name'], $file['size'], $file['name']) || !is_string($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
+        throw new RuntimeException('The uploaded file could not be verified.');
+    }
+    if ((int) $file['size'] < 1 || (int) $file['size'] > MAX_UPLOAD_BYTES) {
+        throw new RuntimeException('The file must be between 1 byte and 5 MB.');
+    }
+
+    $allowed = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+        'application/pdf' => 'pdf',
+    ];
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime = $finfo->file($file['tmp_name']);
+    if (!is_string($mime) || !isset($allowed[$mime])) {
+        throw new RuntimeException('Only JPG, PNG, WEBP, and PDF attachments are accepted.');
+    }
+    if (str_starts_with($mime, 'image/') && getimagesize($file['tmp_name']) === false) {
+        throw new RuntimeException('The image file could not be validated.');
+    }
+
+    $entity = fetch_one('SELECT id FROM ' . $entityTables[$entityType] . ' WHERE id = :id LIMIT 1', ['id' => $entityId]);
+    if ($entity === null) {
+        throw new RuntimeException('The selected record no longer exists.');
+    }
+    $directory = 'attachments/' . date('Y') . '/' . date('m');
+    $absoluteDirectory = rtrim(UPLOAD_STORAGE_PATH, '/\\') . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $directory);
+    if (!is_dir($absoluteDirectory) && !mkdir($absoluteDirectory, 0750, true) && !is_dir($absoluteDirectory)) {
+        throw new RuntimeException('The attachment directory could not be created.');
+    }
+    $storedName = bin2hex(random_bytes(18)) . '.' . $allowed[$mime];
+    $relativePath = $directory . '/' . $storedName;
+    $absolutePath = $absoluteDirectory . DIRECTORY_SEPARATOR . $storedName;
+    if (!move_uploaded_file($file['tmp_name'], $absolutePath)) {
+        throw new RuntimeException('The attachment could not be stored.');
+    }
+    @chmod($absolutePath, 0640);
+
+    return [
+        'entity_type' => $entityType,
+        'entity_id' => $entityId,
+        'original_name' => normalize_text((string) $file['name'], 180),
+        'stored_name' => $storedName,
+        'relative_path' => $relativePath,
+        'mime_type' => $mime,
+        'file_size' => (int) $file['size'],
+        'sha256' => hash_file('sha256', $absolutePath),
+        'absolute_path' => $absolutePath,
+    ];
+}
+
+function save_record_attachment(array $file, int $uploaderId, string $entityType, int $entityId): array
+{
+    $attachment = validate_and_store_attachment($file, $entityType, $entityId);
+    $pdo = db();
+    try {
+        $statement = $pdo->prepare('INSERT INTO record_attachments (entity_type, entity_id, uploader_user_id, original_name, stored_name, relative_path, mime_type, file_size, sha256) VALUES (:entity_type, :entity_id, :uploader, :original_name, :stored_name, :relative_path, :mime_type, :file_size, :sha256)');
+        $statement->execute([
+            'entity_type' => $attachment['entity_type'],
+            'entity_id' => $attachment['entity_id'],
+            'uploader' => $uploaderId,
+            'original_name' => $attachment['original_name'],
+            'stored_name' => $attachment['stored_name'],
+            'relative_path' => $attachment['relative_path'],
+            'mime_type' => $attachment['mime_type'],
+            'file_size' => $attachment['file_size'],
+            'sha256' => $attachment['sha256'],
+        ]);
+        $attachment['id'] = (int) $pdo->lastInsertId();
+        audit_log($uploaderId, 'attachment_uploaded', 'record_attachments', $attachment['id'], ['entity_type' => $entityType, 'entity_id' => $entityId]);
+        unset($attachment['absolute_path']);
+        return $attachment;
+    } catch (Throwable $exception) {
+        @unlink($attachment['absolute_path']);
+        throw $exception;
+    }
+}

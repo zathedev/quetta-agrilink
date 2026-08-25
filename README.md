@@ -107,7 +107,7 @@ The project keeps critical business and authorization decisions in PHP. The brow
 | CSRF protection | Every state-changing form and AJAX request includes a session-bound token. |
 | Authorization | Protected pages and AJAX routes call role and ownership checks before accessing data. |
 | Output safety | Dynamic HTML is emitted through the `e()` escaping helper. |
-| Upload safety | The `uploads/` folder disables PHP-family execution through its own `.htaccess`; future upload handlers must retain MIME, size, and image validation. |
+| Upload safety | The administrator attachment handler enforces role and CSRF checks, content-derived MIME allowlisting, 5 MB size validation, image inspection, random stored names, metadata recording, audit logs, and PHP-family execution blocking in `uploads/`. |
 | Auditability | Account registration, authentication, offers, booking actions, transport actions, and order actions can write structured audit records. |
 
 ## AJAX and state management

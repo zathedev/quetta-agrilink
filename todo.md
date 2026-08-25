@@ -36,3 +36,12 @@
 - [x] Add account-scoped notification surfaces for offers, storage bookings, and transport requests.
 - [x] Verify integration-ready interaction surfaces and XAMPP handoff documentation. Notification registers, administrator records, and compact mobile dormant states are legible; production builds pass.
 - [x] Commit and push the integration-ready extension: `feat: add integration-ready workflow surfaces`.
+
+## XAMPP Deployment Readiness
+
+- [x] Confirm the XAMPP document-root placement, database import, and local application URL configuration.
+- [x] Add a server-side, role-protected upload handler with MIME, size, extension, and generated-name validation.
+- [x] Add a migration for attachment metadata and wire secure administrator record attachments.
+- [x] Document localhost/XAMPP setup, session, CSRF, database, and upload maintenance settings.
+- [x] Lint and test the PHP/MySQL package locally. Administrator authentication and a permitted PNG attachment were validated against MariaDB; the local test record was removed afterward.
+- [ ] Commit and push the XAMPP-readiness extension.

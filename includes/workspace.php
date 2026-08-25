@@ -10,7 +10,7 @@ function workspace_links(string $role): array
         'buyer' => array_merge($common, [['Offers', 'buyer/offers.php', 'offers']]),
         'storage_provider' => array_merge($common, [['Storage marketplace', 'storage/index.php', 'storage']]),
         'transport_provider' => array_merge($common, [['Transport marketplace', 'transport/index.php', 'transport']]),
-        'admin' => array_merge($common, [['Market prices', 'market-prices.php', 'prices']]),
+        'admin' => array_merge($common, [['Market prices', 'market-prices.php', 'prices'], ['Attachments', 'admin/attachments.php', 'attachments']]),
         default => $common,
     };
 }

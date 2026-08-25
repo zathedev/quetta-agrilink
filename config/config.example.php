@@ -15,6 +15,6 @@ const DB_USER = 'root';
 const DB_PASS = '';
 const SESSION_IDLE_MINUTES = 60;
 const MAX_UPLOAD_BYTES = 5_242_880;
+const UPLOAD_STORAGE_PATH = __DIR__ . '/../uploads';
 
 date_default_timezone_set('Asia/Karachi');
-
