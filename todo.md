@@ -51,4 +51,4 @@
 - [x] Make the administrator attachment register degrade safely with an actionable migration notice when its table is missing.
 - [x] Correct the missing marketplace `sort` parameter fallback.
 - [x] Validate both paths against the local PHP/MySQL test environment. The administrator register renders a migration notice without the table, then resumes normally after restoration; an empty marketplace filter resolves to `recent`.
-- [ ] Commit and push the local XAMPP error repair.
+- [x] Commit and push the local XAMPP error repair: `fix: handle local XAMPP migration state`.
