@@ -23,3 +23,34 @@ function ServiceRequest({ kind }: { kind: "storage" | "transport" }) {
 
 export function StoragePage() { return <ServiceRequest kind="storage" />; }
 export function TransportPage() { return <ServiceRequest kind="transport" />; }
+
+const serviceRecords = [
+  {
+    kind: "Cold storage record",
+    title: "Capacity held for the harvest window.",
+    copy: "Review refrigerated capacity, compatible produce, location, and booking terms before sending a storage request.",
+    label: "Storage capacity",
+    value: "76,000 kg available",
+    meta: [["Location", "Quetta"], ["Status", "Available"], ["Booking lead", "Same-day review"]],
+    href: "/storage",
+    action: "Review cold storage",
+    Icon: Snowflake,
+    tone: "storage",
+  },
+  {
+    kind: "Transport record",
+    title: "Vehicles matched to accountable movement.",
+    copy: "Review fleet capacity, temperature control, service coverage, and pickup terms before requesting a vehicle.",
+    label: "Available fleet",
+    value: "3 refrigerated vehicles",
+    meta: [["Coverage", "Quetta & Balochistan"], ["Status", "Ready for requests"], ["Dispatch", "Provider confirmed"]],
+    href: "/transport",
+    action: "Review transport",
+    Icon: Truck,
+    tone: "transport",
+  },
+] as const;
+
+export function ServicesOverview() {
+  return <PreviewLayout><section className="services-ledger-hero"><div><p className="eyebrow clay"><span /> Post-harvest service exchange</p><h1>Storage and transport, recorded before the handover.</h1><p>Choose the next operational record for a ready harvest: capacity, location, timing, provider status, and a clear request action remain visible together.</p></div><aside><span>Quetta, Balochistan</span><strong>Two accountable routes after harvest.</strong><small>Capacity and movement are recorded trade terms, not separate service categories.</small></aside></section><section className="services-ledger"><div className="services-ledger-intro"><div><p className="eyebrow clay"><span /> Available operational records</p><h2>Pick the trade record your harvest needs next.</h2></div><p>Each record keeps availability, accountable next steps, and commercial terms in one practical view.</p></div><div className="service-record-grid">{serviceRecords.map(({ Icon, meta, ...record }) => <article className={`service-record ${record.tone}`} key={record.kind}><div className="service-record-mark"><Icon size={24} /></div><div className="service-record-copy"><p className="eyebrow clay"><span /> {record.kind}</p><h3>{record.title}</h3><p>{record.copy}</p></div><div className="service-record-value"><small>{record.label}</small><strong>{record.value}</strong></div><dl className="service-record-meta">{meta.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl><a className="button button-canopy" href={record.href}>{record.action} <ArrowRight size={16} /></a></article>)}</div></section></PreviewLayout>;
+}

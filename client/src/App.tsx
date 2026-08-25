@@ -6,7 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Marketplace from "./pages/Marketplace";
-import { StoragePage, TransportPage } from "./pages/Services";
+import { ServicesOverview, StoragePage, TransportPage } from "./pages/Services";
 import MarketPrices from "./pages/MarketPrices";
 import Information from "./pages/Information";
 import Workspace from "./pages/Workspace";
@@ -22,6 +22,7 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/marketplace/:id"} component={ListingDetail} />
       <Route path={"/marketplace"} component={Marketplace} />
+      <Route path={"/services"} component={ServicesOverview} />
       <Route path={"/storage"} component={StoragePage} />
       <Route path={"/transport"} component={TransportPage} />
       <Route path={"/market-prices"} component={MarketPrices} />

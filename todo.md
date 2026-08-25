@@ -66,3 +66,8 @@
 - [x] Add authenticated saved marketplace filters, including a migration, management controls, and a reusable filter application flow.
 - [x] Validate local XAMPP download auditing and saved-filter create/apply/delete workflows. The permitted attachment response was downloaded byte-for-byte after an audit write; anonymous access redirected to sign-in; a saved filter was created, applied, and removed through account-scoped PHP requests.
 - [x] Commit and push the completed enhancement: `feat: audit attachment downloads and save filters`.
+
+## Preview Route Integrity
+
+- [x] Repair the managed-preview `/services` route so it presents storage and transport as accountable Orchard Ledger trade records rather than a fallback screen.
+- [x] Apply the accepted visual review refinements to services copy, cross-route styling, and design decisions; verify the preview route renders and the TypeScript build passes.

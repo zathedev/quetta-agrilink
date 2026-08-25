@@ -86,3 +86,6 @@ The mark is an interlocking **leaf and route pin** built from two solid, geometr
 - The Quetta AgriLink leaf-route mark and mixed serif/sans wordmark are deliberately prominent at public and workspace entry points.
 - Functional and workspace screens use upright, exacting ledger hierarchy; expressive italic display is reserved for public storytelling.
 - Empty states remain dormant trade registers with operational columns, accountable status language, and a clear next action.
+- Noto Serif display remains sturdy and trade-bulletin-like; expressive italics are occasional storytelling emphasis only, never the dominant marketplace or operational voice.
+- Every public route and fallback state inherits the warm paper ground, Quetta Canopy anchor, harvest rules, operational labels, and a commercial next action.
+- Storage and transport present capacity, location, timing, status, and accountable next steps as one post-harvest trade record rather than generic service cards.

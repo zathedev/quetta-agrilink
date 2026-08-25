@@ -32,7 +32,7 @@ const workflow = [
 
 const modules = {
   marketplace: {
-    title: "Market-ready supply, not a generic catalogue.",
+    title: "Market-ready supply with terms visible.",
     copy: "Search current harvest by product, grade, origin, quantity, and expected price. Every listing has a clear commercial context.",
     action: "Explore marketplace",
     icon: Search,
