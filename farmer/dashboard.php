@@ -1,0 +1,18 @@
+<?php
+/** Orchard Ledger farmer dashboard: active supply and downstream logistics sit in one operational view. */
+declare(strict_types=1);
+require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/workspace.php';
+$user = require_role(['farmer']);
+$counts = fetch_one('SELECT SUM(status="active") AS listings, COALESCE(SUM(CASE WHEN status="active" THEN quantity_available ELSE 0 END),0) AS quantity FROM produce_listings WHERE farmer_id=:user',['user'=>$user['id']]);
+$offers = fetch_one('SELECT COUNT(*) AS count FROM offers WHERE farmer_id=:user AND status IN ("pending","countered")',['user'=>$user['id']]);
+$orders = fetch_one('SELECT COUNT(*) AS count FROM orders WHERE farmer_id=:user AND status NOT IN ("completed","cancelled")',['user'=>$user['id']]);
+$bookings = fetch_one('SELECT COUNT(*) AS count FROM storage_bookings WHERE farmer_id=:user AND status IN ("requested","approved","active")',['user'=>$user['id']]);
+$requests = fetch_one('SELECT COUNT(*) AS count FROM transport_requests WHERE farmer_id=:user AND status NOT IN ("delivered","cancelled")',['user'=>$user['id']]);
+workspace_open('Farmer dashboard','dashboard'); render_status_cards([['label'=>'Active listings','value'=>(int)$counts['listings'],'detail'=>'produce currently visible'],['label'=>'Available produce','value'=>number_format((float)$counts['quantity'],0).' kg','detail'=>'across active listings'],['label'=>'Offers to review','value'=>(int)$offers['count'],'detail'=>'pending or countered'],['label'=>'Active orders','value'=>(int)$orders['count'],'detail'=>'not yet completed']]);
+$recentOffers = fetch_all('SELECT o.id,o.quantity,o.offered_price,o.status,o.created_at,pl.title,u.full_name AS buyer_name FROM offers o JOIN produce_listings pl ON pl.id=o.listing_id JOIN users u ON u.id=o.buyer_id WHERE o.farmer_id=:user ORDER BY o.created_at DESC LIMIT 6',['user'=>$user['id']]);
+?>
+<section class="workspace-section"><div class="workspace-section-header"><div><h2>Recent buyer offers</h2><p>Review commercial terms in the order they arrived.</p></div><span class="status-pill"><?= count($recentOffers) ?> shown</span></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>Listing</th><th>Buyer</th><th>Quantity</th><th>Offer</th><th>Status</th></tr></thead><tbody><?php if($recentOffers===[]):?><tr><td colspan="5">No buyer offers yet.</td></tr><?php else:foreach($recentOffers as $offer):?><tr><td><?= e($offer['title']) ?></td><td><?= e($offer['buyer_name']) ?></td><td><?= e((string)$offer['quantity']) ?> kg</td><td>Rs. <?= number_format((float)$offer['offered_price'],0) ?>/kg</td><td><span class="status-pill <?= e($offer['status']) ?>"><?= e(ucfirst($offer['status'])) ?></span></td></tr><?php endforeach;endif;?></tbody></table></div></section>
+<section class="workspace-section"><div class="workspace-section-header"><div><h2>Keep the harvest moving</h2><p>Use the next operational path for available produce.</p></div></div><div class="quick-links"><a class="quick-link" href="<?= e(app_url('marketplace/index.php')) ?>"><strong>Manage visibility</strong><span>Review current marketplace listings and availability.</span></a><a class="quick-link" href="<?= e(app_url('storage/index.php')) ?>"><strong>Request storage</strong><span>Reserve compatible cold-storage capacity.</span></a><a class="quick-link" href="<?= e(app_url('transport/index.php')) ?>"><strong>Plan transport</strong><span>Send a provider a documented pickup request.</span></a></div></section>
+<?php workspace_close(); ?>
+
