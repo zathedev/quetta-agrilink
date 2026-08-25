@@ -297,3 +297,38 @@ function unread_notification_count(int $userId): int
     return (int) ($row['count'] ?? 0);
 }
 
+function create_notification(int $userId, string $type, string $title, string $body, ?string $actionUrl = null, ?string $entityType = null, ?int $entityId = null): void
+{
+    execute_query(
+        'INSERT INTO notifications (user_id, type, title, body, action_url, entity_type, entity_id) VALUES (:user_id, :type, :title, :body, :action_url, :entity_type, :entity_id)',
+        [
+            'user_id' => $userId,
+            'type' => $type,
+            'title' => $title,
+            'body' => $body,
+            'action_url' => $actionUrl,
+            'entity_type' => $entityType,
+            'entity_id' => $entityId,
+        ]
+    );
+}
+
+function positive_decimal(mixed $value, int $scale = 2): ?float
+{
+    if (!is_scalar($value) || !is_numeric($value) || (float) $value <= 0) {
+        return null;
+    }
+    return round((float) $value, $scale);
+}
+
+function generate_reference(string $prefix): string
+{
+    for ($attempt = 0; $attempt < 5; $attempt++) {
+        $reference = sprintf('%s-%s-%04d', $prefix, date('Y'), random_int(1, 9999));
+        $existing = fetch_one('SELECT id FROM orders WHERE reference_code = :reference UNION SELECT id FROM storage_bookings WHERE reference_code = :reference UNION SELECT id FROM transport_requests WHERE reference_code = :reference LIMIT 1', ['reference' => $reference]);
+        if ($existing === null) {
+            return $reference;
+        }
+    }
+    throw new RuntimeException('A unique reference could not be generated.');
+}

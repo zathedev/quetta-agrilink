@@ -40,5 +40,45 @@
       }
     });
   });
-})();
 
+  document.querySelectorAll('[data-marketplace-filter]').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const resultTarget = document.querySelector('[data-marketplace-results]');
+      const feedback = document.querySelector('[data-marketplace-feedback]');
+      const submit = form.querySelector('[type="submit"]');
+      const query = new URLSearchParams(new FormData(form));
+      submit.disabled = true;
+      if (feedback) feedback.textContent = 'Refreshing available produce…';
+      try {
+        const payload = await window.qliFetch(`${form.dataset.endpoint}?${query.toString()}`);
+        if (resultTarget) resultTarget.innerHTML = payload.data.html;
+        if (feedback) feedback.textContent = payload.message;
+        window.QuettaStore?.setState({ marketplaceFilters: Object.fromEntries(query) });
+      } catch (error) {
+        if (feedback) feedback.textContent = error.message;
+      } finally {
+        submit.disabled = false;
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-favorite-toggle]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const original = button.textContent;
+      button.disabled = true;
+      try {
+        const body = new FormData();
+        body.append('listing_id', button.dataset.favoriteToggle);
+        const payload = await window.qliFetch(button.dataset.endpoint, { method: 'POST', body });
+        button.classList.toggle('is-saved', payload.data.saved);
+        button.textContent = payload.data.saved ? 'Saved to favourites' : 'Save listing';
+      } catch (error) {
+        button.textContent = error.message;
+      } finally {
+        window.setTimeout(() => { if (!button.classList.contains('is-saved')) button.textContent = original; }, 1800);
+        button.disabled = false;
+      }
+    });
+  });
+})();
