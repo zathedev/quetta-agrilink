@@ -72,8 +72,8 @@ export default function Home() {
           <a href="/storage">Services</a>
         </nav>
         <div className="agri-nav-actions">
-          <a className="text-link" href="/farmer">Sign in</a>
-          <a className="button button-canopy" href="/farmer">Create account <ArrowUpRight size={15} /></a>
+          <a className="text-link" href="/sign-in">Sign in</a>
+          <a className="button button-canopy" href="/sign-in">Create account <ArrowUpRight size={15} /></a>
         </div>
       </header>
 

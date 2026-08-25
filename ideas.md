@@ -82,3 +82,5 @@ The mark is an interlocking **leaf and route pin** built from two solid, geometr
 - Fixed crop-family bands appear consistently on marketplace records, price rows, and workspace records using restrained apple, grape, apricot, root-crop, and nut earth tones.
 - Commodity-facing public pages retain regional crop-handling, storage, or transport imagery; purely abstract hero treatments are avoided.
 - Primary user-facing copy stays commercial and operational. Implementation details and development terminology are excluded from customer-facing content.
+- Transactional screens behave as trade tickets: crop context, accountable terms, calculated total, and recorded status belong to one visual ledger unit.
+- The Quetta AgriLink leaf-route mark and mixed serif/sans wordmark are deliberately prominent at public and workspace entry points.

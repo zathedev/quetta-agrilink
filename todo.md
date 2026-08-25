@@ -20,3 +20,11 @@
 - [x] Expand the administrator workspace into management tables for marketplace listings, storage capacity, fleet, and market-price records.
 - [x] Verify desktop and mobile operational flows. Listing offer composition, storage request preparation, and administrator registers are distinct and legible at 403 px.
 - [x] Verify desktop and mobile operational flows, then commit and push the extension: `feat: add operational marketplace workflows`.
+
+## Persisted Operational Experience
+
+- [x] Add a sign-in route with role-based workspace entry aligned to the production authentication model.
+- [x] Persist submitted offers, storage requests, and transport requests in browser storage and surface them in the relevant workspace.
+- [x] Add administrator create and edit forms for marketplace, storage, fleet, and price records.
+- [x] Verify desktop and mobile interaction surfaces. Account entry, trade-ticket offer terms, browser-persisted record registers, and administrator forms are responsive and compile successfully.
+- [ ] Commit and push the production-alignment extension.
