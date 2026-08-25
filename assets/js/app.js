@@ -81,4 +81,20 @@
       }
     });
   });
+
+  document.querySelectorAll('[data-price-filter]').forEach((form) => {
+    form.addEventListener('change', async () => {
+      const target = document.querySelector('[data-price-results]');
+      const feedback = document.querySelector('[data-price-feedback]');
+      const query = new URLSearchParams(new FormData(form));
+      if (feedback) feedback.textContent = 'Loading recorded prices…';
+      try {
+        const payload = await window.qliFetch(`${form.dataset.endpoint}?${query.toString()}`);
+        if (target) target.innerHTML = payload.data.html;
+        if (feedback) feedback.textContent = payload.message;
+      } catch (error) {
+        if (feedback) feedback.textContent = error.message;
+      }
+    });
+  });
 })();
