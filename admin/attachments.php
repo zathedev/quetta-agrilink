@@ -110,7 +110,7 @@ workspace_open('Record attachments', 'attachments');
 </section>
 
 <section class="workspace-section">
-    <div class="workspace-section-header"><div><h2>Download audit history</h2><p>Each protected file delivery is linked to the signed-in administrator and recorded before the file is served.</p></div></div>
+    <div class="workspace-section-header"><div><h2>Download audit history</h2><p>Each protected file delivery is linked to the signed-in administrator and recorded before the file is served.</p></div><a class="button button-outline button-compact" href="<?= e(app_url('admin/attachment-audit-export.php')) ?>">Export CSV</a></div>
     <div class="data-table-wrap"><table class="data-table audit-table"><thead><tr><th>Attachment</th><th>Record</th><th>Downloaded by</th><th>Timestamp</th></tr></thead><tbody>
     <?php if ($downloadAudits === []): ?>
         <tr><td colspan="4">No protected attachment downloads have been recorded yet.</td></tr>

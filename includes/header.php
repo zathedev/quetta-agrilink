@@ -6,7 +6,7 @@ require_once __DIR__ . '/bootstrap.php';
 $pageTitle = $pageTitle ?? APP_NAME;
 $pageDescription = $pageDescription ?? 'The practical post-harvest marketplace for Balochistan growers and trade partners.';
 $user = current_user();
-$unreadNotifications = $user === null ? 0 : unread_notification_count((int) $user['id']);
+$notificationSummary = $user === null ? ['count' => 0, 'latest_id' => 0] : unread_notification_summary((int) $user['id']);
 function nav_active(string $needle): string { return str_contains($_SERVER['REQUEST_URI'] ?? '', $needle) ? 'is-active' : ''; }
 ?>
 <!doctype html>
@@ -40,9 +40,10 @@ function nav_active(string $needle): string { return str_contains($_SERVER['REQU
         </nav>
         <div class="header-actions">
             <?php if ($user !== null): ?>
-                <a class="notification-link" href="<?= e(app_url('notifications.php')) ?>" aria-label="Notifications">
-                    Alerts<?php if ($unreadNotifications > 0): ?><span><?= $unreadNotifications > 9 ? '9+' : $unreadNotifications ?></span><?php endif; ?>
+                <a class="notification-link" href="<?= e(app_url('notifications.php')) ?>" aria-label="Notifications" data-notification-link data-notification-latest-id="<?= (int) $notificationSummary['latest_id'] ?>" data-notification-endpoint="<?= e(app_url('ajax/notifications/unread-summary.php')) ?>">
+                    Alerts<span data-notification-count<?= $notificationSummary['count'] > 0 ? '' : ' hidden' ?>><?= $notificationSummary['count'] > 9 ? '9+' : (int) $notificationSummary['count'] ?></span>
                 </a>
+                <button class="notification-chime-toggle" type="button" data-notification-chime aria-pressed="false" title="Enable notification sound">Sound off</button>
                 <a class="button button-primary" href="<?= e(app_url(dashboard_path($user['role_slug']))) ?>">My workspace</a>
             <?php else: ?>
                 <a class="button button-quiet" href="<?= e(app_url('auth/login.php')) ?>">Sign in</a>

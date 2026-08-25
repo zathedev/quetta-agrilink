@@ -71,3 +71,12 @@
 
 - [x] Repair the managed-preview `/services` route so it presents storage and transport as accountable Orchard Ledger trade records rather than a fallback screen.
 - [x] Apply the accepted visual review refinements to services copy, cross-route styling, and design decisions; verify the preview route renders and the TypeScript build passes.
+
+## Accountable Discovery Follow-through
+
+- [x] Add a role-protected attachment download-audit CSV export for administrators.
+- [x] Add a default saved marketplace filter per user, including a migration and an explicit apply/reset flow.
+- [x] Notify a filter owner in the account notification register when a newly published listing matches their default marketplace criteria.
+- [x] Add an optional, accessible browser bell chime for newly received in-app notifications without requiring an external audio service.
+- [x] Validate the PHP/MySQL workflows locally and document required migration steps. The default filter was saved and applied; a matching farmer publication generated a buyer in-app alert; the unread summary and CSV response succeeded; temporary records were removed afterward.
+- [ ] Commit and push the completed enhancement to GitHub.

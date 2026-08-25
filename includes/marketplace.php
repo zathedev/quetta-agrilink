@@ -1,5 +1,5 @@
 <?php
-/** Orchard Ledger marketplace service: server-owned filters, strict query parameters, and reusable ledger cards. */
+/** Orchard Ledger marketplace service: server-owned filters, accountable publishing, and default-filter alerts. */
 declare(strict_types=1);
 
 function marketplace_filters(array $input): array
@@ -29,12 +29,21 @@ function saved_marketplace_filters_migration_is_available(): bool
     }
 }
 
+function default_saved_marketplace_filter_migration_is_available(): bool
+{
+    try {
+        $row = fetch_one('SELECT COUNT(*) AS count FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table_name AND COLUMN_NAME = :column_name', ['table_name' => 'saved_marketplace_filters', 'column_name' => 'is_default']);
+        return (int) ($row['count'] ?? 0) === 1;
+    } catch (Throwable $exception) {
+        return false;
+    }
+}
+
 function saved_marketplace_filters_for_user(int $userId): array
 {
     if ($userId < 1 || !saved_marketplace_filters_migration_is_available()) {
         return [];
     }
-
     return fetch_all(
         'SELECT sf.*, pc.name AS category_name
          FROM saved_marketplace_filters sf
@@ -51,7 +60,6 @@ function save_marketplace_filter(int $userId, string $name, array $filters): voi
     if ($userId < 1 || !saved_marketplace_filters_migration_is_available()) {
         throw new RuntimeException('Saved filters are not ready. Import database/migrations/20260825_add_saved_marketplace_filters.sql into the quetta_agrilink database, then refresh this page.');
     }
-
     $name = normalize_text($name, 80);
     $nameLength = function_exists('mb_strlen') ? mb_strlen($name) : strlen($name);
     if ($nameLength < 3) {
@@ -61,7 +69,6 @@ function save_marketplace_filter(int $userId, string $name, array $filters): voi
     if ($existing !== null) {
         throw new RuntimeException('A saved filter already uses that name. Choose a different name.');
     }
-
     execute_query(
         'INSERT INTO saved_marketplace_filters (user_id, name, category_id, district, grade, min_price, max_price, min_quantity, sort_key)
          VALUES (:user_id, :name, :category_id, :district, :grade, :min_price, :max_price, :min_quantity, :sort_key)',
@@ -94,6 +101,38 @@ function delete_marketplace_filter(int $userId, int $filterId): void
     audit_log($userId, 'marketplace_filter_deleted', 'saved_marketplace_filters', $filterId, ['name' => $filter['name']]);
 }
 
+function default_marketplace_filter_for_user(int $userId): ?array
+{
+    if ($userId < 1 || !default_saved_marketplace_filter_migration_is_available()) {
+        return null;
+    }
+    return fetch_one('SELECT * FROM saved_marketplace_filters WHERE user_id = :user_id AND is_default = 1 ORDER BY updated_at DESC, id DESC LIMIT 1', ['user_id' => $userId]);
+}
+
+function set_default_marketplace_filter(int $userId, int $filterId): void
+{
+    if ($userId < 1 || $filterId < 1 || !default_saved_marketplace_filter_migration_is_available()) {
+        throw new RuntimeException('Default filters are not ready. Import database/migrations/20260825_add_default_saved_marketplace_filters.sql into the quetta_agrilink database, then refresh this page.');
+    }
+    $filter = fetch_one('SELECT id, name FROM saved_marketplace_filters WHERE id = :id AND user_id = :user_id LIMIT 1', ['id' => $filterId, 'user_id' => $userId]);
+    if ($filter === null) {
+        throw new RuntimeException('The saved filter is not available.');
+    }
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        $pdo->prepare('UPDATE saved_marketplace_filters SET is_default = 0 WHERE user_id = :user_id')->execute(['user_id' => $userId]);
+        $pdo->prepare('UPDATE saved_marketplace_filters SET is_default = 1 WHERE id = :id AND user_id = :user_id')->execute(['id' => $filterId, 'user_id' => $userId]);
+        $pdo->commit();
+    } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $exception;
+    }
+    audit_log($userId, 'marketplace_filter_defaulted', 'saved_marketplace_filters', $filterId, ['name' => $filter['name']]);
+}
+
 function saved_marketplace_filter_query(array $filter): string
 {
     $query = [
@@ -106,6 +145,85 @@ function saved_marketplace_filter_query(array $filter): string
         'sort' => $filter['sort_key'] ?? 'recent',
     ];
     return http_build_query(array_filter($query, static fn (mixed $value): bool => $value !== null && $value !== ''));
+}
+
+function notify_default_marketplace_filter_matches(int $listingId, int $publisherId): int
+{
+    if ($listingId < 1 || !default_saved_marketplace_filter_migration_is_available()) {
+        return 0;
+    }
+    $listing = fetch_one('SELECT pl.id, pl.title, pl.category_id, pl.grade, pl.quantity_available, pl.expected_price, l.district FROM produce_listings pl JOIN locations l ON l.id = pl.location_id WHERE pl.id = :id AND pl.status = "active" LIMIT 1', ['id' => $listingId]);
+    if ($listing === null) {
+        return 0;
+    }
+    $defaultFilters = fetch_all('SELECT sf.*, u.status AS user_status FROM saved_marketplace_filters sf JOIN users u ON u.id = sf.user_id WHERE sf.is_default = 1');
+    $created = 0;
+    foreach ($defaultFilters as $filter) {
+        if ($filter['user_status'] !== 'active' || (int) $filter['user_id'] === $publisherId) {
+            continue;
+        }
+        $matches = ($filter['category_id'] === null || (int) $filter['category_id'] === (int) $listing['category_id'])
+            && ($filter['district'] === null || $filter['district'] === $listing['district'])
+            && ($filter['grade'] === null || $filter['grade'] === $listing['grade'])
+            && ($filter['min_price'] === null || (float) $listing['expected_price'] >= (float) $filter['min_price'])
+            && ($filter['max_price'] === null || (float) $listing['expected_price'] <= (float) $filter['max_price'])
+            && ($filter['min_quantity'] === null || (float) $listing['quantity_available'] >= (float) $filter['min_quantity']);
+        if (!$matches) {
+            continue;
+        }
+        $existing = fetch_one('SELECT id FROM notifications WHERE user_id = :user_id AND type = :type AND entity_type = :entity_type AND entity_id = :entity_id LIMIT 1', ['user_id' => $filter['user_id'], 'type' => 'marketplace_filter_match', 'entity_type' => 'produce_listing', 'entity_id' => $listingId]);
+        if ($existing !== null) {
+            continue;
+        }
+        create_notification((int) $filter['user_id'], 'marketplace_filter_match', 'New listing matches your default filter', $listing['title'] . ' · Grade ' . $listing['grade'] . ' · ' . $listing['district'] . ' · Rs. ' . number_format((float) $listing['expected_price'], 0) . '/kg.', 'marketplace/listing.php?id=' . $listingId, 'produce_listing', $listingId);
+        audit_log($publisherId, 'marketplace_filter_match_notified', 'produce_listings', $listingId, ['recipient_user_id' => (int) $filter['user_id'], 'saved_filter_id' => (int) $filter['id']]);
+        $created++;
+    }
+    return $created;
+}
+
+function publish_produce_listing(int $farmerId, array $input): int
+{
+    if ($farmerId < 1) {
+        throw new RuntimeException('Sign in as a farmer to publish produce availability.');
+    }
+    $title = normalize_text($input['title'] ?? '', 160);
+    $titleLength = function_exists('mb_strlen') ? mb_strlen($title) : strlen($title);
+    $categoryId = filter_var($input['category_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    $locationId = filter_var($input['location_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    $grade = in_array($input['grade'] ?? '', ['A', 'B', 'C', 'Mixed'], true) ? $input['grade'] : '';
+    $quantity = positive_decimal($input['quantity_available'] ?? null);
+    $price = positive_decimal($input['expected_price'] ?? null);
+    $minimumOrder = positive_decimal($input['minimum_order_quantity'] ?? null);
+    $description = normalize_text($input['description'] ?? '', 1000);
+    $parseDate = static function (mixed $value): ?string {
+        if (!is_string($value) || trim($value) === '') {
+            return null;
+        }
+        $date = DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+        return $date === false ? null : $date->format('Y-m-d');
+    };
+    $harvestDate = $parseDate($input['harvest_date'] ?? null);
+    $availableFrom = $parseDate($input['available_from'] ?? null);
+    if ($titleLength < 3 || !$categoryId || !$locationId || $grade === '' || $quantity === null || $price === null || $minimumOrder === null || $minimumOrder > $quantity) {
+        throw new RuntimeException('Provide a title, valid crop category and origin, grade, positive quantity and price, and a minimum order no larger than the available quantity.');
+    }
+    if ((trim((string) ($input['harvest_date'] ?? '')) !== '' && $harvestDate === null) || (trim((string) ($input['available_from'] ?? '')) !== '' && $availableFrom === null)) {
+        throw new RuntimeException('Use valid harvest and availability dates.');
+    }
+    if (fetch_one('SELECT id FROM produce_categories WHERE id = :id AND is_active = 1 LIMIT 1', ['id' => $categoryId]) === null || fetch_one('SELECT id FROM locations WHERE id = :id LIMIT 1', ['id' => $locationId]) === null) {
+        throw new RuntimeException('Choose an active crop category and a valid origin location.');
+    }
+    $statement = db()->prepare('INSERT INTO produce_listings (farmer_id, category_id, location_id, title, description, grade, quantity_available, expected_price, harvest_date, available_from, minimum_order_quantity, status, published_at) VALUES (:farmer_id, :category_id, :location_id, :title, :description, :grade, :quantity, :price, :harvest_date, :available_from, :minimum_order, "active", NOW())');
+    $statement->execute(['farmer_id' => $farmerId, 'category_id' => $categoryId, 'location_id' => $locationId, 'title' => $title, 'description' => $description !== '' ? $description : null, 'grade' => $grade, 'quantity' => $quantity, 'price' => $price, 'harvest_date' => $harvestDate, 'available_from' => $availableFrom, 'minimum_order' => $minimumOrder]);
+    $listingId = (int) db()->lastInsertId();
+    audit_log($farmerId, 'produce_listing_published', 'produce_listings', $listingId, ['title' => $title]);
+    try {
+        notify_default_marketplace_filter_matches($listingId, $farmerId);
+    } catch (Throwable $exception) {
+        error_log('Marketplace filter matching notification failed: ' . $exception->getMessage());
+    }
+    return $listingId;
 }
 
 function find_listings(array $filters, int $limit = 24): array

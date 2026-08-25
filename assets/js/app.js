@@ -118,4 +118,57 @@
       }
     });
   });
+
+  const notificationLink = document.querySelector('[data-notification-link]');
+  const notificationChime = document.querySelector('[data-notification-chime]');
+  if (notificationLink && notificationChime) {
+    let latestNotificationId = Number(notificationLink.dataset.notificationLatestId || 0);
+    let audioContext = null;
+    let soundEnabled = window.localStorage.getItem('qli_notification_sound') === 'enabled';
+    const updateSoundToggle = () => {
+      notificationChime.setAttribute('aria-pressed', String(soundEnabled));
+      notificationChime.textContent = soundEnabled ? 'Sound on' : 'Sound off';
+      notificationChime.title = soundEnabled ? 'Disable notification sound' : 'Enable notification sound';
+    };
+    const playBell = () => {
+      if (!soundEnabled || !window.AudioContext && !window.webkitAudioContext) return;
+      const AudioApi = window.AudioContext || window.webkitAudioContext;
+      audioContext ||= new AudioApi();
+      if (audioContext.state === 'suspended') audioContext.resume();
+      const now = audioContext.currentTime;
+      [880, 1174].forEach((frequency, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(frequency, now + index * 0.12);
+        gain.gain.setValueAtTime(0.0001, now + index * 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.11, now + index * 0.12 + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.12 + 0.28);
+        oscillator.connect(gain).connect(audioContext.destination);
+        oscillator.start(now + index * 0.12);
+        oscillator.stop(now + index * 0.12 + 0.3);
+      });
+    };
+    updateSoundToggle();
+    notificationChime.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      window.localStorage.setItem('qli_notification_sound', soundEnabled ? 'enabled' : 'disabled');
+      updateSoundToggle();
+      if (soundEnabled) playBell();
+    });
+    const refreshNotificationSummary = async () => {
+      try {
+        const response = await fetch(notificationLink.dataset.notificationEndpoint, { credentials: 'same-origin', headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+        const payload = await response.json();
+        if (!payload.success) return;
+        const count = Number(payload.data?.count || 0);
+        const newest = Number(payload.data?.latest_id || 0);
+        const badge = notificationLink.querySelector('[data-notification-count]');
+        if (badge) { badge.hidden = count === 0; badge.textContent = count > 9 ? '9+' : String(count); }
+        if (newest > latestNotificationId) playBell();
+        latestNotificationId = Math.max(latestNotificationId, newest);
+      } catch (_) { /* Header polling is optional feedback; no visual error is needed. */ }
+    };
+    window.setInterval(refreshNotificationSummary, 45000);
+  }
 })();

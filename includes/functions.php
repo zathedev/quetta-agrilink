@@ -293,8 +293,13 @@ function audit_log(?int $actorId, string $action, string $entityType, ?int $enti
 
 function unread_notification_count(int $userId): int
 {
-    $row = fetch_one('SELECT COUNT(*) AS count FROM notifications WHERE user_id = :user_id AND read_at IS NULL', ['user_id' => $userId]);
-    return (int) ($row['count'] ?? 0);
+    return (int) unread_notification_summary($userId)['count'];
+}
+
+function unread_notification_summary(int $userId): array
+{
+    $row = fetch_one('SELECT COUNT(*) AS count, COALESCE(MAX(id), 0) AS latest_id FROM notifications WHERE user_id = :user_id AND read_at IS NULL', ['user_id' => $userId]);
+    return ['count' => (int) ($row['count'] ?? 0), 'latest_id' => (int) ($row['latest_id'] ?? 0)];
 }
 
 function create_notification(int $userId, string $type, string $title, string $body, ?string $actionUrl = null, ?string $entityType = null, ?int $entityId = null): void

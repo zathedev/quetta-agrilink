@@ -11,8 +11,9 @@ Quetta AgriLink’s deployable application is the PHP/MySQL package in this repo
 | 3 | Import `database/quetta_agrilink.sql` with phpMyAdmin or the MySQL command line. | The `quetta_agrilink` database and initial development records exist. |
 | 4 | Run `database/migrations/20260825_add_record_attachments.sql` once. | The `record_attachments` table exists. |
 | 5 | Run `database/migrations/20260825_add_saved_marketplace_filters.sql` once. | The `saved_marketplace_filters` table exists. |
-| 6 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
-| 7 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
+| 6 | Run `database/migrations/20260825_add_default_saved_marketplace_filters.sql` once. | Each account can mark one saved filter as its default alert criteria. |
+| 7 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
+| 8 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
 
 ## Local security and maintenance
 
@@ -34,3 +35,4 @@ Before attaching files, open XAMPP’s `php/php.ini` and set `upload_max_filesiz
 | Offer / storage / transport | Each request returns a validated response and creates an account-scoped record. |
 | Attachment | An administrator can attach and download a permitted test file; each download is integrity-checked and appears in the download audit history. |
 | Saved marketplace filter | A signed-in user can save, apply, and remove only their own marketplace criteria. |
+| Default listing alerts | A signed-in user can choose one default filter; a farmer publication that matches its criteria creates an in-app alert. Users can enable the optional header bell after a browser interaction. |

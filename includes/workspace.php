@@ -6,7 +6,7 @@ function workspace_links(string $role): array
 {
     $common = [['Dashboard', dashboard_path($role), 'dashboard'], ['Marketplace', 'marketplace/index.php', 'marketplace'], ['Notifications', 'notifications.php', 'notifications']];
     return match ($role) {
-        'farmer' => array_merge($common, [['Offers', 'farmer/offers.php', 'offers'], ['Cold storage', 'storage/index.php', 'storage'], ['Transport', 'transport/index.php', 'transport']]),
+        'farmer' => array_merge($common, [['Publish produce', 'farmer/listings.php', 'listings'], ['Offers', 'farmer/offers.php', 'offers'], ['Cold storage', 'storage/index.php', 'storage'], ['Transport', 'transport/index.php', 'transport']]),
         'buyer' => array_merge($common, [['Offers', 'buyer/offers.php', 'offers']]),
         'storage_provider' => array_merge($common, [['Storage marketplace', 'storage/index.php', 'storage']]),
         'transport_provider' => array_merge($common, [['Transport marketplace', 'transport/index.php', 'transport']]),
