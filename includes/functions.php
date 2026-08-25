@@ -83,7 +83,7 @@ function normalize_text(?string $value, int $maxLength = 255): string
 {
     $value = trim((string) $value);
     $value = preg_replace('/\s+/', ' ', $value) ?? '';
-    return mb_substr($value, 0, $maxLength);
+    return function_exists('mb_substr') ? mb_substr($value, 0, $maxLength) : substr($value, 0, $maxLength);
 }
 
 function validate_registration(array $input): array
@@ -283,7 +283,7 @@ function audit_log(?int $actorId, string $action, string $entityType, ?int $enti
                 'entity_type' => $entityType,
                 'entity_id' => $entityId,
                 'metadata' => json_encode($metadata, JSON_THROW_ON_ERROR),
-                'ip' => mb_substr((string) ($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45),
+                'ip' => substr((string) ($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45),
             ]
         );
     } catch (Throwable $exception) {
