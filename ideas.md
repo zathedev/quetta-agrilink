@@ -84,3 +84,5 @@ The mark is an interlocking **leaf and route pin** built from two solid, geometr
 - Primary user-facing copy stays commercial and operational. Implementation details and development terminology are excluded from customer-facing content.
 - Transactional screens behave as trade tickets: crop context, accountable terms, calculated total, and recorded status belong to one visual ledger unit.
 - The Quetta AgriLink leaf-route mark and mixed serif/sans wordmark are deliberately prominent at public and workspace entry points.
+- Functional and workspace screens use upright, exacting ledger hierarchy; expressive italic display is reserved for public storytelling.
+- Empty states remain dormant trade registers with operational columns, accountable status language, and a clear next action.

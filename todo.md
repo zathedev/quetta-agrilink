@@ -28,3 +28,11 @@
 - [x] Add administrator create and edit forms for marketplace, storage, fleet, and price records.
 - [x] Verify desktop and mobile interaction surfaces. Account entry, trade-ticket offer terms, browser-persisted record registers, and administrator forms are responsive and compile successfully.
 - [x] Commit and push the production-alignment extension: `feat: persist operational workspace records`.
+
+## Integration-Ready Workflow Layer
+
+- [x] Map the managed routes and field names to the existing PHP/MySQL action contract.
+- [x] Add validated image-upload and document-upload surfaces to administrator record forms.
+- [x] Add account-scoped notification surfaces for offers, storage bookings, and transport requests.
+- [x] Verify integration-ready interaction surfaces and XAMPP handoff documentation. Notification registers, administrator records, and compact mobile dormant states are legible; production builds pass.
+- [ ] Commit and push the integration-ready extension.

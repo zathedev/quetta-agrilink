@@ -4,7 +4,7 @@ export type OperationKind = "offer" | "storage" | "transport";
 
 export type SessionRecord = { role: AccountRole; email: string; startedAt: string };
 export type OperationRecord = { id: string; kind: OperationKind; title: string; detail: string; status: string; createdAt: string; ownerRole: AccountRole };
-export type AdminRecord = { id: string; register: "listings" | "storage" | "fleet" | "prices"; values: string[]; createdAt: string };
+export type AdminRecord = { id: string; register: "listings" | "storage" | "fleet" | "prices"; values: string[]; createdAt: string; attachmentName?: string };
 
 const SESSION_KEY = "qli-session-v1";
 const OPERATIONS_KEY = "qli-operations-v1";
