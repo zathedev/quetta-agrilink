@@ -7,8 +7,7 @@ $pageTitle = $pageTitle ?? APP_NAME;
 $pageDescription = $pageDescription ?? 'The practical post-harvest marketplace for Balochistan growers and trade partners.';
 $user = current_user();
 $unreadNotifications = $user === null ? 0 : unread_notification_count((int) $user['id']);
-$currentUri = $_SERVER['REQUEST_URI'] ?? '';
-function nav_active(string $needle): string { global $currentUri; return str_contains($currentUri, $needle) ? 'is-active' : ''; }
+function nav_active(string $needle): string { return str_contains($_SERVER['REQUEST_URI'] ?? '', $needle) ? 'is-active' : ''; }
 ?>
 <!doctype html>
 <html lang="en">
@@ -55,4 +54,3 @@ function nav_active(string $needle): string { global $currentUri; return str_con
 <main>
 <?php if ($notice = flash('success')): ?><div class="site-container flash flash-success"><?= e($notice) ?></div><?php endif; ?>
 <?php if ($notice = flash('error')): ?><div class="site-container flash flash-error"><?= e($notice) ?></div><?php endif; ?>
-

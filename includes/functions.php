@@ -323,9 +323,16 @@ function positive_decimal(mixed $value, int $scale = 2): ?float
 
 function generate_reference(string $prefix): string
 {
+    $table = match ($prefix) {
+        'QAL' => 'orders',
+        'QAS' => 'storage_bookings',
+        'QAT' => 'transport_requests',
+        default => throw new InvalidArgumentException('Unsupported reference prefix.'),
+    };
+
     for ($attempt = 0; $attempt < 5; $attempt++) {
         $reference = sprintf('%s-%s-%04d', $prefix, date('Y'), random_int(1, 9999));
-        $existing = fetch_one('SELECT id FROM orders WHERE reference_code = :reference UNION SELECT id FROM storage_bookings WHERE reference_code = :reference UNION SELECT id FROM transport_requests WHERE reference_code = :reference LIMIT 1', ['reference' => $reference]);
+        $existing = fetch_one("SELECT id FROM {$table} WHERE reference_code = :reference LIMIT 1", ['reference' => $reference]);
         if ($existing === null) {
             return $reference;
         }
