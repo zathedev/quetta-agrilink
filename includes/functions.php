@@ -416,6 +416,9 @@ function validate_and_store_attachment(array $file, string $entityType, int $ent
 
 function save_record_attachment(array $file, int $uploaderId, string $entityType, int $entityId): array
 {
+    if (!attachment_migration_is_available()) {
+        throw new RuntimeException('Attachment storage is not ready. Import database/migrations/20260825_add_record_attachments.sql into the quetta_agrilink database, then refresh this page.');
+    }
     $attachment = validate_and_store_attachment($file, $entityType, $entityId);
     $pdo = db();
     try {
@@ -438,5 +441,15 @@ function save_record_attachment(array $file, int $uploaderId, string $entityType
     } catch (Throwable $exception) {
         @unlink($attachment['absolute_path']);
         throw $exception;
+    }
+}
+
+function attachment_migration_is_available(): bool
+{
+    try {
+        $row = fetch_one('SELECT COUNT(*) AS count FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table_name', ['table_name' => 'record_attachments']);
+        return (int) ($row['count'] ?? 0) === 1;
+    } catch (Throwable $exception) {
+        return false;
     }
 }

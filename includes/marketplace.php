@@ -5,6 +5,8 @@ declare(strict_types=1);
 function marketplace_filters(array $input): array
 {
     $sorts = ['recent' => 'pl.published_at DESC', 'price_low' => 'pl.expected_price ASC', 'price_high' => 'pl.expected_price DESC', 'quantity_high' => 'pl.quantity_available DESC'];
+    $requestedSort = is_string($input['sort'] ?? null) ? $input['sort'] : 'recent';
+    $sort = array_key_exists($requestedSort, $sorts) ? $requestedSort : 'recent';
     return [
         'category_id' => filter_var($input['category_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: null,
         'district' => normalize_text($input['district'] ?? '', 100),
@@ -12,8 +14,8 @@ function marketplace_filters(array $input): array
         'min_price' => positive_decimal($input['min_price'] ?? null),
         'max_price' => positive_decimal($input['max_price'] ?? null),
         'min_quantity' => positive_decimal($input['min_quantity'] ?? null),
-        'sort' => array_key_exists(($input['sort'] ?? 'recent'), $sorts) ? $input['sort'] : 'recent',
-        'order_by' => $sorts[$input['sort'] ?? 'recent'] ?? $sorts['recent'],
+        'sort' => $sort,
+        'order_by' => $sorts[$sort],
     ];
 }
 
@@ -50,4 +52,3 @@ function listing_cards_html(array $listings): string
     foreach ($listings as $index => $listing) { $html .= listing_card_html($listing, $index); }
     return $html;
 }
-

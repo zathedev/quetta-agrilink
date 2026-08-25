@@ -45,3 +45,10 @@
 - [x] Document localhost/XAMPP setup, session, CSRF, database, and upload maintenance settings.
 - [x] Lint and test the PHP/MySQL package locally. Administrator authentication and a permitted PNG attachment were validated against MariaDB; the local test record was removed afterward.
 - [x] Commit and push the XAMPP-readiness extension: `feat: add local XAMPP attachment workflow`.
+
+## Local XAMPP Error Repair
+
+- [x] Make the administrator attachment register degrade safely with an actionable migration notice when its table is missing.
+- [x] Correct the missing marketplace `sort` parameter fallback.
+- [x] Validate both paths against the local PHP/MySQL test environment. The administrator register renders a migration notice without the table, then resumes normally after restoration; an empty marketplace filter resolves to `recent`.
+- [ ] Commit and push the local XAMPP error repair.
