@@ -79,4 +79,4 @@
 - [x] Notify a filter owner in the account notification register when a newly published listing matches their default marketplace criteria.
 - [x] Add an optional, accessible browser bell chime for newly received in-app notifications without requiring an external audio service.
 - [x] Validate the PHP/MySQL workflows locally and document required migration steps. The default filter was saved and applied; a matching farmer publication generated a buyer in-app alert; the unread summary and CSV response succeeded; temporary records were removed afterward.
-- [ ] Commit and push the completed enhancement to GitHub.
+- [x] Commit and push the completed enhancement to GitHub: `feat: add default listing alerts`.
