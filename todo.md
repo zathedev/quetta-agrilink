@@ -58,4 +58,4 @@
 - [x] Add attachment-name search and inclusive date-range filters to the administrator attachment register.
 - [x] Add a clear category filter and asynchronous loading feedback to the local PHP marketplace.
 - [x] Validate the filtering and loading interactions. The local attachment register returns filtered results safely, and the category/sort endpoint returns successful JSON markup.
-- [ ] Commit and push the feature update.
+- [x] Commit and push the feature update: `feat: add attachment and marketplace filters`.
