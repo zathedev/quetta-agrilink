@@ -27,4 +27,4 @@
 - [x] Persist submitted offers, storage requests, and transport requests in browser storage and surface them in the relevant workspace.
 - [x] Add administrator create and edit forms for marketplace, storage, fleet, and price records.
 - [x] Verify desktop and mobile interaction surfaces. Account entry, trade-ticket offer terms, browser-persisted record registers, and administrator forms are responsive and compile successfully.
-- [ ] Commit and push the production-alignment extension.
+- [x] Commit and push the production-alignment extension: `feat: persist operational workspace records`.
