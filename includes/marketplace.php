@@ -19,6 +19,95 @@ function marketplace_filters(array $input): array
     ];
 }
 
+function saved_marketplace_filters_migration_is_available(): bool
+{
+    try {
+        $row = fetch_one('SELECT COUNT(*) AS count FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table_name', ['table_name' => 'saved_marketplace_filters']);
+        return (int) ($row['count'] ?? 0) === 1;
+    } catch (Throwable $exception) {
+        return false;
+    }
+}
+
+function saved_marketplace_filters_for_user(int $userId): array
+{
+    if ($userId < 1 || !saved_marketplace_filters_migration_is_available()) {
+        return [];
+    }
+
+    return fetch_all(
+        'SELECT sf.*, pc.name AS category_name
+         FROM saved_marketplace_filters sf
+         LEFT JOIN produce_categories pc ON pc.id = sf.category_id
+         WHERE sf.user_id = :user_id
+         ORDER BY sf.updated_at DESC, sf.id DESC
+         LIMIT 20',
+        ['user_id' => $userId]
+    );
+}
+
+function save_marketplace_filter(int $userId, string $name, array $filters): void
+{
+    if ($userId < 1 || !saved_marketplace_filters_migration_is_available()) {
+        throw new RuntimeException('Saved filters are not ready. Import database/migrations/20260825_add_saved_marketplace_filters.sql into the quetta_agrilink database, then refresh this page.');
+    }
+
+    $name = normalize_text($name, 80);
+    $nameLength = function_exists('mb_strlen') ? mb_strlen($name) : strlen($name);
+    if ($nameLength < 3) {
+        throw new RuntimeException('Use at least 3 characters to name this saved filter.');
+    }
+    $existing = fetch_one('SELECT id FROM saved_marketplace_filters WHERE user_id = :user_id AND name = :name LIMIT 1', ['user_id' => $userId, 'name' => $name]);
+    if ($existing !== null) {
+        throw new RuntimeException('A saved filter already uses that name. Choose a different name.');
+    }
+
+    execute_query(
+        'INSERT INTO saved_marketplace_filters (user_id, name, category_id, district, grade, min_price, max_price, min_quantity, sort_key)
+         VALUES (:user_id, :name, :category_id, :district, :grade, :min_price, :max_price, :min_quantity, :sort_key)',
+        [
+            'user_id' => $userId,
+            'name' => $name,
+            'category_id' => $filters['category_id'],
+            'district' => $filters['district'] !== '' ? $filters['district'] : null,
+            'grade' => $filters['grade'] !== '' ? $filters['grade'] : null,
+            'min_price' => $filters['min_price'],
+            'max_price' => $filters['max_price'],
+            'min_quantity' => $filters['min_quantity'],
+            'sort_key' => $filters['sort'],
+        ]
+    );
+    $savedFilterId = (int) db()->lastInsertId();
+    audit_log($userId, 'marketplace_filter_saved', 'saved_marketplace_filters', $savedFilterId, ['name' => $name]);
+}
+
+function delete_marketplace_filter(int $userId, int $filterId): void
+{
+    if ($userId < 1 || $filterId < 1 || !saved_marketplace_filters_migration_is_available()) {
+        throw new RuntimeException('The saved filter is not available.');
+    }
+    $filter = fetch_one('SELECT id, name FROM saved_marketplace_filters WHERE id = :id AND user_id = :user_id LIMIT 1', ['id' => $filterId, 'user_id' => $userId]);
+    if ($filter === null) {
+        throw new RuntimeException('The saved filter is not available.');
+    }
+    execute_query('DELETE FROM saved_marketplace_filters WHERE id = :id AND user_id = :user_id', ['id' => $filterId, 'user_id' => $userId]);
+    audit_log($userId, 'marketplace_filter_deleted', 'saved_marketplace_filters', $filterId, ['name' => $filter['name']]);
+}
+
+function saved_marketplace_filter_query(array $filter): string
+{
+    $query = [
+        'category_id' => $filter['category_id'] ?: null,
+        'district' => $filter['district'] ?: null,
+        'grade' => $filter['grade'] ?: null,
+        'min_price' => $filter['min_price'] ?: null,
+        'max_price' => $filter['max_price'] ?: null,
+        'min_quantity' => $filter['min_quantity'] ?: null,
+        'sort' => $filter['sort_key'] ?? 'recent',
+    ];
+    return http_build_query(array_filter($query, static fn (mixed $value): bool => $value !== null && $value !== ''));
+}
+
 function find_listings(array $filters, int $limit = 24): array
 {
     $where = ['pl.status = "active"'];

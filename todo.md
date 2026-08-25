@@ -59,3 +59,10 @@
 - [x] Add a clear category filter and asynchronous loading feedback to the local PHP marketplace.
 - [x] Validate the filtering and loading interactions. The local attachment register returns filtered results safely, and the category/sort endpoint returns successful JSON markup.
 - [x] Commit and push the feature update: `feat: add attachment and marketplace filters`.
+
+## Attachment Accountability and Saved Discovery
+
+- [x] Add a protected attachment download endpoint that records a user, timestamp, and attachment-specific audit entry before serving the permitted file.
+- [x] Add authenticated saved marketplace filters, including a migration, management controls, and a reusable filter application flow.
+- [x] Validate local XAMPP download auditing and saved-filter create/apply/delete workflows. The permitted attachment response was downloaded byte-for-byte after an audit write; anonymous access redirected to sign-in; a saved filter was created, applied, and removed through account-scoped PHP requests.
+- [ ] Commit and push the completed enhancement.

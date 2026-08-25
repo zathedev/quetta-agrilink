@@ -73,6 +73,17 @@
     });
   });
 
+  document.querySelectorAll('[data-saved-marketplace-filter]').forEach((form) => {
+    form.addEventListener('submit', () => {
+      const marketplaceForm = document.querySelector('[data-marketplace-filter]');
+      if (!marketplaceForm) return;
+      const currentFilters = new FormData(marketplaceForm);
+      form.querySelectorAll('[data-saved-filter-value]').forEach((input) => {
+        input.value = currentFilters.get(input.name) || '';
+      });
+    });
+  });
+
   document.querySelectorAll('[data-favorite-toggle]').forEach((button) => {
     button.addEventListener('click', async () => {
       const original = button.textContent;

@@ -453,3 +453,55 @@ function attachment_migration_is_available(): bool
         return false;
     }
 }
+
+/**
+ * Resolve an attachment for a protected administrator download and write its accountability record
+ * before any response headers or file contents are sent.
+ */
+function prepare_attachment_download(int $attachmentId, int $actorId): array
+{
+    if ($attachmentId < 1 || !attachment_migration_is_available()) {
+        throw new RuntimeException('The requested attachment is not available.');
+    }
+
+    $attachment = fetch_one(
+        'SELECT id, entity_type, entity_id, original_name, relative_path, mime_type, file_size, sha256 FROM record_attachments WHERE id = :id LIMIT 1',
+        ['id' => $attachmentId]
+    );
+    if ($attachment === null) {
+        throw new RuntimeException('The requested attachment is not available.');
+    }
+
+    $storageRoot = realpath(UPLOAD_STORAGE_PATH);
+    $candidatePath = $storageRoot === false ? false : realpath($storageRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, ltrim((string) $attachment['relative_path'], '/\\')));
+    $rootWithSeparator = $storageRoot === false ? '' : rtrim($storageRoot, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    $isWithinStorage = is_string($candidatePath) && str_starts_with($candidatePath, $rootWithSeparator);
+    if (!$isWithinStorage || !is_file($candidatePath) || !is_readable($candidatePath)) {
+        throw new RuntimeException('The stored attachment could not be verified.');
+    }
+
+    $actualHash = hash_file('sha256', $candidatePath);
+    if (!is_string($actualHash) || !hash_equals((string) $attachment['sha256'], $actualHash)) {
+        throw new RuntimeException('The stored attachment failed its integrity check.');
+    }
+
+    execute_query(
+        'INSERT INTO audit_logs (actor_user_id, action, entity_type, entity_id, metadata, ip_address) VALUES (:actor, :action, :entity_type, :entity_id, :metadata, :ip)',
+        [
+            'actor' => $actorId,
+            'action' => 'attachment_downloaded',
+            'entity_type' => 'record_attachments',
+            'entity_id' => $attachmentId,
+            'metadata' => json_encode([
+                'original_name' => $attachment['original_name'],
+                'record_type' => $attachment['entity_type'],
+                'record_id' => (int) $attachment['entity_id'],
+                'file_size' => (int) $attachment['file_size'],
+            ], JSON_THROW_ON_ERROR),
+            'ip' => substr((string) ($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45),
+        ]
+    );
+
+    $attachment['absolute_path'] = $candidatePath;
+    return $attachment;
+}
