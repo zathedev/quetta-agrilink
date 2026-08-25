@@ -11,4 +11,4 @@
 - [x] Add role-specific workspace routes for farmer, buyer, storage provider, transport provider, and administrator views.
 - [x] Connect header, footer, calls to action, and workspace navigation to the managed preview routes.
 - [x] Verify desktop and mobile route rendering. Marketplace, storage, transport, market prices, and farmer workspace are distinct pages; the commodity ledger and compact workspace remained legible at 403 px.
-- [ ] Verify the desktop and mobile routed experience, then commit and push the expansion.
+- [x] Verify the desktop and mobile routed experience, then commit and push the expansion: `feat: add routed Quetta AgriLink preview`.
