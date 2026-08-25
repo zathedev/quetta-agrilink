@@ -35,4 +35,4 @@
 - [x] Add validated image-upload and document-upload surfaces to administrator record forms.
 - [x] Add account-scoped notification surfaces for offers, storage bookings, and transport requests.
 - [x] Verify integration-ready interaction surfaces and XAMPP handoff documentation. Notification registers, administrator records, and compact mobile dormant states are legible; production builds pass.
-- [ ] Commit and push the integration-ready extension.
+- [x] Commit and push the integration-ready extension: `feat: add integration-ready workflow surfaces`.
