@@ -65,4 +65,4 @@
 - [x] Add a protected attachment download endpoint that records a user, timestamp, and attachment-specific audit entry before serving the permitted file.
 - [x] Add authenticated saved marketplace filters, including a migration, management controls, and a reusable filter application flow.
 - [x] Validate local XAMPP download auditing and saved-filter create/apply/delete workflows. The permitted attachment response was downloaded byte-for-byte after an audit write; anonymous access redirected to sign-in; a saved filter was created, applied, and removed through account-scoped PHP requests.
-- [ ] Commit and push the completed enhancement.
+- [x] Commit and push the completed enhancement: `feat: audit attachment downloads and save filters`.
