@@ -19,4 +19,4 @@
 - [x] Add interactive storage and transport request feedback within the managed preview.
 - [x] Expand the administrator workspace into management tables for marketplace listings, storage capacity, fleet, and market-price records.
 - [x] Verify desktop and mobile operational flows. Listing offer composition, storage request preparation, and administrator registers are distinct and legible at 403 px.
-- [ ] Verify desktop and mobile operational flows, then commit and push the extension.
+- [x] Verify desktop and mobile operational flows, then commit and push the extension: `feat: add operational marketplace workflows`.
