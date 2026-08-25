@@ -75,3 +75,9 @@ The mark is an interlocking **leaf and route pin** built from two solid, geometr
 - Keep all demonstration records explicitly identified as **demo data** and document local credentials. Never use fabricated reviews, ratings, testimonials, or customer logos.
 - Create reusable elements for headers, navigation, sidebars, alerts, modals, forms, tables, and pagination; server state remains authoritative.
 - Every role-specific experience must preserve the Orchard Ledger visual system while prioritizing the role’s actual operational information.
+
+## Style Decisions
+
+- Marketplace screens use a ledger scan order: product, grade, origin, available quantity, expected price, and availability read before supporting imagery.
+- Fixed crop-family bands appear consistently on marketplace records, price rows, and workspace records using restrained apple, grape, apricot, root-crop, and nut earth tones.
+- Commodity-facing public pages retain regional crop-handling, storage, or transport imagery; purely abstract hero treatments are avoided.
