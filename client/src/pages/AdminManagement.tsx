@@ -1,0 +1,21 @@
+/** Orchard Ledger administration: operational registers remain compact, scannable, and accountable. */
+import { useState } from "react";
+import { CheckCircle2, Database, Leaf, Pencil, Plus, Snowflake, Truck, Users } from "lucide-react";
+import { Link } from "wouter";
+import { Brand } from "@/components/PreviewLayout";
+
+const registers = {
+  listings: { label: "Marketplace listings", icon: Leaf, columns: ["Listing", "Origin", "Available", "Status"], rows: [["Pishin Red Apples", "Pishin", "2,400 kg", "Active"], ["Mastung Seedless Grapes", "Mastung", "1,150 kg", "Offer pending"], ["Kalat Red Potatoes", "Kalat", "4,800 kg", "Active"]] },
+  storage: { label: "Storage capacity", icon: Snowflake, columns: ["Facility", "Capacity", "Available", "Status"], rows: [["Quetta Valley Cold Store", "100,000 kg", "76,000 kg", "Active"], ["Cold room 01", "60,000 kg", "44,000 kg", "Available"], ["Cold room 02", "40,000 kg", "32,000 kg", "Available"]] },
+  fleet: { label: "Transport fleet", icon: Truck, columns: ["Vehicle", "Capacity", "Service", "Status"], rows: [["Refrigerated truck 01", "10,000 kg", "Quetta / Pishin", "Available"], ["Cargo pickup 02", "2,000 kg", "Mastung route", "Available"], ["Cargo pickup 03", "2,000 kg", "Kalat route", "Maintenance"]] },
+  prices: { label: "Market-price records", icon: Database, columns: ["Product", "Market", "Average", "Recorded"], rows: [["Apples", "Pishin", "Rs. 185/kg", "25 Aug 2026"], ["Grapes", "Mastung", "Rs. 265/kg", "25 Aug 2026"], ["Apricots", "Ziarat", "Rs. 310/kg", "25 Aug 2026"]] },
+} as const;
+type RegisterKey = keyof typeof registers;
+
+export default function AdminManagement() {
+  const [active, setActive] = useState<RegisterKey>("listings");
+  const [notice, setNotice] = useState("");
+  const register = registers[active];
+  const Icon = register.icon;
+  return <div className="workspace-shell admin-management"><aside className="workspace-side"><Brand /><div className="workspace-role-icon"><Users size={21} /></div><p>Administrator workspace</p><h2>Administrator</h2><nav><Link href="/admin"><Database size={16} />Management</Link><button type="button" className={active === "listings" ? "active" : ""} onClick={() => setActive("listings")}><Leaf size={16} />Listings</button><button type="button" className={active === "storage" ? "active" : ""} onClick={() => setActive("storage")}><Snowflake size={16} />Storage</button><button type="button" className={active === "fleet" ? "active" : ""} onClick={() => setActive("fleet")}><Truck size={16} />Fleet</button><button type="button" className={active === "prices" ? "active" : ""} onClick={() => setActive("prices")}><Database size={16} />Prices</button></nav><Link className="workspace-home" href="/">Return to public site</Link></aside><main className="workspace-main"><header><div><p className="eyebrow clay"><span /> Administration</p><h1>Operational registers</h1><p>Review supply, capacity, fleet, and price records in one accountable work area.</p></div></header><section className="register-summary"><span><b>5</b> active accounts</span><span><b>4</b> active listings</span><span><b>76,000 kg</b> storage open</span><span><b>3</b> fleet records</span></section><section className="management-register"><div className="management-register-head"><div><Icon size={24} /><div><h2>{register.label}</h2><p>Each record carries its location, commercial context, and current status.</p></div></div><button className="button button-canopy" type="button" onClick={() => setNotice(`New ${register.label.toLowerCase()} entry is ready to prepare.`)}><Plus size={16} /> Add record</button></div>{notice && <div className="management-notice"><CheckCircle2 size={18} /><span>{notice}</span><button type="button" onClick={() => setNotice("")}>Dismiss</button></div>}<div className="management-table"><div>{register.columns.map((column) => <span key={column}>{column}</span>)}<span /></div>{register.rows.map((row) => <article key={row[0]}>{row.map((value, index) => index === 3 ? <b key={value}>{value}</b> : <span key={value}>{value}</span>)}<button type="button" onClick={() => setNotice(`${row[0]} selected for record review.`)} aria-label={`Edit ${row[0]}`}><Pencil size={15} /></button></article>)}</div></section></main></div>;
+}

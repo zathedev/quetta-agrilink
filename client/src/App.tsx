@@ -10,14 +10,16 @@ import { StoragePage, TransportPage } from "./pages/Services";
 import MarketPrices from "./pages/MarketPrices";
 import Information from "./pages/Information";
 import Workspace from "./pages/Workspace";
+import ListingDetail from "./pages/ListingDetail";
+import AdminManagement from "./pages/AdminManagement";
 
 
 function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/marketplace/:id"} component={ListingDetail} />
       <Route path={"/marketplace"} component={Marketplace} />
-      <Route path={"/marketplace/:id"} component={Marketplace} />
       <Route path={"/storage"} component={StoragePage} />
       <Route path={"/transport"} component={TransportPage} />
       <Route path={"/market-prices"} component={MarketPrices} />
@@ -28,7 +30,7 @@ function Router() {
       <Route path={"/buyer"} component={() => <Workspace role="buyer" />} />
       <Route path={"/storage-provider"} component={() => <Workspace role="storage" />} />
       <Route path={"/transport-provider"} component={() => <Workspace role="transport" />} />
-      <Route path={"/admin"} component={() => <Workspace role="admin" />} />
+      <Route path={"/admin"} component={AdminManagement} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

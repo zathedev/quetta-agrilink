@@ -12,3 +12,11 @@
 - [x] Connect header, footer, calls to action, and workspace navigation to the managed preview routes.
 - [x] Verify desktop and mobile route rendering. Marketplace, storage, transport, market prices, and farmer workspace are distinct pages; the commodity ledger and compact workspace remained legible at 403 px.
 - [x] Verify the desktop and mobile routed experience, then commit and push the expansion: `feat: add routed Quetta AgriLink preview`.
+
+## Operational Preview Expansion
+
+- [x] Add listing-detail pages with produce context, offer composition, and confirmation feedback.
+- [x] Add interactive storage and transport request feedback within the managed preview.
+- [x] Expand the administrator workspace into management tables for marketplace listings, storage capacity, fleet, and market-price records.
+- [x] Verify desktop and mobile operational flows. Listing offer composition, storage request preparation, and administrator registers are distinct and legible at 403 px.
+- [ ] Verify desktop and mobile operational flows, then commit and push the extension.
