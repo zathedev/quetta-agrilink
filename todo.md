@@ -150,3 +150,9 @@
 - [x] Add administrator recovery-register filters for account role and regional location that compose safely with existing date filters and CSV export.
 - [x] Refine compact mobile workspace navigation into an accessible task menu without squeezing the desktop sidebar into narrow screens.
 - [x] Validate PHP/MySQL exports and filters, then check desktop/mobile preview alignment before committing and pushing the completed follow-through update.
+
+## Local PHP and Managed Preview Visual Parity Repair
+
+- [x] Compare the authoritative PHP/XAMPP public shell, stylesheet load order, font sources, and navigation structure with the managed preview.
+- [x] Correct the local PHP/XAMPP visual delivery so its font system, navigation, and Orchard Ledger style match the approved application direction without making the preview authoritative.
+- [x] Validate local asset URLs and responsive rendering, then commit and push the visual parity correction.

@@ -9,6 +9,11 @@ $user = current_user();
 $notificationSummary = $user === null ? ['count' => 0, 'latest_id' => 0] : unread_notification_summary((int) $user['id']);
 $notificationPreferences = $user === null ? ['browser_chime_enabled' => 0] : notification_preferences_for_user((int) $user['id']);
 function nav_active(string $needle): string { return str_contains($_SERVER['REQUEST_URI'] ?? '', $needle) ? 'is-active' : ''; }
+$stylesheet_url = static function (string $relativePath): string {
+    $absolutePath = dirname(__DIR__) . '/' . ltrim($relativePath, '/');
+    $version = is_file($absolutePath) ? (string) filemtime($absolutePath) : '1';
+    return app_url($relativePath) . '?v=' . rawurlencode($version);
+};
 ?>
 <!doctype html>
 <html lang="en">
@@ -20,11 +25,12 @@ function nav_active(string $needle): string { return str_contains($_SERVER['REQU
     <title><?= e($pageTitle) ?> | <?= e(APP_NAME) ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Serif:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
-    <link rel="stylesheet" href="<?= e(app_url('assets/css/market-desk.css')) ?>">
-    <link rel="stylesheet" href="<?= e(app_url('assets/css/workspace-mobile-menu.css')) ?>">
+    <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/app.css')) ?>">
+    <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/market-desk.css')) ?>">
+    <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/workspace-mobile-menu.css')) ?>">
+    <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/preview-parity.css')) ?>">
 </head>
 <body>
 <div class="site-notice"><div class="site-container">Serving Quetta first. Built for Balochistan’s post-harvest trade.</div></div>
@@ -32,14 +38,15 @@ function nav_active(string $needle): string { return str_contains($_SERVER['REQU
     <div class="site-container header-inner">
         <a class="brand" href="<?= e(app_url()) ?>" aria-label="Quetta AgriLink home">
             <img src="/manus-storage/quetta-agrilink-mark_a4b760ba.png" alt="" width="42" height="42">
-            <span><strong>Quetta Agri</strong><b>Link</b></span>
+            <span><strong>Quetta</strong><b>AgriLink</b></span>
         </a>
         <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" data-menu-toggle>Menu</button>
         <nav class="primary-nav" data-primary-nav aria-label="Primary navigation">
             <a class="<?= nav_active('/marketplace') ?>" href="<?= e(app_url('marketplace/index.php')) ?>">Find produce</a>
             <a class="<?= nav_active('/storage') ?>" href="<?= e(app_url('storage/index.php')) ?>">Storage</a>
             <a class="<?= nav_active('/transport') ?>" href="<?= e(app_url('transport/index.php')) ?>">Transport</a>
-            <a class="<?= nav_active('/market-prices') ?>" href="<?= e(app_url('market-prices.php')) ?>">Prices</a>
+            <a class="<?= nav_active('/market-prices') ?>" href="<?= e(app_url('market-prices.php')) ?>">Market prices</a>
+            <a class="<?= nav_active('/how-it-works') ?>" href="<?= e(app_url('how-it-works.php')) ?>">Guides</a>
         </nav>
         <div class="header-actions">
             <?php if ($user !== null): ?>

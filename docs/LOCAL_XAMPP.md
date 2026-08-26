@@ -32,6 +32,8 @@ Before attaching files, open XAMPP’s `php/php.ini` and set `upload_max_filesiz
 
 > For a local XAMPP install, `http://localhost` is sufficient for development. HTTPS is needed only when placing this same PHP application behind a local certificate or a later public reverse proxy. The managed preview cannot execute the PHP runtime; local XAMPP remains the authoritative application runtime.
 
+After pulling a visual update, refresh the browser with **Ctrl+F5** once. The PHP header adds the local stylesheet modification time to every CSS URL, so Apache serves the current Orchard Ledger fonts, navigation, and visual-style files rather than an older browser-cached stylesheet.
+
 ### Local password recovery
 
 Password recovery deliberately stays offline for the local XAMPP deployment. A user opens **Sign in → Need to reset your password?** and receives the same confirmation message whether or not an account exists. An authorized administrator verifies the requester through the organisation’s approved local process, records a short verification note, then opens **Workspace → Password recovery** to issue a one-time link. The note must never contain a password, reset link, or token. The link expires after 60 minutes, can be revoked before use, stores only a token hash in MySQL, and must never be copied into unverified channels.
