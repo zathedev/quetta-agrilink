@@ -143,3 +143,10 @@
 - [x] Add account-scoped notification delivery preferences with a documented local-only default.
 - [x] Add a protected printable recovery handover record that excludes passwords, reset links, tokens, and hashes.
 - [x] Validate PHP/MySQL workflows and desktop/mobile preview alignment, then commit and push the completed follow-through update.
+
+## Accountability Discovery and Mobile Access Follow-through
+
+- [x] Add an administrator-only contact-review CSV export that excludes sensitive recovery or credential fields.
+- [x] Add administrator recovery-register filters for account role and regional location that compose safely with existing date filters and CSV export.
+- [x] Refine compact mobile workspace navigation into an accessible task menu without squeezing the desktop sidebar into narrow screens.
+- [x] Validate PHP/MySQL exports and filters, then check desktop/mobile preview alignment before committing and pushing the completed follow-through update.

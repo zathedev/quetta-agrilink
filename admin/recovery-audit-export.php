@@ -8,17 +8,17 @@ if (!local_password_recovery_is_available() || !recovery_verification_notes_are_
     http_response_code(503);
     exit('Password recovery records are not ready. Import the local recovery and verification-note migrations first.');
 }
-$range = local_recovery_audit_date_range($_GET);
-$rows = local_recovery_audit_rows($range);
-audit_log((int) $administrator['id'], 'local_recovery_audit_exported', 'local_password_recovery_requests', null, ['row_count' => count($rows), 'from' => $range['from']?->format('Y-m-d'), 'to' => $range['to']?->format('Y-m-d')]);
+$filters = local_recovery_audit_filters($_GET);
+$rows = local_recovery_audit_rows($filters);
+audit_log((int) $administrator['id'], 'local_recovery_audit_exported', 'local_password_recovery_requests', null, ['row_count' => count($rows), 'from' => $filters['from']?->format('Y-m-d'), 'to' => $filters['to']?->format('Y-m-d'), 'role' => $filters['role'], 'district' => $filters['district']]);
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="quetta-agrilink-recovery-audit-' . date('Ymd-His') . '.csv"');
 header('Cache-Control: no-store');
 $output = fopen('php://output', 'wb');
-fputcsv($output, ['Request ID', 'Account', 'Email', 'Role', 'Requested at', 'Verification note', 'Verified at', 'Verified by', 'Issued at', 'Issued by', 'Expires at', 'Used at', 'Revoked at', 'Revoked by', 'Status']);
+fputcsv($output, ['Request ID', 'Account', 'Email', 'Role', 'District', 'Requested at', 'Verification note', 'Verified at', 'Verified by', 'Issued at', 'Issued by', 'Expires at', 'Used at', 'Revoked at', 'Revoked by', 'Status']);
 foreach ($rows as $row) {
     $status = $row['used_at'] !== null ? 'Used' : ($row['revoked_at'] !== null ? 'Revoked' : ($row['issued_at'] !== null && strtotime((string) $row['expires_at']) > time() ? 'Active' : ($row['issued_at'] !== null ? 'Expired' : 'Awaiting issue')));
-    fputcsv($output, array_map('csv_safe_cell', [$row['id'], $row['full_name'], $row['email'], $row['role_name'], $row['requested_at'], $row['verification_notes'], $row['verified_at'], $row['verified_by_name'], $row['issued_at'], $row['issued_by_name'], $row['expires_at'], $row['used_at'], $row['revoked_at'], $row['revoked_by_name'], $status]));
+    fputcsv($output, array_map('csv_safe_cell', [$row['id'], $row['full_name'], $row['email'], $row['role_name'], $row['district'], $row['requested_at'], $row['verification_notes'], $row['verified_at'], $row['verified_by_name'], $row['issued_at'], $row['issued_by_name'], $row['expires_at'], $row['used_at'], $row['revoked_at'], $row['revoked_by_name'], $status]));
 }
 fclose($output);
 exit;

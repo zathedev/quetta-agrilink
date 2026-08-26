@@ -297,6 +297,52 @@ function record_account_contact_verification(int $userId, int $administratorId, 
     audit_log($administratorId, 'account_contact_verification_recorded', 'users', $userId, ['scope' => $scope, 'reason_code' => $reasonCode]);
 }
 
+function contact_review_register_filters(array $query): array
+{
+    $search = normalize_text($query['search'] ?? '', 80);
+    $status = in_array($query['status'] ?? 'all', ['all', 'needs_review', 'email_reviewed', 'phone_reviewed', 'fully_reviewed'], true) ? (string) $query['status'] : 'all';
+    $reason = normalize_text($query['reason'] ?? '', 48);
+    if (!array_key_exists($reason, contact_review_reason_catalog())) {
+        $reason = '';
+    }
+    return ['search' => $search, 'status' => $status, 'reason' => $reason];
+}
+
+function contact_review_register_query(array $filters): string
+{
+    return http_build_query(array_filter([
+        'search' => ($filters['search'] ?? '') !== '' ? $filters['search'] : null,
+        'status' => ($filters['status'] ?? 'all') !== 'all' ? $filters['status'] : null,
+        'reason' => ($filters['reason'] ?? '') !== '' ? $filters['reason'] : null,
+    ], static fn (mixed $value): bool => $value !== null));
+}
+
+function contact_review_register_rows(array $filters, ?int $limit = null): array
+{
+    if (!account_contact_verification_is_available() || !contact_review_reason_codes_are_available()) {
+        return [];
+    }
+    $conditions = ['u.status = "active"'];
+    $params = [];
+    $search = (string) ($filters['search'] ?? '');
+    $status = (string) ($filters['status'] ?? 'all');
+    $reason = (string) ($filters['reason'] ?? '');
+    if ($search !== '') {
+        $conditions[] = '(u.full_name LIKE :contact_search_name OR u.email LIKE :contact_search_email OR u.phone LIKE :contact_search_phone)';
+        $params['contact_search_name'] = '%' . $search . '%';
+        $params['contact_search_email'] = '%' . $search . '%';
+        $params['contact_search_phone'] = '%' . $search . '%';
+    }
+    if ($status === 'needs_review') { $conditions[] = '(v.user_id IS NULL OR v.verified_email_at IS NULL OR v.verified_phone_at IS NULL)'; }
+    if ($status === 'email_reviewed') { $conditions[] = 'v.verified_email_at IS NOT NULL'; }
+    if ($status === 'phone_reviewed') { $conditions[] = 'v.verified_phone_at IS NOT NULL'; }
+    if ($status === 'fully_reviewed') { $conditions[] = 'v.verified_email_at IS NOT NULL AND v.verified_phone_at IS NOT NULL'; }
+    if ($reason !== '') { $conditions[] = 'v.review_reason_code = :contact_reason'; $params['contact_reason'] = $reason; }
+    $sql = 'SELECT u.id, u.full_name, u.email, u.phone, r.name AS role_name, v.verified_email_at, v.verified_phone_at, v.verification_notes, v.review_reason_code, v.updated_at, verifier.full_name AS verified_by_name FROM users u JOIN roles r ON r.id = u.role_id LEFT JOIN account_contact_verifications v ON v.user_id = u.id LEFT JOIN users verifier ON verifier.id = v.verified_by_user_id WHERE ' . implode(' AND ', $conditions) . ' ORDER BY u.full_name ASC';
+    if ($limit !== null) { $sql .= ' LIMIT ' . max(1, min(1000, $limit)); }
+    return fetch_all($sql, $params);
+}
+
 function local_recovery_audit_date_range(array $query): array
 {
     $parseDate = static function (mixed $value): ?DateTimeImmutable {
@@ -314,6 +360,40 @@ function local_recovery_audit_date_range(array $query): array
     return ['from' => $from, 'to' => $to];
 }
 
+function local_recovery_audit_role_options(): array
+{
+    return fetch_all('SELECT slug, name FROM roles WHERE is_active = 1 ORDER BY name ASC');
+}
+
+function local_recovery_audit_district_options(): array
+{
+    return fetch_all('SELECT DISTINCT account_locations.district FROM (SELECT l.district FROM farmer_profiles p JOIN locations l ON l.id = p.farm_location_id UNION SELECT l.district FROM buyer_profiles p JOIN locations l ON l.id = p.location_id UNION SELECT l.district FROM storage_providers p JOIN locations l ON l.id = p.location_id UNION SELECT l.district FROM transport_providers p JOIN locations l ON l.id = p.location_id) account_locations WHERE account_locations.district <> "" ORDER BY account_locations.district ASC');
+}
+
+function local_recovery_audit_filters(array $query): array
+{
+    $range = local_recovery_audit_date_range($query);
+    $roles = local_recovery_audit_role_options();
+    $allowedRoles = array_column($roles, 'slug');
+    $role = normalize_text($query['recovery_role'] ?? '', 40);
+    if (!in_array($role, $allowedRoles, true)) { $role = ''; }
+    $districts = local_recovery_audit_district_options();
+    $allowedDistricts = array_column($districts, 'district');
+    $district = normalize_text($query['recovery_district'] ?? '', 100);
+    if (!in_array($district, $allowedDistricts, true)) { $district = ''; }
+    return $range + ['role' => $role, 'district' => $district];
+}
+
+function local_recovery_audit_filter_query(array $filters): string
+{
+    return http_build_query(array_filter([
+        'recovery_from' => ($filters['from'] ?? null) instanceof DateTimeImmutable ? $filters['from']->format('Y-m-d') : null,
+        'recovery_to' => ($filters['to'] ?? null) instanceof DateTimeImmutable ? $filters['to']->format('Y-m-d') : null,
+        'recovery_role' => ($filters['role'] ?? '') !== '' ? $filters['role'] : null,
+        'recovery_district' => ($filters['district'] ?? '') !== '' ? $filters['district'] : null,
+    ], static fn (mixed $value): bool => $value !== null));
+}
+
 function local_recovery_audit_rows(array $range, ?int $limit = null): array
 {
     $conditions = ['1 = 1'];
@@ -326,7 +406,9 @@ function local_recovery_audit_rows(array $range, ?int $limit = null): array
         $conditions[] = 'r.requested_at < :recovery_to_exclusive';
         $params['recovery_to_exclusive'] = $range['to']->modify('+1 day')->format('Y-m-d 00:00:00');
     }
-    $sql = 'SELECT r.id, r.requested_at, r.verified_at, r.issued_at, r.expires_at, r.used_at, r.revoked_at, r.verification_notes, u.full_name, u.email, role.name AS role_name, verifier.full_name AS verified_by_name, issuer.full_name AS issued_by_name, revoker.full_name AS revoked_by_name FROM local_password_recovery_requests r JOIN users u ON u.id = r.user_id JOIN roles role ON role.id = u.role_id LEFT JOIN users verifier ON verifier.id = r.verified_by_user_id LEFT JOIN users issuer ON issuer.id = r.issued_by_user_id LEFT JOIN users revoker ON revoker.id = r.revoked_by_user_id WHERE ' . implode(' AND ', $conditions) . ' ORDER BY r.requested_at DESC, r.id DESC';
+    if (($range['role'] ?? '') !== '') { $conditions[] = 'role.slug = :recovery_role'; $params['recovery_role'] = $range['role']; }
+    if (($range['district'] ?? '') !== '') { $conditions[] = 'COALESCE(farmer_location.district, buyer_location.district, storage_location.district, transport_location.district, "") = :recovery_district'; $params['recovery_district'] = $range['district']; }
+    $sql = 'SELECT r.id, r.requested_at, r.verified_at, r.issued_at, r.expires_at, r.used_at, r.revoked_at, r.verification_notes, u.full_name, u.email, role.name AS role_name, role.slug AS role_slug, COALESCE(farmer_location.district, buyer_location.district, storage_location.district, transport_location.district, "") AS district, verifier.full_name AS verified_by_name, issuer.full_name AS issued_by_name, revoker.full_name AS revoked_by_name FROM local_password_recovery_requests r JOIN users u ON u.id = r.user_id JOIN roles role ON role.id = u.role_id LEFT JOIN farmer_profiles farmer_profile ON farmer_profile.user_id = u.id LEFT JOIN locations farmer_location ON farmer_location.id = farmer_profile.farm_location_id LEFT JOIN buyer_profiles buyer_profile ON buyer_profile.user_id = u.id LEFT JOIN locations buyer_location ON buyer_location.id = buyer_profile.location_id LEFT JOIN storage_providers storage_profile ON storage_profile.user_id = u.id LEFT JOIN locations storage_location ON storage_location.id = storage_profile.location_id LEFT JOIN transport_providers transport_profile ON transport_profile.user_id = u.id LEFT JOIN locations transport_location ON transport_location.id = transport_profile.location_id LEFT JOIN users verifier ON verifier.id = r.verified_by_user_id LEFT JOIN users issuer ON issuer.id = r.issued_by_user_id LEFT JOIN users revoker ON revoker.id = r.revoked_by_user_id WHERE ' . implode(' AND ', $conditions) . ' ORDER BY r.requested_at DESC, r.id DESC';
     if ($limit !== null) {
         $sql .= ' LIMIT ' . max(1, min(500, $limit));
     }

@@ -9,6 +9,31 @@
     toggle.setAttribute('aria-expanded', String(open));
   });
 
+  document.querySelectorAll('.workspace-sidebar').forEach((sidebar, index) => {
+    const workspaceNav = sidebar.querySelector('nav[aria-label="Workspace navigation"]');
+    const roleLabel = sidebar.querySelector('.role-label');
+    const roleName = sidebar.querySelector('h2');
+    if (!workspaceNav || !roleLabel || !roleName) return;
+    const summary = document.createElement('div');
+    summary.className = 'workspace-nav-summary';
+    workspaceNav.id = `workspace-task-menu-${index}`;
+    const taskToggle = document.createElement('button');
+    taskToggle.type = 'button';
+    taskToggle.className = 'workspace-menu-toggle';
+    taskToggle.setAttribute('aria-controls', workspaceNav.id);
+    taskToggle.setAttribute('aria-expanded', 'false');
+    taskToggle.textContent = 'Tasks';
+    sidebar.insertBefore(summary, sidebar.firstChild);
+    summary.append(roleLabel, roleName, taskToggle);
+    const setTaskMenu = (open) => {
+      workspaceNav.classList.toggle('is-open', open);
+      taskToggle.setAttribute('aria-expanded', String(open));
+      taskToggle.textContent = open ? 'Close tasks' : 'Tasks';
+    };
+    taskToggle.addEventListener('click', () => setTaskMenu(!workspaceNav.classList.contains('is-open')));
+    document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && workspaceNav.classList.contains('is-open')) { setTaskMenu(false); taskToggle.focus(); } });
+  });
+
   window.qliFetch = async (url, options = {}) => {
     const response = await fetch(url, {
       credentials: 'same-origin',

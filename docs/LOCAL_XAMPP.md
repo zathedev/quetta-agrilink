@@ -57,6 +57,7 @@ After recording an offline verification note, an administrator may open **Print 
 | Dashboard activity dates | A signed-in role applies an activity date range and sees only its own matching audit entries. |
 | Structured reviews and recovery dates | A contact review requires a controlled local-evidence reason plus safe context; recovery request dates constrain both the protected register and its CSV export. |
 | Saved activity ranges | A signed-in role saves, applies, and removes only its own dashboard activity date ranges; another account’s preset is never selectable or deletable. |
-| Contact-review discovery | An administrator searches active accounts and filters the local contact register by outstanding state or approved review evidence, without leaving the register scope. |
+| Contact-review discovery and export | An administrator searches active accounts, filters the local contact register by outstanding state or approved review evidence, and exports the matching accountability rows. The CSV omits free-text evidence notes, recovery data, credentials, reset links, selectors, tokens, and hashes. |
 | Local notification preferences | A signed-in account enables or disables default-filter marketplace alerts and the optional browser chime; no email or SMS delivery is added. |
 | Printable recovery handover | An administrator prints a verified recovery record with account and lifecycle context; the output contains no password, reset link, selector, token, or hash. |
+| Recovery discovery filters | An administrator filters the local recovery register and protected CSV by received date, account role, and profile district. A filter never exposes recovery selectors, tokens, hashes, reset links, or passwords. |

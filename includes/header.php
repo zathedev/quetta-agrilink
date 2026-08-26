@@ -24,6 +24,7 @@ function nav_active(string $needle): string { return str_contains($_SERVER['REQU
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
     <link rel="stylesheet" href="<?= e(app_url('assets/css/market-desk.css')) ?>">
+    <link rel="stylesheet" href="<?= e(app_url('assets/css/workspace-mobile-menu.css')) ?>">
 </head>
 <body>
 <div class="site-notice"><div class="site-container">Serving Quetta first. Built for Balochistan’s post-harvest trade.</div></div>

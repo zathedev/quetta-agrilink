@@ -91,6 +91,9 @@ The mark is an interlocking **leaf and route pin** built from two solid, geometr
 - Storage and transport present capacity, location, timing, status, and accountable next steps as one post-harvest trade record rather than generic service cards.
 - Workspace typography uses Noto Sans for dashboard structure, guidance, controls, metrics, status, and summaries; Noto Serif is reserved for page titles, brand moments, and commodity names.
 - Every role dashboard leads with the actionable attention queue, followed by its direct trade action; onboarding and quick guidance remain compact support layers.
+- Workspace headers retain the Quetta AgriLink leaf-route mark and mixed serif/sans wordmark; a task control supports navigation but never replaces branded entry context.
+- At mobile widths, trade ledgers become self-contained tickets: product, origin or trade context, grade or quantity, status, and the next review step remain visible without horizontal table dependence.
+- Operational visual weight follows the working sequence: attention queue first, direct commercial action second, then activity, guidance, shortcuts, metrics, and supporting record ledgers.
 - Primary workspace actions use concrete commercial verbs such as publish availability, review offer, arrange storage, confirm booking, and review delivery request—never generic “Open task” language.
 - Functional screens use Noto Sans for their primary hierarchy; any Noto Serif treatment is limited to the brand, a restrained title moment, or commodity names.
 - Workspace shortcuts, metrics, guidance, and form surfaces are treated as linked trade-register units through fine rules, crop/status bands, explicit record labels, and accountable commercial actions.
