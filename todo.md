@@ -104,4 +104,4 @@
 - [x] Redesign the public, marketplace, sign-in, and sign-up experiences across the PHP application and managed preview.
 - [x] Redesign dashboards and role workspaces around clear next actions, progress, and understandable operational records.
 - [x] Validate desktop and mobile redesigned journeys. The local PHP home, sign-in, registration, and authenticated farmer dashboard served the redesigned structures; all PHP/JS checks and preview builds passed; mobile marketplace listings were converted from a horizontal ledger into stacked summaries.
-- [ ] Commit and push the completed UX redesign to GitHub.
+- [x] Commit and push the completed UX redesign to GitHub: `feat: redesign application experience`.
