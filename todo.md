@@ -95,4 +95,4 @@
 - [x] Add account-scoped notification filtering by alert type and read state.
 - [x] Add protected downloadable CSV activity history for an individual farmer listing.
 - [x] Validate local PHP/MySQL workflows and document the new exports. An owned listing quantity was amended and export contained its activity event; non-farmer export access returned 403; filtered read and unread matching alerts remained account-scoped; temporary validation data was removed afterward.
-- [ ] Commit and push the completed operational update.
+- [x] Commit and push the completed operational update: `feat: add listing activity operations`.
