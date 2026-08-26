@@ -191,6 +191,148 @@ function authenticate(string $email, string $password): array
     return [true, 'You are signed in.', ['role' => $user['role_slug']]];
 }
 
+/** Local XAMPP recovery uses an administrator-issued link, never an unconfigured external email service. */
+function local_password_recovery_is_available(): bool
+{
+    try {
+        $row = fetch_one('SELECT COUNT(*) AS count FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table_name', ['table_name' => 'local_password_recovery_requests']);
+        return (int) ($row['count'] ?? 0) === 1;
+    } catch (Throwable $exception) {
+        return false;
+    }
+}
+
+function onboarding_state_is_available(): bool
+{
+    try {
+        $row = fetch_one('SELECT COUNT(*) AS count FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table_name AND COLUMN_NAME = :column_name', ['table_name' => 'users', 'column_name' => 'onboarding_completed_at']);
+        return (int) ($row['count'] ?? 0) === 1;
+    } catch (Throwable $exception) {
+        return false;
+    }
+}
+
+function onboarding_is_complete(int $userId): bool
+{
+    if ($userId < 1 || !onboarding_state_is_available()) {
+        return true;
+    }
+    $row = fetch_one('SELECT onboarding_completed_at FROM users WHERE id = :id LIMIT 1', ['id' => $userId]);
+    return $row !== null && $row['onboarding_completed_at'] !== null;
+}
+
+function complete_onboarding(int $userId): void
+{
+    if ($userId < 1 || !onboarding_state_is_available()) {
+        return;
+    }
+    execute_query('UPDATE users SET onboarding_completed_at = COALESCE(onboarding_completed_at, NOW()) WHERE id = :id', ['id' => $userId]);
+    audit_log($userId, 'onboarding_completed', 'users', $userId);
+}
+
+function request_local_password_recovery(string $email): void
+{
+    if (!local_password_recovery_is_available()) {
+        error_log('Local password recovery request received before migration was imported.');
+        return;
+    }
+    $now = time();
+    if (($now - (int) ($_SESSION['local_recovery_requested_at'] ?? 0)) < 60) {
+        return;
+    }
+    $_SESSION['local_recovery_requested_at'] = $now;
+    $user = fetch_one('SELECT id FROM users WHERE email = :email AND status = "active" LIMIT 1', ['email' => trim($email)]);
+    if ($user === null) {
+        return;
+    }
+    execute_query(
+        'INSERT INTO local_password_recovery_requests (user_id, requested_ip) VALUES (:user_id, :ip)',
+        ['user_id' => (int) $user['id'], 'ip' => substr((string) ($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45)]
+    );
+    audit_log((int) $user['id'], 'local_password_recovery_requested', 'users', (int) $user['id']);
+}
+
+function issue_local_password_reset(int $requestId, int $administratorId): string
+{
+    if (!local_password_recovery_is_available()) {
+        throw new RuntimeException('Password recovery is not ready. Import database/migrations/20260826_add_local_password_recovery.sql, then refresh this page.');
+    }
+    $request = fetch_one(
+        'SELECT r.id, r.user_id FROM local_password_recovery_requests r JOIN users u ON u.id = r.user_id WHERE r.id = :id AND u.status = "active" LIMIT 1',
+        ['id' => $requestId]
+    );
+    if ($request === null) {
+        throw new RuntimeException('That recovery request is no longer available.');
+    }
+    $selector = bin2hex(random_bytes(12));
+    $token = bin2hex(random_bytes(32));
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        $pdo->prepare('UPDATE local_password_recovery_requests SET revoked_at = NOW(), revoked_by_user_id = :administrator_id WHERE user_id = :user_id AND selector IS NOT NULL AND used_at IS NULL AND revoked_at IS NULL AND expires_at > NOW()')
+            ->execute(['administrator_id' => $administratorId, 'user_id' => (int) $request['user_id']]);
+        $pdo->prepare('UPDATE local_password_recovery_requests SET issued_by_user_id = :administrator_id, issued_at = NOW(), selector = :selector, token_hash = :token_hash, expires_at = DATE_ADD(NOW(), INTERVAL 60 MINUTE), used_at = NULL, revoked_at = NULL, revoked_by_user_id = NULL WHERE id = :id')
+            ->execute(['administrator_id' => $administratorId, 'selector' => $selector, 'token_hash' => hash('sha256', $token), 'id' => $requestId]);
+        $pdo->commit();
+    } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $exception;
+    }
+    audit_log($administratorId, 'local_password_reset_issued', 'local_password_recovery_requests', $requestId, ['user_id' => (int) $request['user_id'], 'expires_in_minutes' => 60]);
+    return app_url('auth/reset-password.php?selector=' . rawurlencode($selector) . '&token=' . rawurlencode($token));
+}
+
+function revoke_local_password_reset(int $requestId, int $administratorId): void
+{
+    $affected = execute_query('UPDATE local_password_recovery_requests SET revoked_at = NOW(), revoked_by_user_id = :administrator_id WHERE id = :id AND selector IS NOT NULL AND used_at IS NULL AND revoked_at IS NULL', ['administrator_id' => $administratorId, 'id' => $requestId]);
+    if ($affected < 1) {
+        throw new RuntimeException('That reset link is not active.');
+    }
+    audit_log($administratorId, 'local_password_reset_revoked', 'local_password_recovery_requests', $requestId);
+}
+
+function resolve_local_password_reset(string $selector, string $token): ?array
+{
+    if (!preg_match('/^[a-f0-9]{24}$/', $selector) || !preg_match('/^[a-f0-9]{64}$/', $token) || !local_password_recovery_is_available()) {
+        return null;
+    }
+    $request = fetch_one('SELECT r.id, r.user_id, r.token_hash, u.full_name FROM local_password_recovery_requests r JOIN users u ON u.id = r.user_id WHERE r.selector = :selector AND r.used_at IS NULL AND r.revoked_at IS NULL AND r.expires_at > NOW() LIMIT 1', ['selector' => $selector]);
+    if ($request === null || !hash_equals((string) $request['token_hash'], hash('sha256', $token))) {
+        return null;
+    }
+    return $request;
+}
+
+function complete_local_password_reset(int $requestId, string $selector, string $token, string $password): void
+{
+    if (strlen($password) < 10 || !preg_match('/[A-Za-z]/', $password) || !preg_match('/\d/', $password)) {
+        throw new RuntimeException('Use at least 10 characters, including a letter and a number.');
+    }
+    $request = resolve_local_password_reset($selector, $token);
+    if ($request === null || (int) $request['id'] !== $requestId) {
+        throw new RuntimeException('This reset link is invalid, expired, or already used.');
+    }
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        $pdo->prepare('UPDATE users SET password_hash = :password_hash WHERE id = :user_id')->execute(['password_hash' => password_hash($password, PASSWORD_DEFAULT), 'user_id' => (int) $request['user_id']]);
+        $consume = $pdo->prepare('UPDATE local_password_recovery_requests SET used_at = NOW() WHERE id = :id AND selector = :selector AND used_at IS NULL AND revoked_at IS NULL AND expires_at > NOW()');
+        $consume->execute(['id' => $requestId, 'selector' => $selector]);
+        if ($consume->rowCount() !== 1) {
+            throw new RuntimeException('This reset link is no longer available.');
+        }
+        $pdo->commit();
+    } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $exception;
+    }
+    audit_log((int) $request['user_id'], 'local_password_reset_completed', 'local_password_recovery_requests', $requestId);
+}
+
 function current_user(): ?array
 {
     static $userLoaded = false;

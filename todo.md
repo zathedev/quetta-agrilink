@@ -105,3 +105,11 @@
 - [x] Redesign dashboards and role workspaces around clear next actions, progress, and understandable operational records.
 - [x] Validate desktop and mobile redesigned journeys. The local PHP home, sign-in, registration, and authenticated farmer dashboard served the redesigned structures; all PHP/JS checks and preview builds passed; mobile marketplace listings were converted from a horizontal ledger into stacked summaries.
 - [x] Commit and push the completed UX redesign to GitHub: `feat: redesign application experience`.
+
+## Recovery and First-Use Guidance
+
+- [x] Add a privacy-preserving password recovery request and administrator-issued, one-time local reset flow suitable for an XAMPP deployment without external email.
+- [x] Add first-time role-specific onboarding that explains the initial operational path without blocking access to the workspace.
+- [x] Add role-specific dashboard shortcuts for the most frequent account actions.
+- [x] Validate local PHP/MySQL recovery, onboarding, and shortcut workflows. A generic recovery request created a protected admin record; an administrator issued a one-time link; the password reset completed and the same link was rejected on reuse; onboarding completion was account-scoped and hid the guide; temporary state was restored afterward.
+- [ ] Commit and push the completed follow-through update.

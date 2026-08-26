@@ -12,8 +12,10 @@ Quetta AgriLink’s deployable application is the PHP/MySQL package in this repo
 | 4 | Run `database/migrations/20260825_add_record_attachments.sql` once. | The `record_attachments` table exists. |
 | 5 | Run `database/migrations/20260825_add_saved_marketplace_filters.sql` once. | The `saved_marketplace_filters` table exists. |
 | 6 | Run `database/migrations/20260825_add_default_saved_marketplace_filters.sql` once. | Each account can mark one saved filter as its default alert criteria. |
-| 7 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
-| 8 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
+| 7 | Run `database/migrations/20260826_add_local_password_recovery.sql` once. | The administrator-issued local recovery register is available. |
+| 8 | Run `database/migrations/20260826_add_user_onboarding_state.sql` once. | First-use workspace guidance can be completed per account. |
+| 9 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
+| 10 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
 
 ## Local security and maintenance
 
@@ -24,6 +26,10 @@ Attachments are stored beneath `uploads/attachments/YYYY/MM/`. The server accept
 Before attaching files, open XAMPP’s `php/php.ini` and set `upload_max_filesize = 6M` and `post_max_size = 8M` or higher, then restart **Apache**. PHP rejects oversize bodies before the application can inspect them, so its limits must be larger than the application’s 5 MB policy.
 
 > For a local XAMPP install, `http://localhost` is sufficient for development. HTTPS is needed only when placing this same PHP application behind a local certificate or a later public reverse proxy. The managed preview cannot execute the PHP runtime; local XAMPP remains the authoritative application runtime.
+
+### Local password recovery
+
+Password recovery deliberately stays offline for the local XAMPP deployment. A user opens **Sign in → Need to reset your password?** and receives the same confirmation message whether or not an account exists. An authorized administrator verifies the requester through the organisation’s approved local process, then opens **Workspace → Password recovery** to issue a one-time link. The link expires after 60 minutes, can be revoked before use, stores only a token hash in MySQL, and must never be copied into unverified channels.
 
 ## Validation checklist
 
@@ -38,3 +44,5 @@ Before attaching files, open XAMPP’s `php/php.ini` and set `upload_max_filesiz
 | Default listing alerts | A signed-in user can choose one default filter; a farmer publication that matches its criteria creates an in-app alert. Users can enable the optional header bell after a browser interaction. |
 | Listing operations | A farmer can amend an owned record’s available quantity above its minimum order, manage its lifecycle, and export its own listing activity history as CSV. |
 | Notification register | A signed-in user can filter only their own alerts by type or read state, then mark an individual alert or the full unread register as read. |
+| Local password recovery | A public request returns a generic confirmation; an administrator issues a one-time link after verification; the reset link changes the password exactly once and rejects repeat use. |
+| First-use guidance | A signed-in account sees non-blocking role guidance and its common task shortcuts on the dashboard; completing the guide hides it only for that account. |

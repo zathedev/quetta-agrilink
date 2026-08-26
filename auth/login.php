@@ -31,7 +31,7 @@ require __DIR__ . '/../includes/header.php';
             <input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>">
             <div class="form-field"><label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" required value="<?= e($email) ?>"></div>
             <div class="form-field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required></div>
-            <div class="form-actions"><a class="muted" href="<?= e(app_url('auth/register.php')) ?>">New here? Create an account</a><button class="button button-primary" type="submit">Open workspace</button></div>
+            <div class="form-actions"><span><a class="muted" href="<?= e(app_url('auth/register.php')) ?>">New here? Create an account</a><br><a class="muted" href="<?= e(app_url('auth/recover.php')) ?>">Need to reset your password?</a></span><button class="button button-primary" type="submit">Open workspace</button></div>
         </form>
         <p class="auth-role-note">Your workspace is scoped to your role. You will see only the operational records and actions your account is permitted to manage.</p>
     </div>
