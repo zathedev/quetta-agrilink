@@ -274,6 +274,27 @@ function update_produce_listing_status(int $farmerId, int $listingId, string $st
     return $status;
 }
 
+function update_produce_listing_quantity(int $farmerId, int $listingId, mixed $requestedQuantity): float
+{
+    $quantity = positive_decimal($requestedQuantity);
+    if ($farmerId < 1 || $listingId < 1 || $quantity === null) {
+        throw new RuntimeException('Provide a positive available quantity for this produce record.');
+    }
+    $listing = fetch_one('SELECT id, title, quantity_available, minimum_order_quantity FROM produce_listings WHERE id = :id AND farmer_id = :farmer_id LIMIT 1', ['id' => $listingId, 'farmer_id' => $farmerId]);
+    if ($listing === null) {
+        throw new RuntimeException('That produce record is not available in your workspace.');
+    }
+    if ($quantity < (float) $listing['minimum_order_quantity']) {
+        throw new RuntimeException('Available quantity cannot be lower than the minimum order quantity of ' . number_format((float) $listing['minimum_order_quantity'], 2) . ' kg.');
+    }
+    if ((float) $listing['quantity_available'] === $quantity) {
+        return $quantity;
+    }
+    execute_query('UPDATE produce_listings SET quantity_available = :quantity WHERE id = :id AND farmer_id = :farmer_id', ['quantity' => $quantity, 'id' => $listingId, 'farmer_id' => $farmerId]);
+    audit_log($farmerId, 'produce_listing_quantity_updated', 'produce_listings', $listingId, ['title' => $listing['title'], 'from_kg' => (float) $listing['quantity_available'], 'to_kg' => $quantity]);
+    return $quantity;
+}
+
 function find_listings(array $filters, int $limit = 24): array
 {
     $where = ['pl.status = "active"'];

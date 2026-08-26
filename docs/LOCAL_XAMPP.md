@@ -36,3 +36,5 @@ Before attaching files, open XAMPP’s `php/php.ini` and set `upload_max_filesiz
 | Attachment | An administrator can attach and download a permitted test file; each download is integrity-checked and appears in the download audit history. |
 | Saved marketplace filter | A signed-in user can save, apply, and remove only their own marketplace criteria. |
 | Default listing alerts | A signed-in user can choose one default filter; a farmer publication that matches its criteria creates an in-app alert. Users can enable the optional header bell after a browser interaction. |
+| Listing operations | A farmer can amend an owned record’s available quantity above its minimum order, manage its lifecycle, and export its own listing activity history as CSV. |
+| Notification register | A signed-in user can filter only their own alerts by type or read state, then mark an individual alert or the full unread register as read. |

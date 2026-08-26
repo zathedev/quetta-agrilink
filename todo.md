@@ -88,3 +88,11 @@
 - [x] Add farmer-only listing status controls for pausing, reactivating, and marking produce sold out.
 - [x] Validate the local PHP/MySQL workflows. A default saved filter was edited while retaining default state; an associated new listing generated an alert; individual and all-alert read controls completed; and lifecycle transitions reached paused, active, then sold out. Temporary records were removed afterward.
 - [x] Commit and push the completed account-management update: `feat: add account management controls`.
+
+## Listing and Alert Operations
+
+- [x] Add farmer-owned available-quantity amendments with validation and activity logging.
+- [x] Add account-scoped notification filtering by alert type and read state.
+- [x] Add protected downloadable CSV activity history for an individual farmer listing.
+- [x] Validate local PHP/MySQL workflows and document the new exports. An owned listing quantity was amended and export contained its activity event; non-farmer export access returned 403; filtered read and unread matching alerts remained account-scoped; temporary validation data was removed afterward.
+- [ ] Commit and push the completed operational update.
