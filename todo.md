@@ -120,4 +120,4 @@
 - [x] Add administrator-only recovery-verification notes that stay attached to the recovery request without storing reset links or passwords.
 - [x] Add concise role-specific dashboard activity summaries that direct each account to the most recent relevant record.
 - [x] Validate the local PHP/MySQL workflows. A farmer updated only their own profile; a duplicate account email was rejected; the activity summary reflected the update; a reset link could not be issued before an administrator recorded an offline verification note; and temporary validation data was restored afterward.
-- [ ] Commit and push the completed account and accountability update.
+- [x] Commit and push the completed account and accountability update: `feat: add profile accountability controls`.
