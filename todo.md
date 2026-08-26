@@ -96,3 +96,12 @@
 - [x] Add protected downloadable CSV activity history for an individual farmer listing.
 - [x] Validate local PHP/MySQL workflows and document the new exports. An owned listing quantity was amended and export contained its activity event; non-farmer export access returned 403; filtered read and unread matching alerts remained account-scoped; temporary validation data was removed afterward.
 - [x] Commit and push the completed operational update: `feat: add listing activity operations`.
+
+## Whole-Application UX Redesign
+
+- [x] Audit the current public, authentication, marketplace, dashboard, and role-workspace journeys for clarity, hierarchy, and ordinary-user usability issues.
+- [x] Refine the established Orchard Ledger direction into a calmer, task-led information architecture while retaining its existing color philosophy.
+- [x] Redesign the public, marketplace, sign-in, and sign-up experiences across the PHP application and managed preview.
+- [x] Redesign dashboards and role workspaces around clear next actions, progress, and understandable operational records.
+- [x] Validate desktop and mobile redesigned journeys. The local PHP home, sign-in, registration, and authenticated farmer dashboard served the redesigned structures; all PHP/JS checks and preview builds passed; mobile marketplace listings were converted from a horizontal ledger into stacked summaries.
+- [ ] Commit and push the completed UX redesign to GitHub.

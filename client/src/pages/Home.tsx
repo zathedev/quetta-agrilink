@@ -1,21 +1,7 @@
-/**
- * Orchard Ledger preview — an editorial B2B agricultural marketplace.
- * The composition uses warm paper, Quetta Canopy green, generous asymmetry, and operational data blocks.
- */
-import { useState } from "react";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Box,
-  ChevronRight,
-  Leaf,
-  MapPin,
-  Search,
-  Snowflake,
-  Sprout,
-  Tractor,
-  Truck,
-} from "lucide-react";
+/** Market Desk home: a compact task launcher helps ordinary users choose the right next move without reading a brochure. */
+import { ArrowRight, ArrowUpRight, LineChart, MapPin, Search, Snowflake, Sprout, Truck } from "lucide-react";
+import { Link } from "wouter";
+import { PreviewLayout } from "@/components/PreviewLayout";
 
 const marketRows = [
   { produce: "Pishin Apples", district: "Pishin", grade: "A", quantity: "2,400 kg", price: "Rs. 185/kg", tone: "apple" },
@@ -23,125 +9,11 @@ const marketRows = [
   { produce: "Ziarat Apricots", district: "Ziarat", grade: "Premium", quantity: "860 kg", price: "Rs. 310/kg", tone: "apricot" },
 ];
 
-const workflow = [
-  ["01", "List", "Make supply visible", "Publish grade, quantity, origin, and price in a trade-ready format."],
-  ["02", "Agree", "Trade with context", "Compare active produce and keep each offer tied to the listing."],
-  ["03", "Protect", "Reserve capacity", "Request compatible cold storage when timing needs more control."],
-  ["04", "Move", "Plan the handover", "Choose a capable vehicle and track each delivery milestone."],
+const tasks = [
+  { label: "Buy or sell", title: "Find produce", copy: "Compare available crops, grade, origin, quantity, and expected price before making an offer.", href: "/marketplace", icon: Search },
+  { label: "Protect harvest", title: "Book storage", copy: "Review capacity, produce compatibility, location, and booking terms in one place.", href: "/storage", icon: Snowflake },
+  { label: "Arrange delivery", title: "Plan transport", copy: "Match pickup needs with vehicle capacity, refrigeration, and service area.", href: "/transport", icon: Truck },
+  { label: "Plan with context", title: "Check prices", copy: "Use recorded reference prices before publishing supply or sending an offer.", href: "/market-prices", icon: LineChart },
 ];
 
-const modules = {
-  marketplace: {
-    title: "Market-ready supply with terms visible.",
-    copy: "Search current harvest by product, grade, origin, quantity, and expected price. Every listing has a clear commercial context.",
-    action: "Explore marketplace",
-    icon: Search,
-  },
-  storage: {
-    title: "Protect value when timing matters.",
-    copy: "Review compatible produce, available capacity, storage type, and daily price before sending a booking request.",
-    action: "Find cold storage",
-    icon: Snowflake,
-  },
-  transport: {
-    title: "Match every crop with a capable vehicle.",
-    copy: "Compare fleet capability, refrigeration, service area, and capacity before planning a pickup and delivery.",
-    action: "Plan transport",
-    icon: Truck,
-  },
-} as const;
-
-type ModuleKey = keyof typeof modules;
-
-export default function Home() {
-  const [activeModule, setActiveModule] = useState<ModuleKey>("marketplace");
-  const module = modules[activeModule];
-  const ModuleIcon = module.icon;
-
-  return (
-    <div className="agri-shell">
-      <header className="agri-header">
-        <a className="agri-brand" href="#top" aria-label="Quetta AgriLink home">
-          <span className="agri-brand-mark"><Leaf size={21} strokeWidth={2.4} /></span>
-          <span>Quetta<br /><em>AgriLink</em></span>
-        </a>
-        <nav className="agri-nav" aria-label="Primary navigation">
-          <a href="/marketplace">Marketplace</a>
-          <a href="/how-it-works">How it works</a>
-          <a href="/market-prices">Market prices</a>
-          <a href="/storage">Services</a>
-        </nav>
-        <div className="agri-nav-actions">
-          <a className="text-link" href="/sign-in">Sign in</a>
-          <a className="button button-canopy" href="/sign-in">Create account <ArrowUpRight size={15} /></a>
-        </div>
-      </header>
-
-      <main id="top">
-        <section className="hero-section">
-          <div className="hero-copy">
-            <p className="eyebrow"><span /> Quetta’s agricultural trade network</p>
-            <h1>Connect.<br />Store. Sell.<br /><i>Grow.</i></h1>
-            <p className="hero-deck">A practical marketplace connecting Balochistan’s growers with buyers, cold storage, and reliable transportation.</p>
-            <div className="hero-actions">
-              <a className="button button-canopy button-large" href="/marketplace">Explore marketplace <ArrowRight size={18} /></a>
-              <a className="button button-ghost button-large" href="/how-it-works">See how it works <ChevronRight size={18} /></a>
-            </div>
-            <div className="hero-stats" aria-label="Platform statistics">
-              <div><strong>4</strong><span>active produce<br />listings</span></div>
-              <div><strong>1</strong><span>available storage<br />facility</span></div>
-              <div><strong>1</strong><span>transport<br />provider</span></div>
-            </div>
-          </div>
-          <div className="hero-visual" aria-label="Agricultural storage and trade visual">
-            <div className="hero-visual-image" />
-            <div className="hero-stamp"><Sprout size={18} /><span>From harvest<br />to handover</span></div>
-            <div className="hero-location"><MapPin size={15} /><span>Quetta, Balochistan</span></div>
-          </div>
-        </section>
-
-        <section className="workflow-section" id="workflow">
-          <div className="section-intro split-intro">
-            <div><p className="eyebrow clay"><span /> The practical path</p><h2>From harvest to handover,<br />with a clear next step.</h2></div>
-            <p>Quetta AgriLink keeps the after-harvest workflow connected: supply, demand, storage, transport, and delivery status remain visible to the people doing the work.</p>
-          </div>
-          <div className="workflow-grid">
-            {workflow.map(([number, label, title, copy]) => <article className="workflow-card" key={number}><span>{number} / {label}</span><h3>{title}</h3><p>{copy}</p></article>)}
-          </div>
-        </section>
-
-        <section className="market-section" id="market">
-          <div className="section-intro market-intro"><div><p className="eyebrow clay"><span /> Available produce</p><h2>Recent entries from the marketplace.</h2></div><a href="/marketplace" className="button button-outline">View all produce <ArrowRight size={16} /></a></div>
-          <div className="ledger-table">
-            <div className="ledger-head"><span>Produce &amp; origin</span><span>Grade</span><span>Available</span><span>Expected price</span><span /></div>
-            {marketRows.map((row) => <article className="ledger-row" key={row.produce}>
-              <div className="produce-cell"><span className={`produce-dot ${row.tone}`} /><div><h3>{row.produce}</h3><p>{row.district}, Balochistan</p></div></div>
-              <span><b className="grade-tag">Grade {row.grade}</b></span><span>{row.quantity}</span><strong>{row.price}</strong><a href="/marketplace" aria-label={`Inspect ${row.produce}`}><ArrowUpRight size={18} /></a>
-            </article>)}
-          </div>
-        </section>
-
-        <section className="service-section" id="services">
-          <div className="service-image" />
-          <div className="service-panel">
-            <div className="module-tabs" role="tablist" aria-label="Platform services">
-              {(Object.keys(modules) as ModuleKey[]).map((key) => <button key={key} className={activeModule === key ? "active" : ""} onClick={() => setActiveModule(key)} role="tab" aria-selected={activeModule === key}>{key === "marketplace" ? "Marketplace" : key === "storage" ? "Cold storage" : "Transport"}</button>)}
-            </div>
-            <ModuleIcon className="module-icon" size={31} strokeWidth={1.55} />
-            <p className="eyebrow light"><span /> {activeModule === "storage" ? "Capacity exchange" : activeModule === "transport" ? "Transport exchange" : "Commerce exchange"}</p>
-            <h2>{module.title}</h2><p>{module.copy}</p>
-            <a className="button button-light" href={activeModule === "storage" ? "/storage" : activeModule === "transport" ? "/transport" : "/marketplace"}>{module.action} <ArrowRight size={17} /></a>
-          </div>
-        </section>
-
-        <section className="intelligence-section" id="intelligence">
-          <div className="intelligence-copy"><p className="eyebrow"><span /> Trade intelligence</p><h2>Price awareness belongs alongside the crop, not after the deal.</h2><p>Use recorded market ranges as a reference when planning listings, purchase decisions, storage time, and transport requirements.</p><a className="button button-outline light-outline" href="/market-prices">View market prices <ArrowRight size={17} /></a></div>
-          <div className="price-board"><div className="price-board-label"><Tractor size={20} /><span>Recent reference ranges</span></div><div><span>Apples</span><strong>Rs. 185 <em>/kg</em></strong><small>Pishin market · recorded today</small></div><div><span>Grapes</span><strong>Rs. 265 <em>/kg</em></strong><small>Mastung market · recorded today</small></div><div><span>Apricots</span><strong>Rs. 310 <em>/kg</em></strong><small>Ziarat market · recorded today</small></div></div>
-        </section>
-
-        <section className="closing-cta"><p className="eyebrow clay"><span /> Bring the chain together</p><h2>Start with the work<br />you need to do next.</h2><p>Create the right account type and build a profile that reflects your role in the agricultural supply chain.</p><a className="button button-canopy button-large" href="/farmer">Join Quetta AgriLink <ArrowUpRight size={18} /></a></section>
-      </main>
-      <footer className="agri-footer"><div className="agri-brand footer-brand"><span className="agri-brand-mark"><Leaf size={19} strokeWidth={2.4} /></span><span>Quetta<br /><em>AgriLink</em></span></div><p>One platform for everything after harvest.</p><span>© 2026 Quetta AgriLink</span></footer>
-    </div>
-  );
-}
+export default function Home() { return <PreviewLayout><div className="desk-home"><div className="desk-wrap"><section className="desk-hero"><div><p className="desk-kicker">Quetta’s post-harvest market desk</p><h1>Choose the next step for your <em>harvest.</em></h1><p className="desk-hero-copy">Buy, sell, store, or move produce with the key terms visible before you commit. Start with the task you need today.</p><div className="desk-hero-actions"><Link className="button button-canopy button-large" href="/marketplace">Find available produce <ArrowRight size={17} /></Link><Link className="button button-ghost button-large" href="/sign-up">Create an account <ArrowUpRight size={16} /></Link></div><div className="desk-signal-row"><article><strong>4</strong><span>active listings</span></article><article><strong>76,000 kg</strong><span>storage open</span></article><article><strong>3</strong><span>vehicles available</span></article></div></div><aside className="desk-hero-board"><div className="desk-board-image" /><div className="desk-board-content"><div><span>Plan with the facts</span><strong>Supply, capacity, and delivery in one place.</strong></div><small><MapPin size={13} /> Quetta, Balochistan</small></div></aside></section><section className="desk-section"><div className="desk-section-head"><div><p className="desk-kicker">Start here</p><h2>What do you need to do?</h2></div><p>Every route uses the same trade information: product, quantity, timing, location, and a clear next action.</p></div><div className="desk-task-grid">{tasks.map((task) => { const Icon = task.icon; return <article className="desk-task" key={task.title}><span className="desk-task-icon"><Icon size={20} /></span><small>{task.label}</small><h3>{task.title}</h3><p>{task.copy}</p><Link href={task.href}>Open {task.title.toLowerCase()} <ArrowRight size={14} /></Link></article>; })}</div></section><section className="desk-section"><div className="desk-section-head"><div><p className="desk-kicker">Preview market board</p><h2>Available produce, easy to compare.</h2></div><Link className="button button-outline" href="/marketplace">Open marketplace <ArrowRight size={15} /></Link></div><div className="desk-market-panel"><div className="desk-market-head"><span>Produce and origin</span><span>Grade</span><span>Available</span><span>Expected price</span><span /></div>{marketRows.map((row) => <article className="desk-market-row" key={row.produce}><div className={`desk-produce ${row.tone}`}><i /><div><strong>{row.produce}</strong><span>{row.district}, Balochistan</span></div></div><span>Grade {row.grade}</span><span>{row.quantity}</span><b>{row.price}</b><Link href="/marketplace" aria-label={`Inspect ${row.produce}`}><ArrowRight size={16} /></Link></article>)}</div></section><section className="desk-section"><div className="desk-support-grid"><article className="desk-support-card"><p className="desk-kicker">Trade intelligence</p><h3>Use price reference before you agree.</h3><p>Recorded market ranges help you plan supply, offers, storage time, and transport needs with more confidence.</p><Link className="button" href="/market-prices">Check market prices <ArrowRight size={15} /></Link></article><article className="desk-price-card"><h3>Today’s reference</h3><div className="desk-price-line"><span>Apples</span><strong>Rs. 185/kg</strong></div><div className="desk-price-line"><span>Grapes</span><strong>Rs. 265/kg</strong></div><div className="desk-price-line"><span>Apricots</span><strong>Rs. 310/kg</strong></div></article></div></section><section className="desk-section"><div className="desk-cta"><div><h2>Open a workspace built around your role.</h2><p>Farmers, buyers, storage providers, transport providers, and administrators each see the work relevant to them.</p></div><Link className="button button-canopy button-large" href="/sign-up">Choose your account type <Sprout size={16} /></Link></div></section></div></div></PreviewLayout>; }

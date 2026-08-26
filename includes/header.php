@@ -1,5 +1,5 @@
 <?php
-/** Orchard Ledger public shell: warm paper, Quetta Canopy green, precise trade information. */
+/** Market Desk public shell: short task navigation keeps the local PHP app approachable before users know its workflows. */
 declare(strict_types=1);
 require_once __DIR__ . '/bootstrap.php';
 
@@ -22,6 +22,7 @@ function nav_active(string $needle): string { return str_contains($_SERVER['REQU
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Serif:wght@500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="<?= e(app_url('assets/css/app.css')) ?>">
+    <link rel="stylesheet" href="<?= e(app_url('assets/css/market-desk.css')) ?>">
 </head>
 <body>
 <div class="site-notice"><div class="site-container">Serving Quetta first. Built for Balochistan’s post-harvest trade.</div></div>
@@ -33,10 +34,10 @@ function nav_active(string $needle): string { return str_contains($_SERVER['REQU
         </a>
         <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" data-menu-toggle>Menu</button>
         <nav class="primary-nav" data-primary-nav aria-label="Primary navigation">
-            <a class="<?= nav_active('/marketplace') ?>" href="<?= e(app_url('marketplace/index.php')) ?>">Marketplace</a>
-            <a class="<?= nav_active('/storage') ?>" href="<?= e(app_url('storage/index.php')) ?>">Cold storage</a>
+            <a class="<?= nav_active('/marketplace') ?>" href="<?= e(app_url('marketplace/index.php')) ?>">Find produce</a>
+            <a class="<?= nav_active('/storage') ?>" href="<?= e(app_url('storage/index.php')) ?>">Storage</a>
             <a class="<?= nav_active('/transport') ?>" href="<?= e(app_url('transport/index.php')) ?>">Transport</a>
-            <a class="<?= nav_active('/market-prices') ?>" href="<?= e(app_url('market-prices.php')) ?>">Market prices</a>
+            <a class="<?= nav_active('/market-prices') ?>" href="<?= e(app_url('market-prices.php')) ?>">Prices</a>
         </nav>
         <div class="header-actions">
             <?php if ($user !== null): ?>

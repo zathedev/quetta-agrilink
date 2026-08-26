@@ -13,6 +13,7 @@ import Workspace from "./pages/Workspace";
 import ListingDetail from "./pages/ListingDetail";
 import AdminManagement from "./pages/AdminManagement";
 import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
 import Notifications from "./pages/Notifications";
 
 
@@ -27,6 +28,7 @@ function Router() {
       <Route path={"/transport"} component={TransportPage} />
       <Route path={"/market-prices"} component={MarketPrices} />
       <Route path={"/sign-in"} component={SignIn} />
+      <Route path={"/sign-up"} component={SignUp} />
       <Route path={"/notifications"} component={Notifications} />
       <Route path={"/about"} component={() => <Information page="about" />} />
       <Route path={"/how-it-works"} component={() => <Information page="how" />} />

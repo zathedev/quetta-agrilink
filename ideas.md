@@ -89,3 +89,26 @@ The mark is an interlocking **leaf and route pin** built from two solid, geometr
 - Noto Serif display remains sturdy and trade-bulletin-like; expressive italics are occasional storytelling emphasis only, never the dominant marketplace or operational voice.
 - Every public route and fallback state inherits the warm paper ground, Quetta Canopy anchor, harvest rules, operational labels, and a commercial next action.
 - Storage and transport present capacity, location, timing, status, and accountable next steps as one post-harvest trade record rather than generic service cards.
+
+## UX Redesign Decision — Market Desk
+
+The current colors, material feeling, and regional trade identity remain. The redesign corrects the experience rather than replacing the brand: **Market Desk** turns Orchard Ledger from an editorial brochure into an approachable working tool for an ordinary grower, buyer, storage operator, transporter, or administrator.
+
+### Structure and hierarchy
+
+1. **Lead with a task, not a slogan.** Every public page starts with a compact page purpose, one primary next step, and plain-language choices such as *Find produce*, *Book storage*, *Arrange transport*, or *Publish availability*.
+2. **Make the working state visible.** Dashboard pages open with a short “Needs your attention” queue, then show essential metrics and recent records. Status is explained in human language beside the action it affects.
+3. **Reduce reading load.** Serif display text is kept to a restrained page title or section moment. Forms, filters, dashboards, and data registers use sturdy sans-serif hierarchy, larger labels, generous click targets, and one clear primary action per panel.
+4. **Make navigation self-evident.** Public navigation is shortened around core tasks. Account pages use a clear role selector and sign-in/sign-up switch. Workspaces use a compact, labelled task navigation with a visible return route and notification status.
+
+### Layout grammar
+
+Public screens use a **task launcher → proof of availability → guided next step** sequence instead of multiple long editorial bands. Authentication becomes a two-column orientation screen where the role choice and form are easily understood. Workspaces use a practical top command bar, an attention panel, readable metrics, and a responsive record list; a dark rail is a supporting navigation element, not the dominant page surface.
+
+### Interaction and accessibility
+
+Controls are grouped by intent, inline validation explains recovery, filter chips show active criteria, and destructive or state-changing actions remain explicit. On small screens, important actions and status appear before secondary detail; navigation becomes a compact menu rather than a squeezed desktop sidebar. The optional notification sound remains opt-in.
+
+### Typography refinement
+
+Noto Serif stays for brand moments and selected page headings, capped to a calm 42–48px desktop range. Noto Sans becomes the dominant operational face, with 16px body copy, 14px labels, high-contrast form text, and clear section labels. Italics are removed from functional screens.

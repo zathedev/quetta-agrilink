@@ -1,5 +1,5 @@
 <?php
-/** Orchard Ledger authentication page: calm, direct, and focused on a secure return to work. */
+/** Market Desk sign-in: clear account orientation and a focused secure return to role-scoped work. */
 declare(strict_types=1);
 require_once __DIR__ . '/../includes/bootstrap.php';
 
@@ -23,17 +23,17 @@ $pageTitle = 'Sign in';
 require __DIR__ . '/../includes/header.php';
 ?>
 <section class="auth-page">
-    <aside class="auth-aside"><span class="eyebrow">Quetta’s post-harvest network</span><h1>Keep every harvest moving.</h1><p>Manage produce, buyers, storage, transport, and operational updates from one trusted workspace.</p></aside>
+    <aside class="auth-aside"><span class="desk-kicker">Account access</span><h1>Return to the work that needs you.</h1><p>Sign in to review the offers, capacity, delivery requests, and records connected to your account role.</p></aside>
     <div class="auth-form-wrap">
-        <h1>Sign in</h1><p>Access your Quetta AgriLink workspace.</p>
+        <p class="desk-kicker">Sign in</p><h1>Open your workspace</h1><p>Enter your account details to see the records and actions relevant to your role.</p>
         <?php if ($error): ?><div class="flash flash-error"><?= e($error) ?></div><?php endif; ?>
         <form method="post" class="form-grid" novalidate>
             <input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>">
             <div class="form-field"><label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" required value="<?= e($email) ?>"></div>
             <div class="form-field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required></div>
-            <div class="form-actions"><a class="muted" href="<?= e(app_url('auth/register.php')) ?>">Need an account?</a><button class="button button-primary" type="submit">Sign in</button></div>
+            <div class="form-actions"><a class="muted" href="<?= e(app_url('auth/register.php')) ?>">New here? Create an account</a><button class="button button-primary" type="submit">Open workspace</button></div>
         </form>
+        <p class="auth-role-note">Your workspace is scoped to your role. You will see only the operational records and actions your account is permitted to manage.</p>
     </div>
 </section>
 <?php require __DIR__ . '/../includes/footer.php'; ?>
-
