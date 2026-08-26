@@ -112,4 +112,4 @@
 - [x] Add first-time role-specific onboarding that explains the initial operational path without blocking access to the workspace.
 - [x] Add role-specific dashboard shortcuts for the most frequent account actions.
 - [x] Validate local PHP/MySQL recovery, onboarding, and shortcut workflows. A generic recovery request created a protected admin record; an administrator issued a one-time link; the password reset completed and the same link was rejected on reuse; onboarding completion was account-scoped and hid the guide; temporary state was restored afterward.
-- [ ] Commit and push the completed follow-through update.
+- [x] Commit and push the completed follow-through update: `feat: add local recovery guidance`.
