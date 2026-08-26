@@ -10,7 +10,7 @@ function workspace_links(string $role): array
         'buyer' => array_merge($common, [['Offers', 'buyer/offers.php', 'offers']]),
         'storage_provider' => array_merge($common, [['Storage marketplace', 'storage/index.php', 'storage']]),
         'transport_provider' => array_merge($common, [['Transport marketplace', 'transport/index.php', 'transport']]),
-        'admin' => array_merge($common, [['Market prices', 'market-prices.php', 'prices'], ['Attachments', 'admin/attachments.php', 'attachments'], ['Password recovery', 'admin/password-recovery.php', 'recovery']]),
+        'admin' => array_merge($common, [['Market prices', 'market-prices.php', 'prices'], ['Attachments', 'admin/attachments.php', 'attachments'], ['Password recovery', 'admin/password-recovery.php', 'recovery'], ['Contact verification', 'admin/contact-verification.php', 'contact_verification']]),
         default => $common,
     };
 }
@@ -27,12 +27,39 @@ function workspace_shortcuts(string $role): array
     };
 }
 
-function workspace_activity_summary(int $userId, string $role): array
+function workspace_activity_date_range(array $query): array
+{
+    $parseDate = static function (mixed $value): ?DateTimeImmutable {
+        if (!is_string($value) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return null;
+        }
+        $date = DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+        return $date !== false && $date->format('Y-m-d') === $value ? $date : null;
+    };
+    $from = $parseDate($query['activity_from'] ?? null);
+    $to = $parseDate($query['activity_to'] ?? null);
+    if ($from !== null && $to !== null && $from > $to) {
+        [$from, $to] = [$to, $from];
+    }
+    return ['from' => $from, 'to' => $to];
+}
+
+function workspace_activity_summary(int $userId, string $role, ?DateTimeImmutable $from = null, ?DateTimeImmutable $to = null): array
 {
     if ($userId < 1) {
         return [];
     }
-    $rows = fetch_all('SELECT action, entity_type, created_at FROM audit_logs WHERE actor_user_id = :user_id ORDER BY created_at DESC, id DESC LIMIT 3', ['user_id' => $userId]);
+    $conditions = ['actor_user_id = :user_id'];
+    $params = ['user_id' => $userId];
+    if ($from !== null) {
+        $conditions[] = 'created_at >= :activity_from';
+        $params['activity_from'] = $from->format('Y-m-d 00:00:00');
+    }
+    if ($to !== null) {
+        $conditions[] = 'created_at < :activity_to_exclusive';
+        $params['activity_to_exclusive'] = $to->modify('+1 day')->format('Y-m-d 00:00:00');
+    }
+    $rows = fetch_all('SELECT action, entity_type, created_at FROM audit_logs WHERE ' . implode(' AND ', $conditions) . ' ORDER BY created_at DESC, id DESC LIMIT 3', $params);
     $labels = [
         'account_registered' => 'Account created',
         'login' => 'Signed in',
@@ -71,11 +98,12 @@ function workspace_open(string $title, string $active): array
         'admin' => ['Review operational records', 'Keep listings, storage, fleet, attachments, and market prices accurate for all roles.', 'admin/dashboard.php', 'Review records'],
         default => ['Review current work', 'Review the current operational records in your workspace.', 'marketplace/index.php', 'Review marketplace'],
     };
-    $activitySummary = $active === 'dashboard' ? workspace_activity_summary((int) $user['id'], $user['role_name']) : [];
+    $activityRange = $active === 'dashboard' ? workspace_activity_date_range($_GET) : ['from' => null, 'to' => null];
+    $activitySummary = $active === 'dashboard' ? workspace_activity_summary((int) $user['id'], $user['role_name'], $activityRange['from'], $activityRange['to']) : [];
     $pageTitle = $title;
     require __DIR__ . '/header.php';
     ?>
-    <section class="workspace"><aside class="workspace-sidebar"><span class="role-label"><?= e($user['role_name']) ?> workspace</span><h2><?= e($user['full_name']) ?></h2><nav aria-label="Workspace navigation"><?php foreach(workspace_links($user['role_slug']) as [$label,$path,$key]): ?><a class="<?= $active === $key ? 'is-active' : '' ?>" href="<?= e(app_url($path)) ?>"><?= e($label) ?></a><?php endforeach;?></nav><form class="workspace-signout" method="post" action="<?= e(app_url('auth/logout.php')) ?>"><input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>"><button type="submit">Sign out securely</button></form></aside><div class="workspace-main"><div class="workspace-topbar"><div><p class="desk-kicker"><?= e($user['role_name']) ?> workspace</p><h1><?= e($title) ?></h1><p>Start with the work that needs your attention. Your records and available actions are scoped to this account.</p></div><div class="workspace-user">Signed in as<br><strong><?= e($user['role_name']) ?></strong></div></div><?php if ($active === 'dashboard'): ?><section class="workspace-focus"><div><span>Next commercial action</span><h2><?= e($focus[0]) ?></h2><p><?= e($focus[1]) ?></p></div><a class="button button-primary" href="<?= e(app_url($focus[2])) ?>"><?= e($focus[3]) ?></a></section><section class="workspace-activity-summary"><div><p class="desk-kicker">Recent account activity</p><h2>What changed most recently</h2></div><div class="activity-summary-list"><?php foreach ($activitySummary as $entry): ?><article><strong><?= e($entry['label']) ?></strong><span><?= e($entry['detail']) ?></span></article><?php endforeach; ?></div></section><?php if (!onboarding_is_complete((int) $user['id'])): ?><section class="workspace-onboarding"><div><span>Workspace guide</span><h2>Review attention items, then confirm the next commercial action.</h2><ol><li>Choose the record that needs a response.</li><li>Confirm visible terms before taking action.</li><li>Return to the record when its status changes.</li></ol></div><form method="post" action="<?= e(app_url('ajax/onboarding/complete.php')) ?>"><input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>"><button class="button button-quiet" type="submit">Continue to workspace</button></form></section><?php endif; ?><section class="workspace-shortcuts"><div class="workspace-section-header"><div><p class="desk-kicker">Trade shortcuts</p><h2>Common commercial actions</h2><p>Open the work you return to most often.</p></div></div><div class="quick-links"><?php foreach (workspace_shortcuts($user['role_slug']) as [$label, $description, $path]): ?><a class="quick-link" href="<?= e(app_url($path)) ?>"><strong><?= e($label) ?></strong><span><?= e($description) ?></span></a><?php endforeach; ?></div></section><?php endif; ?>
+    <section class="workspace"><aside class="workspace-sidebar"><span class="role-label"><?= e($user['role_name']) ?> workspace</span><h2><?= e($user['full_name']) ?></h2><nav aria-label="Workspace navigation"><?php foreach(workspace_links($user['role_slug']) as [$label,$path,$key]): ?><a class="<?= $active === $key ? 'is-active' : '' ?>" href="<?= e(app_url($path)) ?>"><?= e($label) ?></a><?php endforeach;?></nav><form class="workspace-signout" method="post" action="<?= e(app_url('auth/logout.php')) ?>"><input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>"><button type="submit">Sign out securely</button></form></aside><div class="workspace-main"><div class="workspace-topbar"><div><p class="desk-kicker"><?= e($user['role_name']) ?> workspace</p><h1><?= e($title) ?></h1><p>Start with the work that needs your attention. Your records and available actions are scoped to this account.</p></div><div class="workspace-user">Signed in as<br><strong><?= e($user['role_name']) ?></strong></div></div><?php if ($active === 'dashboard'): ?><section class="workspace-focus"><div><span>Next commercial action</span><h2><?= e($focus[0]) ?></h2><p><?= e($focus[1]) ?></p></div><a class="button button-primary" href="<?= e(app_url($focus[2])) ?>"><?= e($focus[3]) ?></a></section><section class="workspace-activity-summary"><div><p class="desk-kicker">Recent account activity</p><h2>What changed most recently</h2></div><form class="activity-date-filter" method="get"><label>From<input type="date" name="activity_from" value="<?= e($activityRange['from']?->format('Y-m-d') ?? '') ?>"></label><label>To<input type="date" name="activity_to" value="<?= e($activityRange['to']?->format('Y-m-d') ?? '') ?>"></label><button class="button button-quiet" type="submit">Filter activity</button><a href="<?= e(app_url(dashboard_path($user['role_slug']))) ?>">Clear dates</a></form><div class="activity-summary-list"><?php foreach ($activitySummary as $entry): ?><article><strong><?= e($entry['label']) ?></strong><span><?= e($entry['detail']) ?></span></article><?php endforeach; ?></div></section><?php if (!onboarding_is_complete((int) $user['id'])): ?><section class="workspace-onboarding"><div><span>Workspace guide</span><h2>Review attention items, then confirm the next commercial action.</h2><ol><li>Choose the record that needs a response.</li><li>Confirm visible terms before taking action.</li><li>Return to the record when its status changes.</li></ol></div><form method="post" action="<?= e(app_url('ajax/onboarding/complete.php')) ?>"><input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>"><button class="button button-quiet" type="submit">Continue to workspace</button></form></section><?php endif; ?><section class="workspace-shortcuts"><div class="workspace-section-header"><div><p class="desk-kicker">Trade shortcuts</p><h2>Common commercial actions</h2><p>Open the work you return to most often.</p></div></div><div class="quick-links"><?php foreach (workspace_shortcuts($user['role_slug']) as [$label, $description, $path]): ?><a class="quick-link" href="<?= e(app_url($path)) ?>"><strong><?= e($label) ?></strong><span><?= e($description) ?></span></a><?php endforeach; ?></div></section><?php endif; ?>
     <?php
     return $user;
 }

@@ -121,3 +121,11 @@
 - [x] Add concise role-specific dashboard activity summaries that direct each account to the most recent relevant record.
 - [x] Validate the local PHP/MySQL workflows. A farmer updated only their own profile; a duplicate account email was rejected; the activity summary reflected the update; a reset link could not be issued before an administrator recorded an offline verification note; and temporary validation data was restored afterward.
 - [x] Commit and push the completed account and accountability update: `feat: add profile accountability controls`.
+
+## Contact and Operational Audit Follow-through
+
+- [x] Add an administrator-recorded account contact-verification status with accountable notes and timestamps, without claiming automatic email or phone verification.
+- [x] Add a protected administrator CSV export for password-recovery request and verification audit history.
+- [x] Add account-scoped date-range filtering for role-specific dashboard activity summaries.
+- [x] Validate local PHP/MySQL workflows and document the migration. An administrator recorded email/phone review; an altered phone cleared only its phone-review state; the farmer saw only its date-matched activity; recovery CSV download excluded selectors, token hashes, and password hashes; temporary records were removed afterward.
+- [ ] Commit and push the completed accountability update.

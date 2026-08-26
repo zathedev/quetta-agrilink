@@ -15,8 +15,9 @@ Quetta AgriLink’s deployable application is the PHP/MySQL package in this repo
 | 7 | Run `database/migrations/20260826_add_local_password_recovery.sql` once. | The administrator-issued local recovery register is available. |
 | 8 | Run `database/migrations/20260826_add_recovery_verification_notes.sql` once. | Administrators must record offline identity verification before issuing a reset link. |
 | 9 | Run `database/migrations/20260826_add_user_onboarding_state.sql` once. | First-use workspace guidance can be completed per account. |
-| 10 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
-| 11 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
+| 10 | Run `database/migrations/20260826_add_account_contact_verifications.sql` once. | Administrators can record local email/phone contact review without claiming automatic email/SMS verification. |
+| 11 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
+| 12 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
 
 ## Local security and maintenance
 
@@ -47,3 +48,5 @@ Password recovery deliberately stays offline for the local XAMPP deployment. A u
 | Notification register | A signed-in user can filter only their own alerts by type or read state, then mark an individual alert or the full unread register as read. |
 | Local password recovery | A public request returns a generic confirmation; an administrator issues a one-time link after verification; the reset link changes the password exactly once and rejects repeat use. |
 | First-use guidance | A signed-in account sees non-blocking role guidance and its common task shortcuts on the dashboard; completing the guide hides it only for that account. |
+| Contact review and recovery export | An administrator records an offline email/phone review without saving credentials; changed contact details clear only their corresponding review state; the recovery CSV excludes selectors, tokens, hashes, and passwords. |
+| Dashboard activity dates | A signed-in role applies an activity date range and sees only its own matching audit entries. |

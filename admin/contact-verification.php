@@ -1,0 +1,23 @@
+<?php
+/** Market Desk administrator contact verification: record a local verification decision without sending email/SMS or storing credentials. */
+declare(strict_types=1);
+require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/workspace.php';
+
+$administrator = require_role(['admin']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+    try {
+        record_account_contact_verification((int) ($_POST['user_id'] ?? 0), (int) $administrator['id'], (string) ($_POST['contact_scope'] ?? ''), (string) ($_POST['verification_note'] ?? ''));
+        flash('success', 'The local contact-verification record has been saved. Changed contact details will require a fresh review.');
+    } catch (Throwable $exception) {
+        flash('error', $exception->getMessage());
+    }
+    redirect('admin/contact-verification.php');
+}
+
+$records = account_contact_verification_is_available() ? fetch_all('SELECT u.id, u.full_name, u.email, u.phone, r.name AS role_name, v.verified_email_at, v.verified_phone_at, v.verification_notes, v.updated_at, verifier.full_name AS verified_by_name FROM users u JOIN roles r ON r.id = u.role_id LEFT JOIN account_contact_verifications v ON v.user_id = u.id LEFT JOIN users verifier ON verifier.id = v.verified_by_user_id WHERE u.status = "active" ORDER BY u.full_name ASC') : [];
+workspace_open('Contact verification', 'contact_verification');
+?>
+<?php if (!account_contact_verification_is_available()): ?><div class="flash flash-error">Contact verification is not ready. Import <code>database/migrations/20260826_add_account_contact_verifications.sql</code> into the selected <code>quetta_agrilink</code> database.</div><?php else: ?><section class="workspace-section"><div class="workspace-section-header"><div><p class="desk-kicker">Administrator accountability register</p><h2>Local contact verification</h2><p>Record an offline review of the email address, contact number, or both. This status does not send a message or claim automatic verification.</p></div></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>Account</th><th>Current contact status</th><th>Verification record</th><th>Administrator action</th></tr></thead><tbody><?php foreach ($records as $record): ?><tr><td><strong><?= e($record['full_name']) ?></strong><br><span class="muted"><?= e($record['role_name']) ?></span><br><span class="muted"><?= e($record['email']) ?> · <?= e($record['phone']) ?></span></td><td><div class="contact-status-stack"><span class="status-pill <?= $record['verified_email_at'] !== null ? 'verified' : 'pending' ?>">Email <?= $record['verified_email_at'] !== null ? 'reviewed' : 'not reviewed' ?></span><span class="status-pill <?= $record['verified_phone_at'] !== null ? 'verified' : 'pending' ?>">Phone <?= $record['verified_phone_at'] !== null ? 'reviewed' : 'not reviewed' ?></span></div></td><td><?php if ($record['updated_at'] !== null): ?><p class="verification-note"><?= e($record['verification_notes']) ?></p><small class="muted">Last recorded by <?= e($record['verified_by_name'] ?? 'administrator') ?> at <?= e(date('j M Y H:i', strtotime((string) $record['updated_at']))) ?></small><?php else: ?><span class="muted">No local contact review has been recorded.</span><?php endif; ?></td><td><form method="post" class="verification-form"><input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>"><input type="hidden" name="user_id" value="<?= (int) $record['id'] ?>"><select name="contact_scope" required><option value="both">Email and phone</option><option value="email">Email only</option><option value="phone">Phone only</option></select><textarea name="verification_note" required maxlength="800" placeholder="How the current contact was reviewed — never enter passwords, reset links, or tokens."></textarea><button class="button button-quiet" type="submit">Record contact review</button></form></td></tr><?php endforeach; ?></tbody></table></div></section><?php endif; ?>
+<?php workspace_close(); ?>

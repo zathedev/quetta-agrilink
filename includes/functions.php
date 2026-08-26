@@ -215,6 +215,54 @@ function recovery_verification_notes_are_available(): bool
     }
 }
 
+function account_contact_verification_is_available(): bool
+{
+    try {
+        $row = fetch_one('SELECT COUNT(*) AS count FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table_name', ['table_name' => 'account_contact_verifications']);
+        return (int) ($row['count'] ?? 0) === 1;
+    } catch (Throwable $exception) {
+        return false;
+    }
+}
+
+function account_contact_verification(int $userId): ?array
+{
+    if ($userId < 1 || !account_contact_verification_is_available()) {
+        return null;
+    }
+
+    return fetch_one('SELECT v.verified_email_at, v.verified_phone_at, v.verification_notes, v.updated_at, verifier.full_name AS verified_by_name FROM account_contact_verifications v LEFT JOIN users verifier ON verifier.id = v.verified_by_user_id WHERE v.user_id = :user_id LIMIT 1', ['user_id' => $userId]);
+}
+
+function record_account_contact_verification(int $userId, int $administratorId, string $scope, string $note): void
+{
+    if (!account_contact_verification_is_available()) {
+        throw new RuntimeException('Contact verification is not ready. Import database/migrations/20260826_add_account_contact_verifications.sql, then refresh this page.');
+    }
+    if ($userId < 1 || $administratorId < 1 || !in_array($scope, ['email', 'phone', 'both'], true)) {
+        throw new RuntimeException('Choose a valid account and contact review scope.');
+    }
+
+    $note = normalize_text($note, 800);
+    if ((function_exists('mb_strlen') ? mb_strlen($note) : strlen($note)) < 8) {
+        throw new RuntimeException('Record a brief description of how the current contact was reviewed.');
+    }
+    if (preg_match('#https?://|reset-password\.php|token=|password#i', $note)) {
+        throw new RuntimeException('Do not store passwords, reset links, tokens, or credentials in a contact-verification note.');
+    }
+
+    $account = fetch_one('SELECT id, email, phone FROM users WHERE id = :id AND status = "active" LIMIT 1', ['id' => $userId]);
+    if ($account === null || ($scope !== 'phone' && trim((string) $account['email']) === '') || ($scope !== 'email' && trim((string) $account['phone']) === '')) {
+        throw new RuntimeException('The selected account no longer has the contact detail chosen for review.');
+    }
+
+    $emailAt = $scope === 'email' || $scope === 'both' ? date('Y-m-d H:i:s') : null;
+    $phoneAt = $scope === 'phone' || $scope === 'both' ? date('Y-m-d H:i:s') : null;
+    $statement = db()->prepare('INSERT INTO account_contact_verifications (user_id, verified_email_at, verified_phone_at, verification_notes, verified_by_user_id) VALUES (:user_id, :email_at, :phone_at, :note, :administrator_id) ON DUPLICATE KEY UPDATE verification_notes = VALUES(verification_notes), verified_by_user_id = VALUES(verified_by_user_id), verified_email_at = CASE WHEN VALUES(verified_email_at) IS NOT NULL THEN VALUES(verified_email_at) ELSE verified_email_at END, verified_phone_at = CASE WHEN VALUES(verified_phone_at) IS NOT NULL THEN VALUES(verified_phone_at) ELSE verified_phone_at END, updated_at = NOW()');
+    $statement->execute(['user_id' => $userId, 'email_at' => $emailAt, 'phone_at' => $phoneAt, 'note' => $note, 'administrator_id' => $administratorId]);
+    audit_log($administratorId, 'account_contact_verification_recorded', 'users', $userId, ['scope' => $scope]);
+}
+
 function save_recovery_verification_note(int $requestId, int $administratorId, string $note): void
 {
     if (!recovery_verification_notes_are_available()) {
@@ -302,6 +350,15 @@ function update_account_profile(int $userId, array $input): array
         return [true, 'Your profile is already up to date.', ['changed' => []]];
     }
     execute_query('UPDATE users SET full_name = :full_name, email = :email, phone = :phone WHERE id = :id', ['full_name' => $fullName, 'email' => $email, 'phone' => $phone, 'id' => $userId]);
+    if (account_contact_verification_is_available() && (in_array('email', $changed, true) || in_array('phone', $changed, true))) {
+        if (in_array('email', $changed, true) && in_array('phone', $changed, true)) {
+            execute_query('UPDATE account_contact_verifications SET verified_email_at = NULL, verified_phone_at = NULL WHERE user_id = :user_id', ['user_id' => $userId]);
+        } elseif (in_array('email', $changed, true)) {
+            execute_query('UPDATE account_contact_verifications SET verified_email_at = NULL WHERE user_id = :user_id', ['user_id' => $userId]);
+        } else {
+            execute_query('UPDATE account_contact_verifications SET verified_phone_at = NULL WHERE user_id = :user_id', ['user_id' => $userId]);
+        }
+    }
     audit_log($userId, 'profile_updated', 'users', $userId, ['fields' => $changed]);
     return [true, 'Your profile details have been updated.', ['changed' => $changed]];
 }
