@@ -1,15 +1,87 @@
-/** Market Desk workspace: roles start with attention-needed tasks, then scan metrics and records in a calm order. */
-import { ArrowRight, Bell, Box, CheckCircle2, ClipboardList, LayoutDashboard, MapPinned, PackageCheck, Snowflake, Truck } from "lucide-react";
+/** Market Desk workspace: attention-first, commodity-led operational canvas with direct commercial actions and compact support guidance. */
+import {
+  ArrowRight,
+  Bell,
+  Box,
+  CheckCircle2,
+  ClipboardList,
+  LayoutDashboard,
+  MapPinned,
+  PackageCheck,
+  Snowflake,
+  Truck,
+  UserRound,
+} from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 import { Brand } from "@/components/PreviewLayout";
 import { getOperations } from "@/lib/operations";
 
 const data = {
-  farmer: { name: "Farmer", label: "Farmer workspace", stats: [["4", "Active listings"], ["8,340 kg", "Available produce"], ["1", "Offer to review"], ["1", "Storage booking"]], items: [["Pishin Red Apples", "2,400 kg", "Active"], ["Mastung Seedless Grapes", "1,150 kg", "Offer pending"], ["Ziarat Dried Apricots", "860 kg", "Storage requested"]] },
-  buyer: { name: "Buyer", label: "Buyer workspace", stats: [["2", "Active orders"], ["1", "Pending offer"], ["3", "Saved listings"], ["5", "Market alerts"]], items: [["Pishin Red Apples", "Farmer offer", "Countered"], ["Mastung Seedless Grapes", "1,150 kg", "Saved"], ["Kalat Red Potatoes", "4,800 kg", "Available"]] },
-  storage: { name: "Storage provider", label: "Storage provider workspace", stats: [["76,000 kg", "Available capacity"], ["1", "Pending booking"], ["0", "Active bookings"], ["1", "Facility"]], items: [["QAS-2026-0184", "Pishin Red Apples", "Requested"], ["Cold room 01", "76,000 kg open", "Available"], ["Capacity review", "Next action", "Required"]] },
-  transport: { name: "Transport provider", label: "Transport provider workspace", stats: [["3", "Available vehicles"], ["1", "New request"], ["0", "Active trips"], ["1", "Service area"]], items: [["QAT-2026-0042", "1,150 kg grapes", "Requested"], ["Refrigerated truck", "10,000 kg", "Available"], ["Dispatch review", "Next action", "Required"]] },
-  admin: { name: "Administrator", label: "Administrator workspace", stats: [["5", "Active accounts"], ["4", "Marketplace listings"], ["1", "Storage facility"], ["1", "Transport provider"]], items: [["Market records", "5 price entries", "Current"], ["Account review", "5 active accounts", "Current"], ["Operational audit", "No issues", "Tracked"]] },
+  farmer: {
+    name: "Farmer",
+    label: "Farmer workspace",
+    stats: [["4", "Active listings"], ["8,340 kg", "Available produce"], ["1", "Offer to review"], ["1", "Storage booking"]],
+    items: [["Pishin Red Apples", "Pishin · Grade A · 2,400 kg", "Active"], ["Mastung Seedless Grapes", "Mastung · Grade A · 1,150 kg", "Offer pending"], ["Ziarat Dried Apricots", "Ziarat · Premium · 860 kg", "Storage requested"]],
+  },
+  buyer: {
+    name: "Buyer",
+    label: "Buyer workspace",
+    stats: [["2", "Active orders"], ["1", "Pending offer"], ["3", "Saved listings"], ["5", "Market alerts"]],
+    items: [["Pishin Red Apples", "Farmer offer · Grade A", "Countered"], ["Mastung Seedless Grapes", "Mastung · 1,150 kg", "Saved"], ["Kalat Red Potatoes", "Kalat · Grade A · 4,800 kg", "Available"]],
+  },
+  storage: {
+    name: "Storage provider",
+    label: "Storage provider workspace",
+    stats: [["76,000 kg", "Available capacity"], ["1", "Pending booking"], ["0", "Active bookings"], ["1", "Facility"]],
+    items: [["QAS-2026-0184", "Pishin Apples · 2,400 kg", "Requested"], ["Cold room 01", "76,000 kg open · apples compatible", "Available"], ["Capacity review", "Confirm a booking window", "Required"]],
+  },
+  transport: {
+    name: "Transport provider",
+    label: "Transport provider workspace",
+    stats: [["3", "Available vehicles"], ["1", "New request"], ["0", "Active trips"], ["1", "Service area"]],
+    items: [["QAT-2026-0042", "Mastung grapes · 1,150 kg", "Requested"], ["Refrigerated truck", "10,000 kg · Quetta route", "Available"], ["Dispatch review", "Confirm pickup and timing", "Required"]],
+  },
+  admin: {
+    name: "Administrator",
+    label: "Administrator workspace",
+    stats: [["5", "Active accounts"], ["4", "Marketplace listings"], ["1", "Storage facility"], ["1", "Transport provider"]],
+    items: [["Market records", "5 price entries · current", "Current"], ["Account review", "5 active accounts", "Current"], ["Operational audit", "No issues reported", "Tracked"]],
+  },
 } as const;
-export default function Workspace({ role }: { role: keyof typeof data }) { const item = data[role]; const operations = role === "farmer" || role === "buyer" ? getOperations(role) : []; const workflow = role === "storage" ? "/storage" : role === "transport" ? "/transport" : "/marketplace"; const task = role === "farmer" ? ["Publish availability", "/marketplace"] : role === "buyer" ? ["Find produce", "/marketplace"] : role === "storage" ? ["Review storage requests", "/storage"] : role === "transport" ? ["Review delivery requests", "/transport"] : ["Review market records", "/admin"]; const shortcuts = role === "farmer" ? [["Publish produce", "/marketplace"], ["Review offers", "/notifications"], ["Plan storage", "/storage"]] : role === "buyer" ? [["Find produce", "/marketplace"], ["Review offers", "/notifications"], ["Check prices", "/market-prices"]] : role === "storage" ? [["Review bookings", "/storage"], ["Check capacity", "/storage"], ["Open marketplace", "/marketplace"]] : role === "transport" ? [["Review requests", "/transport"], ["Check fleet", "/transport"], ["Open marketplace", "/marketplace"]] : [["Review records", "/admin"], ["Manage attachments", "/admin"], ["Open marketplace", "/marketplace"]]; const [onboardingComplete, setOnboardingComplete] = useState(() => window.localStorage.getItem(`qli-onboarding-${role}`) === "complete"); const icon = role === "storage" ? <Snowflake size={21} /> : role === "transport" ? <Truck size={21} /> : role === "farmer" ? <PackageCheck size={21} /> : role === "buyer" ? <ClipboardList size={21} /> : <LayoutDashboard size={21} />; const attention = [...operations.map((operation) => [operation.title, operation.detail, operation.status]), ...item.items.filter(([, , status]) => !["Active", "Available", "Current", "Tracked", "Saved"].includes(status))].slice(0, 3); const finishOnboarding = () => { window.localStorage.setItem(`qli-onboarding-${role}`, "complete"); setOnboardingComplete(true); }; return <div className="workspace-shell"><aside className="workspace-side"><Brand /><div className="workspace-role-icon">{icon}</div><p>{item.label}</p><h2>{item.name}</h2><nav><a className="active" href="#overview"><LayoutDashboard size={16} />Overview</a><Link href="/marketplace"><Box size={16} />Find produce</Link><Link href={workflow}><MapPinned size={16} />My operations</Link><Link href="/notifications"><Bell size={16} />Alerts <span>{operations.length || 2}</span></Link></nav><Link className="workspace-home" href="/">Return to public site <ArrowRight size={15} /></Link></aside><main className="workspace-main" id="overview"><header><div><p className="desk-kicker">{item.label}</p><h1>{item.name} workspace</h1><p>Start with the work that needs your attention, then review your latest records below.</p></div><Link className="workspace-bell" href="/notifications"><Bell size={17} /><span>{operations.length || 2}</span></Link></header>{!onboardingComplete && <section className="preview-onboarding"><div><p className="desk-kicker">Getting started</p><h2>Three simple steps for this workspace</h2><ol><li>Choose the task that matches today’s work.</li><li>Review the status and terms before you confirm anything.</li><li>Return to the relevant record when another action is needed.</li></ol></div><button className="button button-outline" type="button" onClick={finishOnboarding}><CheckCircle2 size={16} /> I understand</button></section>}<section className="workspace-callout"><div>{icon}<div><h3>Your next step: {task[0]}</h3><p>Open the relevant work area to review the terms, status, and action available to you.</p></div></div><Link className="button button-canopy" href={task[1]}>Open task <ArrowRight size={16} /></Link></section><section className="preview-shortcuts"><div className="workspace-activity-head"><div><p className="desk-kicker">Quick actions</p><h2>Common tasks</h2><p>Open the work you return to most often.</p></div></div><div>{shortcuts.map(([label, href]) => <Link key={label} href={href}><strong>{label}</strong><span>Open task <ArrowRight size={13} /></span></Link>)}</div></section><section className="workspace-activity"><div className="workspace-activity-head"><div><h2>Needs your attention</h2><p>Only records that need a decision, response, or follow-up are shown here.</p></div><Link href="/notifications">View all alerts <ArrowRight size={15} /></Link></div><div className="workspace-table"><div><span>Record</span><span>What needs attention</span><span>Status</span></div>{attention.length ? attention.map(([title, detail, status]) => <article key={`${title}-${status}`}><strong>{title}</strong><span>{detail}</span><b className="requested">{status}</b></article>) : <article><strong>No urgent work</strong><span>Your current records are up to date.</span><b>Clear</b></article>}</div></section><section className="workspace-stats">{item.stats.map(([value, label]) => <article key={label}><strong>{value}</strong><span>{label}</span></article>)}</section><section className="workspace-activity"><div className="workspace-activity-head"><div><h2>Recent records</h2><p>Use these records to understand your current position before taking another action.</p></div><Link href={workflow}>Open workflow <ArrowRight size={15} /></Link></div><div className="workspace-table"><div><span>Record</span><span>Detail</span><span>Status</span></div>{item.items.map(([title, detail, status]) => <article key={title}><strong>{title}</strong><span>{detail}</span><b className={status.toLowerCase().replaceAll(" ", "-")}>{status}</b></article>)}</div></section></main></div>; }
+
+type Role = keyof typeof data;
+
+const roleConfig: Record<Role, { task: [string, string, string]; shortcuts: [string, string, string][] }> = {
+  farmer: { task: ["Publish current availability", "/marketplace", "Publish availability"], shortcuts: [["Publish availability", "Record crop, grade, quantity, and expected price.", "/marketplace"], ["Review buyer offers", "Compare terms before accepting or countering.", "/notifications"], ["Arrange storage", "Check capacity before harvest moves.", "/storage"]] },
+  buyer: { task: ["Review available produce", "/marketplace", "Compare produce"], shortcuts: [["Find produce", "Compare grade, origin, quantity, and expected price.", "/marketplace"], ["Review open offers", "Respond to grower terms with clear next steps.", "/notifications"], ["Check market prices", "Use current price context before buying.", "/market-prices"]] },
+  storage: { task: ["Review pending storage booking", "/storage", "Review booking"], shortcuts: [["Review bookings", "Confirm capacity, timing, and compatible produce.", "/storage"], ["Check available capacity", "See open rooms before accepting another booking.", "/storage"], ["View harvest supply", "Identify produce that may need cold storage.", "/marketplace"]] },
+  transport: { task: ["Review new delivery request", "/transport", "Review delivery request"], shortcuts: [["Review delivery requests", "Confirm pickup, destination, load, and timing.", "/transport"], ["Check fleet capacity", "Review available vehicles and service coverage.", "/transport"], ["View harvest supply", "Identify produce that may need delivery.", "/marketplace"]] },
+  admin: { task: ["Review market records", "/admin", "Review records"], shortcuts: [["Review market records", "Keep prices and listings accurate for all roles.", "/admin"], ["Manage attachments", "Check protected records and audit history.", "/admin"], ["Review recovery requests", "Verify identity before issuing any reset link.", "/admin"]] },
+};
+
+export default function Workspace({ role }: { role: Role }) {
+  const item = data[role];
+  const config = roleConfig[role];
+  const operations = role === "farmer" || role === "buyer" ? getOperations(role) : [];
+  const workflow = role === "storage" ? "/storage" : role === "transport" ? "/transport" : "/marketplace";
+  const [onboardingComplete, setOnboardingComplete] = useState(() => window.localStorage.getItem(`qli-onboarding-${role}`) === "complete");
+  const icon = role === "storage" ? <Snowflake size={21} /> : role === "transport" ? <Truck size={21} /> : role === "farmer" ? <PackageCheck size={21} /> : role === "buyer" ? <ClipboardList size={21} /> : <LayoutDashboard size={21} />;
+  const attention = [...operations.map((operation) => [operation.title, operation.detail, operation.status]), ...item.items.filter(([, , status]) => !["Active", "Available", "Current", "Tracked", "Saved"].includes(status))].slice(0, 3);
+  const activity = attention.length ? attention : item.items.slice(0, 3).map(([title, detail]) => [title, detail, "Updated"]);
+  const finishOnboarding = () => { window.localStorage.setItem(`qli-onboarding-${role}`, "complete"); setOnboardingComplete(true); };
+
+  return <div className="workspace-shell">
+    <aside className="workspace-side"><Brand /><div className="workspace-role-icon">{icon}</div><p>{item.label}</p><h2>{item.name}</h2><nav><a className="active" href="#overview"><LayoutDashboard size={16} />Overview</a><Link href="/marketplace"><Box size={16} />Find produce</Link><Link href={workflow}><MapPinned size={16} />My operations</Link><Link href="/notifications"><Bell size={16} />Alerts <span>{operations.length || 2}</span></Link><Link href="/profile"><UserRound size={16} />My profile</Link></nav><Link className="workspace-home" href="/">Return to public site <ArrowRight size={15} /></Link></aside>
+    <main className="workspace-main workspace-operational" id="overview">
+      <header><div><p className="desk-kicker">{item.label}</p><h1>{item.name} workspace</h1><p>Review the trade records needing a decision, then move to the commercial action that follows.</p></div><Link className="workspace-bell" href="/notifications"><Bell size={17} /><span>{operations.length || 2}</span></Link></header>
+      <section className="workspace-activity workspace-attention-queue"><div className="workspace-activity-head"><div><p className="desk-kicker">Current attention</p><h2>Trade records requiring a decision</h2><p>Product, availability, and the next status are visible together.</p></div><Link href="/notifications">Review all alerts <ArrowRight size={15} /></Link></div><div className="workspace-table"><div><span>Produce or record</span><span>Trade detail</span><span>Status</span></div>{attention.length ? attention.map(([title, detail, status]) => <article key={`${title}-${status}`}><strong>{title}</strong><span>{detail}</span><b className="requested">{status}</b></article>) : <article><strong>No trade items need attention</strong><span>Your current records are ready for the next commercial action.</span><b>Clear</b></article>}</div></section>
+      <section className="workspace-callout"><div>{icon}<div><span>Next commercial action</span><h3>{config.task[0]}</h3><p>Open the relevant work area to confirm the visible terms and status.</p></div></div><Link className="button button-canopy" href={config.task[1]}>{config.task[2]} <ArrowRight size={16} /></Link></section>
+      <section className="preview-activity-summary"><p className="desk-kicker">Recent account activity</p><h2>What changed most recently</h2><div>{activity.map(([title, detail, status]) => <article key={`${title}-${status}`}><strong>{title}</strong><span>{detail}</span><em>{status}</em></article>)}</div></section>
+      {!onboardingComplete && <section className="preview-onboarding preview-onboarding-compact"><div><p className="desk-kicker">Workspace guide</p><h2>Start with the attention queue, then confirm the next trade action.</h2><p>Use the record status to decide what needs a response; your shortcuts remain available below.</p></div><button className="button button-outline" type="button" onClick={finishOnboarding}><CheckCircle2 size={16} /> Continue to trade records</button></section>}
+      <section className="preview-shortcuts"><div className="workspace-activity-head"><div><p className="desk-kicker">Trade shortcuts</p><h2>Common commercial actions</h2><p>Open the work you return to most often.</p></div></div><div>{config.shortcuts.map(([label, description, href]) => <Link key={label} href={href}><strong>{label}</strong><span>{description} <ArrowRight size={13} /></span></Link>)}</div></section>
+      <section className="workspace-stats">{item.stats.map(([value, label]) => <article key={label}><strong>{value}</strong><span>{label}</span></article>)}</section>
+      <section className="workspace-activity"><div className="workspace-activity-head"><div><p className="desk-kicker">Record ledger</p><h2>Current operating records</h2><p>Use product, quantity, origin, and status before taking a new action.</p></div><Link href={workflow}>Open operations <ArrowRight size={15} /></Link></div><div className="workspace-table"><div><span>Produce or record</span><span>Trade detail</span><span>Status</span></div>{item.items.map(([title, detail, status]) => <article key={title}><strong>{title}</strong><span>{detail}</span><b className={status.toLowerCase().replaceAll(" ", "-")}>{status}</b></article>)}</div></section>
+    </main>
+  </div>;
+}

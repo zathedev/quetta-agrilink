@@ -202,6 +202,38 @@ function local_password_recovery_is_available(): bool
     }
 }
 
+function recovery_verification_notes_are_available(): bool
+{
+    if (!local_password_recovery_is_available()) {
+        return false;
+    }
+    try {
+        $row = fetch_one('SELECT COUNT(*) AS count FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table_name AND COLUMN_NAME = :column_name', ['table_name' => 'local_password_recovery_requests', 'column_name' => 'verification_notes']);
+        return (int) ($row['count'] ?? 0) === 1;
+    } catch (Throwable $exception) {
+        return false;
+    }
+}
+
+function save_recovery_verification_note(int $requestId, int $administratorId, string $note): void
+{
+    if (!recovery_verification_notes_are_available()) {
+        throw new RuntimeException('Recovery verification notes are not ready. Import database/migrations/20260826_add_recovery_verification_notes.sql, then refresh this page.');
+    }
+    $note = normalize_text($note, 800);
+    if ((function_exists('mb_strlen') ? mb_strlen($note) : strlen($note)) < 8) {
+        throw new RuntimeException('Record at least a brief description of how identity was verified before issuing a link.');
+    }
+    if (preg_match('#https?://|reset-password\.php|token=#i', $note)) {
+        throw new RuntimeException('Do not store reset links or tokens in the verification note.');
+    }
+    $updated = execute_query('UPDATE local_password_recovery_requests SET verification_notes = :note, verified_by_user_id = :administrator_id, verified_at = NOW() WHERE id = :id', ['note' => $note, 'administrator_id' => $administratorId, 'id' => $requestId]);
+    if (!$updated) {
+        throw new RuntimeException('That recovery request is no longer available.');
+    }
+    audit_log($administratorId, 'local_recovery_verification_recorded', 'local_password_recovery_requests', $requestId);
+}
+
 function onboarding_state_is_available(): bool
 {
     try {
@@ -230,6 +262,50 @@ function complete_onboarding(int $userId): void
     audit_log($userId, 'onboarding_completed', 'users', $userId);
 }
 
+function update_account_profile(int $userId, array $input): array
+{
+    if ($userId < 1) {
+        return [false, 'Your account could not be identified.', []];
+    }
+    $fullName = normalize_text($input['full_name'] ?? '', 120);
+    $email = filter_var(trim((string) ($input['email'] ?? '')), FILTER_VALIDATE_EMAIL);
+    $phone = normalize_text($input['phone'] ?? '', 30);
+    $nameLength = function_exists('mb_strlen') ? mb_strlen($fullName) : strlen($fullName);
+    $errors = [];
+    if ($nameLength < 3) {
+        $errors['full_name'] = 'Enter your full name using at least 3 characters.';
+    }
+    if ($email === false) {
+        $errors['email'] = 'Enter a valid email address.';
+    }
+    if (!preg_match('/^[0-9+()\-\s]{7,30}$/', $phone)) {
+        $errors['phone'] = 'Enter a valid contact number.';
+    }
+    if ($errors !== []) {
+        return [false, 'Please correct the highlighted details.', ['errors' => $errors]];
+    }
+    $duplicate = fetch_one('SELECT id FROM users WHERE (email = :email OR phone = :phone) AND id <> :user_id LIMIT 1', ['email' => $email, 'phone' => $phone, 'user_id' => $userId]);
+    if ($duplicate !== null) {
+        return [false, 'That email address or contact number is already connected to another account.', ['errors' => ['email' => 'Use a different email address or contact number.']]];
+    }
+    $current = fetch_one('SELECT full_name, email, phone FROM users WHERE id = :id LIMIT 1', ['id' => $userId]);
+    if ($current === null) {
+        return [false, 'Your account is no longer available.', []];
+    }
+    $changed = [];
+    foreach (['full_name' => $fullName, 'email' => $email, 'phone' => $phone] as $field => $value) {
+        if (!hash_equals((string) $current[$field], (string) $value)) {
+            $changed[] = $field;
+        }
+    }
+    if ($changed === []) {
+        return [true, 'Your profile is already up to date.', ['changed' => []]];
+    }
+    execute_query('UPDATE users SET full_name = :full_name, email = :email, phone = :phone WHERE id = :id', ['full_name' => $fullName, 'email' => $email, 'phone' => $phone, 'id' => $userId]);
+    audit_log($userId, 'profile_updated', 'users', $userId, ['fields' => $changed]);
+    return [true, 'Your profile details have been updated.', ['changed' => $changed]];
+}
+
 function request_local_password_recovery(string $email): void
 {
     if (!local_password_recovery_is_available()) {
@@ -254,15 +330,18 @@ function request_local_password_recovery(string $email): void
 
 function issue_local_password_reset(int $requestId, int $administratorId): string
 {
-    if (!local_password_recovery_is_available()) {
+    if (!local_password_recovery_is_available() || !recovery_verification_notes_are_available()) {
         throw new RuntimeException('Password recovery is not ready. Import database/migrations/20260826_add_local_password_recovery.sql, then refresh this page.');
     }
     $request = fetch_one(
-        'SELECT r.id, r.user_id FROM local_password_recovery_requests r JOIN users u ON u.id = r.user_id WHERE r.id = :id AND u.status = "active" LIMIT 1',
+        'SELECT r.id, r.user_id, r.verification_notes, r.verified_at FROM local_password_recovery_requests r JOIN users u ON u.id = r.user_id WHERE r.id = :id AND u.status = "active" LIMIT 1',
         ['id' => $requestId]
     );
     if ($request === null) {
         throw new RuntimeException('That recovery request is no longer available.');
+    }
+    if (trim((string) $request['verification_notes']) === '' || $request['verified_at'] === null) {
+        throw new RuntimeException('Record how the requester’s identity was verified before issuing a reset link.');
     }
     $selector = bin2hex(random_bytes(12));
     $token = bin2hex(random_bytes(32));

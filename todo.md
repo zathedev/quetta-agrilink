@@ -113,3 +113,11 @@
 - [x] Add role-specific dashboard shortcuts for the most frequent account actions.
 - [x] Validate local PHP/MySQL recovery, onboarding, and shortcut workflows. A generic recovery request created a protected admin record; an administrator issued a one-time link; the password reset completed and the same link was rejected on reuse; onboarding completion was account-scoped and hid the guide; temporary state was restored afterward.
 - [x] Commit and push the completed follow-through update: `feat: add local recovery guidance`.
+
+## Profile and Accountability Follow-through
+
+- [x] Add account-scoped profile editing with email and contact uniqueness checks plus an audit trail.
+- [x] Add administrator-only recovery-verification notes that stay attached to the recovery request without storing reset links or passwords.
+- [x] Add concise role-specific dashboard activity summaries that direct each account to the most recent relevant record.
+- [x] Validate the local PHP/MySQL workflows. A farmer updated only their own profile; a duplicate account email was rejected; the activity summary reflected the update; a reset link could not be issued before an administrator recorded an offline verification note; and temporary validation data was restored afterward.
+- [ ] Commit and push the completed account and accountability update.

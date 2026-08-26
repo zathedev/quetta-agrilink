@@ -89,6 +89,9 @@ The mark is an interlocking **leaf and route pin** built from two solid, geometr
 - Noto Serif display remains sturdy and trade-bulletin-like; expressive italics are occasional storytelling emphasis only, never the dominant marketplace or operational voice.
 - Every public route and fallback state inherits the warm paper ground, Quetta Canopy anchor, harvest rules, operational labels, and a commercial next action.
 - Storage and transport present capacity, location, timing, status, and accountable next steps as one post-harvest trade record rather than generic service cards.
+- Workspace typography uses Noto Sans for dashboard structure, guidance, controls, metrics, status, and summaries; Noto Serif is reserved for page titles, brand moments, and commodity names.
+- Every role dashboard leads with the actionable attention queue, followed by its direct trade action; onboarding and quick guidance remain compact support layers.
+- Primary workspace actions use concrete commercial verbs such as publish availability, review offer, arrange storage, confirm booking, and review delivery request—never generic “Open task” language.
 
 ## UX Redesign Decision — Market Desk
 
