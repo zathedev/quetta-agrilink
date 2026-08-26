@@ -16,8 +16,10 @@ Quetta AgriLink’s deployable application is the PHP/MySQL package in this repo
 | 8 | Run `database/migrations/20260826_add_recovery_verification_notes.sql` once. | Administrators must record offline identity verification before issuing a reset link. |
 | 9 | Run `database/migrations/20260826_add_user_onboarding_state.sql` once. | First-use workspace guidance can be completed per account. |
 | 10 | Run `database/migrations/20260826_add_account_contact_verifications.sql` once. | Administrators can record local email/phone contact review without claiming automatic email/SMS verification. |
-| 11 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
-| 12 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
+| 11 | Run `database/migrations/20260826_add_contact_review_reason_codes.sql` once. | The administrator contact register requires a controlled local-evidence reason before saving a review. |
+| 12 | Run `database/migrations/20260826_add_dashboard_activity_presets.sql` once. | Each signed-in account can save and reuse only its own dashboard activity date ranges. |
+| 13 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
+| 14 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
 
 ## Local security and maintenance
 
@@ -50,3 +52,5 @@ Password recovery deliberately stays offline for the local XAMPP deployment. A u
 | First-use guidance | A signed-in account sees non-blocking role guidance and its common task shortcuts on the dashboard; completing the guide hides it only for that account. |
 | Contact review and recovery export | An administrator records an offline email/phone review without saving credentials; changed contact details clear only their corresponding review state; the recovery CSV excludes selectors, tokens, hashes, and passwords. |
 | Dashboard activity dates | A signed-in role applies an activity date range and sees only its own matching audit entries. |
+| Structured reviews and recovery dates | A contact review requires a controlled local-evidence reason plus safe context; recovery request dates constrain both the protected register and its CSV export. |
+| Saved activity ranges | A signed-in role saves, applies, and removes only its own dashboard activity date ranges; another account’s preset is never selectable or deletable. |

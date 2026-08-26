@@ -30,7 +30,7 @@ export default function Marketplace() {
 
   const hasFilters = search.trim() !== "" || type !== "All produce" || sort !== "Newest";
   const reset = () => { setSearch(""); setType("All produce"); setSort("Newest"); };
-  return <PreviewLayout><section className="desk-market-hero"><div><p className="desk-kicker">Marketplace</p><h1>Find produce with the terms already visible.</h1><p>Search by crop or district, then compare origin, grade, available quantity, price, and freshness before you inspect a listing.</p></div><ol><li><b>1</b> Search supply</li><li><b>2</b> Compare terms</li><li><b>3</b> Open a listing</li></ol></section>
+  return <PreviewLayout><section className="desk-market-hero"><div><p className="desk-kicker">Marketplace</p><h1>Find produce with the terms already visible.</h1><p>Search by crop or district, then compare origin, grade, available quantity, price, and freshness before you inspect a listing.</p></div><aside className="desk-market-origin-signal"><div className="desk-market-origin-art" /><div><span>Origin handling signal</span><strong>Pishin to Quetta market desk</strong><small>Grade, harvest timing, storage readiness, and delivery context follow the crop record.</small></div><ol><li><b>1</b> Search supply</li><li><b>2</b> Compare terms</li><li><b>3</b> Open a listing</li></ol></aside></section>
       <section className="market-page desk-market-page">
         <aside className="filter-rail">
           <div className="filter-title"><SlidersHorizontal size={16} /><strong>Refine supply</strong></div>

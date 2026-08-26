@@ -225,22 +225,56 @@ function account_contact_verification_is_available(): bool
     }
 }
 
+function contact_review_reason_codes_are_available(): bool
+{
+    if (!account_contact_verification_is_available()) {
+        return false;
+    }
+    try {
+        $row = fetch_one('SELECT COUNT(*) AS count FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table_name AND COLUMN_NAME = :column_name', ['table_name' => 'account_contact_verifications', 'column_name' => 'review_reason_code']);
+        return (int) ($row['count'] ?? 0) === 1;
+    } catch (Throwable $exception) {
+        return false;
+    }
+}
+
+function contact_review_reason_catalog(): array
+{
+    return [
+        'registration_record' => 'Compared with local registration record',
+        'in_person_review' => 'Reviewed in person by authorised staff',
+        'trade_document' => 'Compared with approved local trade document',
+        'organisation_referral' => 'Confirmed through approved organisation referral',
+        'other_local_evidence' => 'Other approved local evidence',
+    ];
+}
+
+function contact_review_reason_label(?string $reasonCode): string
+{
+    $catalog = contact_review_reason_catalog();
+    return $reasonCode !== null && isset($catalog[$reasonCode]) ? $catalog[$reasonCode] : 'Legacy local review record';
+}
+
 function account_contact_verification(int $userId): ?array
 {
     if ($userId < 1 || !account_contact_verification_is_available()) {
         return null;
     }
 
-    return fetch_one('SELECT v.verified_email_at, v.verified_phone_at, v.verification_notes, v.updated_at, verifier.full_name AS verified_by_name FROM account_contact_verifications v LEFT JOIN users verifier ON verifier.id = v.verified_by_user_id WHERE v.user_id = :user_id LIMIT 1', ['user_id' => $userId]);
+    $reasonField = contact_review_reason_codes_are_available() ? 'v.review_reason_code,' : 'NULL AS review_reason_code,';
+    return fetch_one('SELECT v.verified_email_at, v.verified_phone_at, v.verification_notes, ' . $reasonField . ' v.updated_at, verifier.full_name AS verified_by_name FROM account_contact_verifications v LEFT JOIN users verifier ON verifier.id = v.verified_by_user_id WHERE v.user_id = :user_id LIMIT 1', ['user_id' => $userId]);
 }
 
-function record_account_contact_verification(int $userId, int $administratorId, string $scope, string $note): void
+function record_account_contact_verification(int $userId, int $administratorId, string $scope, string $reasonCode, string $note): void
 {
-    if (!account_contact_verification_is_available()) {
-        throw new RuntimeException('Contact verification is not ready. Import database/migrations/20260826_add_account_contact_verifications.sql, then refresh this page.');
+    if (!account_contact_verification_is_available() || !contact_review_reason_codes_are_available()) {
+        throw new RuntimeException('Contact verification is not ready. Import the account contact verification and contact review reason migrations, then refresh this page.');
     }
     if ($userId < 1 || $administratorId < 1 || !in_array($scope, ['email', 'phone', 'both'], true)) {
         throw new RuntimeException('Choose a valid account and contact review scope.');
+    }
+    if (!array_key_exists($reasonCode, contact_review_reason_catalog())) {
+        throw new RuntimeException('Choose a valid local contact-review reason.');
     }
 
     $note = normalize_text($note, 800);
@@ -258,9 +292,51 @@ function record_account_contact_verification(int $userId, int $administratorId, 
 
     $emailAt = $scope === 'email' || $scope === 'both' ? date('Y-m-d H:i:s') : null;
     $phoneAt = $scope === 'phone' || $scope === 'both' ? date('Y-m-d H:i:s') : null;
-    $statement = db()->prepare('INSERT INTO account_contact_verifications (user_id, verified_email_at, verified_phone_at, verification_notes, verified_by_user_id) VALUES (:user_id, :email_at, :phone_at, :note, :administrator_id) ON DUPLICATE KEY UPDATE verification_notes = VALUES(verification_notes), verified_by_user_id = VALUES(verified_by_user_id), verified_email_at = CASE WHEN VALUES(verified_email_at) IS NOT NULL THEN VALUES(verified_email_at) ELSE verified_email_at END, verified_phone_at = CASE WHEN VALUES(verified_phone_at) IS NOT NULL THEN VALUES(verified_phone_at) ELSE verified_phone_at END, updated_at = NOW()');
-    $statement->execute(['user_id' => $userId, 'email_at' => $emailAt, 'phone_at' => $phoneAt, 'note' => $note, 'administrator_id' => $administratorId]);
-    audit_log($administratorId, 'account_contact_verification_recorded', 'users', $userId, ['scope' => $scope]);
+    $statement = db()->prepare('INSERT INTO account_contact_verifications (user_id, verified_email_at, verified_phone_at, verification_notes, review_reason_code, verified_by_user_id) VALUES (:user_id, :email_at, :phone_at, :note, :reason_code, :administrator_id) ON DUPLICATE KEY UPDATE verification_notes = VALUES(verification_notes), review_reason_code = VALUES(review_reason_code), verified_by_user_id = VALUES(verified_by_user_id), verified_email_at = CASE WHEN VALUES(verified_email_at) IS NOT NULL THEN VALUES(verified_email_at) ELSE verified_email_at END, verified_phone_at = CASE WHEN VALUES(verified_phone_at) IS NOT NULL THEN VALUES(verified_phone_at) ELSE verified_phone_at END, updated_at = NOW()');
+    $statement->execute(['user_id' => $userId, 'email_at' => $emailAt, 'phone_at' => $phoneAt, 'note' => $note, 'reason_code' => $reasonCode, 'administrator_id' => $administratorId]);
+    audit_log($administratorId, 'account_contact_verification_recorded', 'users', $userId, ['scope' => $scope, 'reason_code' => $reasonCode]);
+}
+
+function local_recovery_audit_date_range(array $query): array
+{
+    $parseDate = static function (mixed $value): ?DateTimeImmutable {
+        if (!is_string($value) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return null;
+        }
+        $date = DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+        return $date !== false && $date->format('Y-m-d') === $value ? $date : null;
+    };
+    $from = $parseDate($query['recovery_from'] ?? null);
+    $to = $parseDate($query['recovery_to'] ?? null);
+    if ($from !== null && $to !== null && $from > $to) {
+        [$from, $to] = [$to, $from];
+    }
+    return ['from' => $from, 'to' => $to];
+}
+
+function local_recovery_audit_rows(array $range, ?int $limit = null): array
+{
+    $conditions = ['1 = 1'];
+    $params = [];
+    if (($range['from'] ?? null) instanceof DateTimeImmutable) {
+        $conditions[] = 'r.requested_at >= :recovery_from';
+        $params['recovery_from'] = $range['from']->format('Y-m-d 00:00:00');
+    }
+    if (($range['to'] ?? null) instanceof DateTimeImmutable) {
+        $conditions[] = 'r.requested_at < :recovery_to_exclusive';
+        $params['recovery_to_exclusive'] = $range['to']->modify('+1 day')->format('Y-m-d 00:00:00');
+    }
+    $sql = 'SELECT r.id, r.requested_at, r.verified_at, r.issued_at, r.expires_at, r.used_at, r.revoked_at, r.verification_notes, u.full_name, u.email, role.name AS role_name, verifier.full_name AS verified_by_name, issuer.full_name AS issued_by_name, revoker.full_name AS revoked_by_name FROM local_password_recovery_requests r JOIN users u ON u.id = r.user_id JOIN roles role ON role.id = u.role_id LEFT JOIN users verifier ON verifier.id = r.verified_by_user_id LEFT JOIN users issuer ON issuer.id = r.issued_by_user_id LEFT JOIN users revoker ON revoker.id = r.revoked_by_user_id WHERE ' . implode(' AND ', $conditions) . ' ORDER BY r.requested_at DESC, r.id DESC';
+    if ($limit !== null) {
+        $sql .= ' LIMIT ' . max(1, min(500, $limit));
+    }
+    return fetch_all($sql, $params);
+}
+
+function csv_safe_cell(mixed $value): string
+{
+    $cell = (string) ($value ?? '');
+    return preg_match('/^[=+\-@]/', $cell) === 1 ? "'" . $cell : $cell;
 }
 
 function save_recovery_verification_note(int $requestId, int $administratorId, string $note): void

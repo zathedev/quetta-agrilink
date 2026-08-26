@@ -51,6 +51,7 @@ const data = {
 } as const;
 
 type Role = keyof typeof data;
+type ActivityRange = { id: string; name: string; from: string; to: string };
 
 const roleConfig: Record<Role, { task: [string, string, string]; shortcuts: [string, string, string][] }> = {
   farmer: { task: ["Publish current availability", "/marketplace", "Publish availability"], shortcuts: [["Publish availability", "Record crop, grade, quantity, and expected price.", "/marketplace"], ["Review buyer offers", "Compare terms before accepting or countering.", "/notifications"], ["Arrange storage", "Check capacity before harvest moves.", "/storage"]] },
@@ -66,10 +67,24 @@ export default function Workspace({ role }: { role: Role }) {
   const operations = role === "farmer" || role === "buyer" ? getOperations(role) : [];
   const workflow = role === "storage" ? "/storage" : role === "transport" ? "/transport" : "/marketplace";
   const [onboardingComplete, setOnboardingComplete] = useState(() => window.localStorage.getItem(`qli-onboarding-${role}`) === "complete");
+  const [activityFrom, setActivityFrom] = useState("");
+  const [activityTo, setActivityTo] = useState("");
+  const [presetName, setPresetName] = useState("");
+  const [savedRanges, setSavedRanges] = useState<ActivityRange[]>(() => {
+    try { return JSON.parse(window.localStorage.getItem(`qli-activity-ranges-${role}`) || "[]") as ActivityRange[]; } catch { return []; }
+  });
   const icon = role === "storage" ? <Snowflake size={21} /> : role === "transport" ? <Truck size={21} /> : role === "farmer" ? <PackageCheck size={21} /> : role === "buyer" ? <ClipboardList size={21} /> : <LayoutDashboard size={21} />;
   const attention = [...operations.map((operation) => [operation.title, operation.detail, operation.status]), ...item.items.filter(([, , status]) => !["Active", "Available", "Current", "Tracked", "Saved"].includes(status))].slice(0, 3);
   const activity = attention.length ? attention : item.items.slice(0, 3).map(([title, detail]) => [title, detail, "Updated"]);
   const finishOnboarding = () => { window.localStorage.setItem(`qli-onboarding-${role}`, "complete"); setOnboardingComplete(true); };
+  const persistRanges = (next: ActivityRange[]) => { window.localStorage.setItem(`qli-activity-ranges-${role}`, JSON.stringify(next)); setSavedRanges(next); };
+  const saveRange = () => {
+    const name = presetName.trim();
+    if (!name || (!activityFrom && !activityTo)) return;
+    const next = [{ id: crypto.randomUUID(), name, from: activityFrom, to: activityTo }, ...savedRanges.filter((range) => range.name !== name)];
+    persistRanges(next); setPresetName("");
+  };
+  const applyRange = (range: ActivityRange) => { setActivityFrom(range.from); setActivityTo(range.to); };
 
   return <div className="workspace-shell">
     <aside className="workspace-side"><Brand /><div className="workspace-role-icon">{icon}</div><p>{item.label}</p><h2>{item.name}</h2><nav><a className="active" href="#overview"><LayoutDashboard size={16} />Overview</a><Link href="/marketplace"><Box size={16} />Find produce</Link><Link href={workflow}><MapPinned size={16} />My operations</Link><Link href="/notifications"><Bell size={16} />Alerts <span>{operations.length || 2}</span></Link><Link href="/profile"><UserRound size={16} />My profile</Link></nav><Link className="workspace-home" href="/">Return to public site <ArrowRight size={15} /></Link></aside>
@@ -77,7 +92,7 @@ export default function Workspace({ role }: { role: Role }) {
       <header><div><p className="desk-kicker">{item.label}</p><h1>{item.name} workspace</h1><p>Review the trade records needing a decision, then move to the commercial action that follows.</p></div><Link className="workspace-bell" href="/notifications"><Bell size={17} /><span>{operations.length || 2}</span></Link></header>
       <section className="workspace-activity workspace-attention-queue"><div className="workspace-activity-head"><div><p className="desk-kicker">Current attention</p><h2>Trade records requiring a decision</h2><p>Product, availability, and the next status are visible together.</p></div><Link href="/notifications">Review all alerts <ArrowRight size={15} /></Link></div><div className="workspace-table"><div><span>Produce or record</span><span>Trade detail</span><span>Status</span></div>{attention.length ? attention.map(([title, detail, status]) => <article key={`${title}-${status}`}><strong>{title}</strong><span>{detail}</span><b className="requested">{status}</b></article>) : <article><strong>No trade items need attention</strong><span>Your current records are ready for the next commercial action.</span><b>Clear</b></article>}</div></section>
       <section className="workspace-callout"><div>{icon}<div><span>Next commercial action</span><h3>{config.task[0]}</h3><p>Open the relevant work area to confirm the visible terms and status.</p></div></div><Link className="button button-canopy" href={config.task[1]}>{config.task[2]} <ArrowRight size={16} /></Link></section>
-      <section className="preview-activity-summary"><p className="desk-kicker">Recent account activity</p><h2>What changed most recently</h2><div>{activity.map(([title, detail, status]) => <article key={`${title}-${status}`}><strong>{title}</strong><span>{detail}</span><em>{status}</em></article>)}</div></section>
+      <section className="preview-activity-summary"><p className="desk-kicker">Recent account activity</p><h2>What changed most recently</h2><div className="preview-activity-controls"><label>From<input type="date" value={activityFrom} onChange={(event) => setActivityFrom(event.target.value)} /></label><label>To<input type="date" value={activityTo} onChange={(event) => setActivityTo(event.target.value)} /></label><label>Save this range as<input value={presetName} maxLength={60} placeholder="e.g. Harvest week" onChange={(event) => setPresetName(event.target.value)} /></label><button className="button button-outline" type="button" onClick={saveRange}>Save range</button></div>{savedRanges.length > 0 && <div className="preview-saved-ranges">{savedRanges.map((range) => <article key={range.id}><button type="button" onClick={() => applyRange(range)}><strong>{range.name}</strong><span>{range.from || "Start"} to {range.to || "Today"}</span></button><button type="button" onClick={() => persistRanges(savedRanges.filter((item) => item.id !== range.id))}>Remove</button></article>)}</div>}<small className="preview-range-note">Preview ranges are remembered in this browser. The local PHP application stores them only for the signed-in account.</small><div>{activity.map(([title, detail, status]) => <article key={`${title}-${status}`}><strong>{title}</strong><span>{detail}</span><em>{status}</em></article>)}</div></section>
       {!onboardingComplete && <section className="preview-onboarding preview-onboarding-compact"><div><p className="desk-kicker">Workspace guide</p><h2>Start with the attention queue, then confirm the next trade action.</h2><p>Use the record status to decide what needs a response; your shortcuts remain available below.</p></div><button className="button button-outline" type="button" onClick={finishOnboarding}><CheckCircle2 size={16} /> Continue to trade records</button></section>}
       <section className="preview-shortcuts"><div className="workspace-activity-head"><div><p className="desk-kicker">Trade shortcuts</p><h2>Common commercial actions</h2><p>Open the work you return to most often.</p></div></div><div>{config.shortcuts.map(([label, description, href]) => <Link key={label} href={href}><strong>{label}</strong><span>{description} <ArrowRight size={13} /></span></Link>)}</div></section>
       <section className="workspace-stats">{item.stats.map(([value, label]) => <article key={label}><strong>{value}</strong><span>{label}</span></article>)}</section>

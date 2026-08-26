@@ -129,3 +129,10 @@
 - [x] Add account-scoped date-range filtering for role-specific dashboard activity summaries.
 - [x] Validate local PHP/MySQL workflows and document the migration. An administrator recorded email/phone review; an altered phone cleared only its phone-review state; the farmer saw only its date-matched activity; recovery CSV download excluded selectors, token hashes, and password hashes; temporary records were removed afterward.
 - [x] Commit and push the completed accountability update: `feat: add contact audit controls`.
+
+## Review Reason and Time-Range Follow-through
+
+- [x] Add a structured administrator contact-review reason catalog with a constrained explanation field and preserved audit trail.
+- [x] Add protected date-range filtering to the administrator recovery-audit register and CSV export.
+- [x] Add account-scoped saved dashboard activity date presets for common operational time windows.
+- [x] Validate local PHP/MySQL workflows, document any migration, then commit and push the completed follow-through update.
