@@ -80,3 +80,11 @@
 - [x] Add an optional, accessible browser bell chime for newly received in-app notifications without requiring an external audio service.
 - [x] Validate the PHP/MySQL workflows locally and document required migration steps. The default filter was saved and applied; a matching farmer publication generated a buyer in-app alert; the unread summary and CSV response succeeded; temporary records were removed afterward.
 - [x] Commit and push the completed enhancement to GitHub: `feat: add default listing alerts`.
+
+## Account Management Controls
+
+- [x] Add owner-scoped notification read controls for individual alerts and the full alert register.
+- [x] Add owner-scoped editing for saved marketplace filters, including default-filter continuity.
+- [x] Add farmer-only listing status controls for pausing, reactivating, and marking produce sold out.
+- [x] Validate the local PHP/MySQL workflows. A default saved filter was edited while retaining default state; an associated new listing generated an alert; individual and all-alert read controls completed; and lifecycle transitions reached paused, active, then sold out. Temporary records were removed afterward.
+- [ ] Commit and push the completed account-management update.

@@ -318,6 +318,34 @@ function create_notification(int $userId, string $type, string $title, string $b
     );
 }
 
+function mark_notification_read(int $userId, int $notificationId): bool
+{
+    if ($userId < 1 || $notificationId < 1) {
+        return false;
+    }
+    $notification = fetch_one('SELECT id FROM notifications WHERE id = :id AND user_id = :user_id LIMIT 1', ['id' => $notificationId, 'user_id' => $userId]);
+    if ($notification === null) {
+        throw new RuntimeException('That notification is not available in your account.');
+    }
+    $affected = execute_query('UPDATE notifications SET read_at = COALESCE(read_at, NOW()) WHERE id = :id AND user_id = :user_id', ['id' => $notificationId, 'user_id' => $userId]);
+    if ($affected > 0) {
+        audit_log($userId, 'notification_read', 'notifications', $notificationId);
+    }
+    return $affected > 0;
+}
+
+function mark_all_notifications_read(int $userId): int
+{
+    if ($userId < 1) {
+        return 0;
+    }
+    $affected = execute_query('UPDATE notifications SET read_at = NOW() WHERE user_id = :user_id AND read_at IS NULL', ['user_id' => $userId]);
+    if ($affected > 0) {
+        audit_log($userId, 'notifications_read_all', 'notifications', null, ['count' => $affected]);
+    }
+    return $affected;
+}
+
 function positive_decimal(mixed $value, int $scale = 2): ?float
 {
     if (!is_scalar($value) || !is_numeric($value) || (float) $value <= 0) {

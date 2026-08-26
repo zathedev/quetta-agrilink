@@ -101,6 +101,36 @@ function delete_marketplace_filter(int $userId, int $filterId): void
     audit_log($userId, 'marketplace_filter_deleted', 'saved_marketplace_filters', $filterId, ['name' => $filter['name']]);
 }
 
+function marketplace_filter_for_user(int $userId, int $filterId): ?array
+{
+    if ($userId < 1 || $filterId < 1 || !saved_marketplace_filters_migration_is_available()) {
+        return null;
+    }
+    return fetch_one('SELECT * FROM saved_marketplace_filters WHERE id = :id AND user_id = :user_id LIMIT 1', ['id' => $filterId, 'user_id' => $userId]);
+}
+
+function update_marketplace_filter(int $userId, int $filterId, string $name, array $filters): void
+{
+    $filter = marketplace_filter_for_user($userId, $filterId);
+    if ($filter === null) {
+        throw new RuntimeException('The saved filter is not available.');
+    }
+    $name = normalize_text($name, 80);
+    $nameLength = function_exists('mb_strlen') ? mb_strlen($name) : strlen($name);
+    if ($nameLength < 3) {
+        throw new RuntimeException('Use at least 3 characters to name this saved filter.');
+    }
+    $duplicate = fetch_one('SELECT id FROM saved_marketplace_filters WHERE user_id = :user_id AND name = :name AND id != :id LIMIT 1', ['user_id' => $userId, 'name' => $name, 'id' => $filterId]);
+    if ($duplicate !== null) {
+        throw new RuntimeException('Another saved filter already uses that name. Choose a different name.');
+    }
+    execute_query(
+        'UPDATE saved_marketplace_filters SET name = :name, category_id = :category_id, district = :district, grade = :grade, min_price = :min_price, max_price = :max_price, min_quantity = :min_quantity, sort_key = :sort_key WHERE id = :id AND user_id = :user_id',
+        ['id' => $filterId, 'user_id' => $userId, 'name' => $name, 'category_id' => $filters['category_id'], 'district' => $filters['district'] !== '' ? $filters['district'] : null, 'grade' => $filters['grade'] !== '' ? $filters['grade'] : null, 'min_price' => $filters['min_price'], 'max_price' => $filters['max_price'], 'min_quantity' => $filters['min_quantity'], 'sort_key' => $filters['sort']]
+    );
+    audit_log($userId, 'marketplace_filter_updated', 'saved_marketplace_filters', $filterId, ['name' => $name, 'is_default' => !empty($filter['is_default'])]);
+}
+
 function default_marketplace_filter_for_user(int $userId): ?array
 {
     if ($userId < 1 || !default_saved_marketplace_filter_migration_is_available()) {
@@ -224,6 +254,24 @@ function publish_produce_listing(int $farmerId, array $input): int
         error_log('Marketplace filter matching notification failed: ' . $exception->getMessage());
     }
     return $listingId;
+}
+
+function update_produce_listing_status(int $farmerId, int $listingId, string $status): string
+{
+    $allowedStatuses = ['active', 'paused', 'sold_out'];
+    if ($farmerId < 1 || $listingId < 1 || !in_array($status, $allowedStatuses, true)) {
+        throw new RuntimeException('That listing status action is not available.');
+    }
+    $listing = fetch_one('SELECT id, title, status FROM produce_listings WHERE id = :id AND farmer_id = :farmer_id LIMIT 1', ['id' => $listingId, 'farmer_id' => $farmerId]);
+    if ($listing === null) {
+        throw new RuntimeException('That produce record is not available in your workspace.');
+    }
+    if ($listing['status'] === $status) {
+        return $status;
+    }
+    execute_query('UPDATE produce_listings SET status = :status_value, published_at = CASE WHEN :status_for_publish = "active" AND published_at IS NULL THEN NOW() ELSE published_at END WHERE id = :id AND farmer_id = :farmer_id', ['status_value' => $status, 'status_for_publish' => $status, 'id' => $listingId, 'farmer_id' => $farmerId]);
+    audit_log($farmerId, 'produce_listing_status_updated', 'produce_listings', $listingId, ['title' => $listing['title'], 'from' => $listing['status'], 'to' => $status]);
+    return $status;
 }
 
 function find_listings(array $filters, int $limit = 24): array
