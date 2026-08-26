@@ -128,4 +128,4 @@
 - [x] Add a protected administrator CSV export for password-recovery request and verification audit history.
 - [x] Add account-scoped date-range filtering for role-specific dashboard activity summaries.
 - [x] Validate local PHP/MySQL workflows and document the migration. An administrator recorded email/phone review; an altered phone cleared only its phone-review state; the farmer saw only its date-matched activity; recovery CSV download excluded selectors, token hashes, and password hashes; temporary records were removed afterward.
-- [ ] Commit and push the completed accountability update.
+- [x] Commit and push the completed accountability update: `feat: add contact audit controls`.
