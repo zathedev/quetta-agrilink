@@ -136,3 +136,10 @@
 - [x] Add protected date-range filtering to the administrator recovery-audit register and CSV export.
 - [x] Add account-scoped saved dashboard activity date presets for common operational time windows.
 - [x] Validate local PHP/MySQL workflows, document any migration, then commit and push the completed follow-through update.
+
+## Accountability Operations Follow-through
+
+- [x] Add administrator search and status filtering to the local contact-review register.
+- [x] Add account-scoped notification delivery preferences with a documented local-only default.
+- [x] Add a protected printable recovery handover record that excludes passwords, reset links, tokens, and hashes.
+- [x] Validate PHP/MySQL workflows and desktop/mobile preview alignment, then commit and push the completed follow-through update.

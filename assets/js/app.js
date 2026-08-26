@@ -124,7 +124,7 @@
   if (notificationLink && notificationChime) {
     let latestNotificationId = Number(notificationLink.dataset.notificationLatestId || 0);
     let audioContext = null;
-    let soundEnabled = window.localStorage.getItem('qli_notification_sound') === 'enabled';
+    let soundEnabled = notificationChime.dataset.notificationChimeEnabled === '1';
     const updateSoundToggle = () => {
       notificationChime.setAttribute('aria-pressed', String(soundEnabled));
       notificationChime.textContent = soundEnabled ? 'Sound on' : 'Sound off';
@@ -150,11 +150,18 @@
       });
     };
     updateSoundToggle();
-    notificationChime.addEventListener('click', () => {
-      soundEnabled = !soundEnabled;
-      window.localStorage.setItem('qli_notification_sound', soundEnabled ? 'enabled' : 'disabled');
-      updateSoundToggle();
-      if (soundEnabled) playBell();
+    notificationChime.addEventListener('click', async () => {
+      const next = !soundEnabled;
+      notificationChime.disabled = true;
+      try {
+        const body = new FormData();
+        body.append('browser_chime_enabled', next ? '1' : '0');
+        await window.qliFetch(notificationChime.dataset.notificationChimeEndpoint, { method: 'POST', body });
+        soundEnabled = next;
+        updateSoundToggle();
+        if (soundEnabled) playBell();
+      } catch (_) { /* The page remains usable when optional preference storage is temporarily unavailable. */ }
+      finally { notificationChime.disabled = false; }
     });
     const refreshNotificationSummary = async () => {
       try {

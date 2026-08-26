@@ -18,8 +18,9 @@ Quetta AgriLink’s deployable application is the PHP/MySQL package in this repo
 | 10 | Run `database/migrations/20260826_add_account_contact_verifications.sql` once. | Administrators can record local email/phone contact review without claiming automatic email/SMS verification. |
 | 11 | Run `database/migrations/20260826_add_contact_review_reason_codes.sql` once. | The administrator contact register requires a controlled local-evidence reason before saving a review. |
 | 12 | Run `database/migrations/20260826_add_dashboard_activity_presets.sql` once. | Each signed-in account can save and reuse only its own dashboard activity date ranges. |
-| 13 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
-| 14 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
+| 13 | Run `database/migrations/20260826_add_user_notification_preferences.sql` once. | Each signed-in account can set local marketplace-match and optional browser-chime preferences. |
+| 14 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
+| 15 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
 
 ## Local security and maintenance
 
@@ -34,6 +35,8 @@ Before attaching files, open XAMPP’s `php/php.ini` and set `upload_max_filesiz
 ### Local password recovery
 
 Password recovery deliberately stays offline for the local XAMPP deployment. A user opens **Sign in → Need to reset your password?** and receives the same confirmation message whether or not an account exists. An authorized administrator verifies the requester through the organisation’s approved local process, records a short verification note, then opens **Workspace → Password recovery** to issue a one-time link. The note must never contain a password, reset link, or token. The link expires after 60 minutes, can be revoked before use, stores only a token hash in MySQL, and must never be copied into unverified channels.
+
+After recording an offline verification note, an administrator may open **Print handover record** beside the recovery request. This printable document captures the account, verified contact information, review context, lifecycle status, and staff accountability. It deliberately excludes passwords, reset links, selectors, tokens, token hashes, and password hashes; any active reset link must remain outside the printed record and use the approved verified local process.
 
 ## Validation checklist
 
@@ -54,3 +57,6 @@ Password recovery deliberately stays offline for the local XAMPP deployment. A u
 | Dashboard activity dates | A signed-in role applies an activity date range and sees only its own matching audit entries. |
 | Structured reviews and recovery dates | A contact review requires a controlled local-evidence reason plus safe context; recovery request dates constrain both the protected register and its CSV export. |
 | Saved activity ranges | A signed-in role saves, applies, and removes only its own dashboard activity date ranges; another account’s preset is never selectable or deletable. |
+| Contact-review discovery | An administrator searches active accounts and filters the local contact register by outstanding state or approved review evidence, without leaving the register scope. |
+| Local notification preferences | A signed-in account enables or disables default-filter marketplace alerts and the optional browser chime; no email or SMS delivery is added. |
+| Printable recovery handover | An administrator prints a verified recovery record with account and lifecycle context; the output contains no password, reset link, selector, token, or hash. |

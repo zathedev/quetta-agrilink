@@ -672,6 +672,50 @@ function create_notification(int $userId, string $type, string $title, string $b
     );
 }
 
+function notification_preferences_are_available(): bool
+{
+    try {
+        $row = fetch_one('SELECT COUNT(*) AS count FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table_name', ['table_name' => 'user_notification_preferences']);
+        return (int) ($row['count'] ?? 0) === 1;
+    } catch (Throwable $exception) {
+        return false;
+    }
+}
+
+function notification_preferences_for_user(int $userId): array
+{
+    $defaults = ['marketplace_match_alerts_enabled' => 1, 'browser_chime_enabled' => 0];
+    if ($userId < 1 || !notification_preferences_are_available()) {
+        return $defaults;
+    }
+    $row = fetch_one('SELECT marketplace_match_alerts_enabled, browser_chime_enabled FROM user_notification_preferences WHERE user_id = :user_id LIMIT 1', ['user_id' => $userId]);
+    return $row === null ? $defaults : [
+        'marketplace_match_alerts_enabled' => (int) $row['marketplace_match_alerts_enabled'],
+        'browser_chime_enabled' => (int) $row['browser_chime_enabled'],
+    ];
+}
+
+function save_notification_preferences(int $userId, array $input): array
+{
+    if ($userId < 1 || !notification_preferences_are_available()) {
+        throw new RuntimeException('Notification preferences are not ready. Import database/migrations/20260826_add_user_notification_preferences.sql, then refresh this page.');
+    }
+    $marketplaceEnabled = !empty($input['marketplace_match_alerts_enabled']) ? 1 : 0;
+    $browserChimeEnabled = !empty($input['browser_chime_enabled']) ? 1 : 0;
+    $statement = db()->prepare('INSERT INTO user_notification_preferences (user_id, marketplace_match_alerts_enabled, browser_chime_enabled) VALUES (:user_id, :marketplace_enabled, :browser_enabled) ON DUPLICATE KEY UPDATE marketplace_match_alerts_enabled = VALUES(marketplace_match_alerts_enabled), browser_chime_enabled = VALUES(browser_chime_enabled), updated_at = NOW()');
+    $statement->execute(['user_id' => $userId, 'marketplace_enabled' => $marketplaceEnabled, 'browser_enabled' => $browserChimeEnabled]);
+    audit_log($userId, 'notification_preferences_saved', 'user_notification_preferences', $userId, ['marketplace_match_alerts_enabled' => $marketplaceEnabled, 'browser_chime_enabled' => $browserChimeEnabled]);
+    return ['marketplace_match_alerts_enabled' => $marketplaceEnabled, 'browser_chime_enabled' => $browserChimeEnabled];
+}
+
+function notification_delivery_enabled(int $userId, string $type): bool
+{
+    if ($type !== 'marketplace_filter_match') {
+        return true;
+    }
+    return notification_preferences_for_user($userId)['marketplace_match_alerts_enabled'] === 1;
+}
+
 function mark_notification_read(int $userId, int $notificationId): bool
 {
     if ($userId < 1 || $notificationId < 1) {

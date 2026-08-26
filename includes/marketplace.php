@@ -201,6 +201,9 @@ function notify_default_marketplace_filter_matches(int $listingId, int $publishe
         if (!$matches) {
             continue;
         }
+        if (!notification_delivery_enabled((int) $filter['user_id'], 'marketplace_filter_match')) {
+            continue;
+        }
         $existing = fetch_one('SELECT id FROM notifications WHERE user_id = :user_id AND type = :type AND entity_type = :entity_type AND entity_id = :entity_id LIMIT 1', ['user_id' => $filter['user_id'], 'type' => 'marketplace_filter_match', 'entity_type' => 'produce_listing', 'entity_id' => $listingId]);
         if ($existing !== null) {
             continue;

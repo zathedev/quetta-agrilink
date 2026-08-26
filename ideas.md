@@ -95,6 +95,9 @@ The mark is an interlocking **leaf and route pin** built from two solid, geometr
 - Functional screens use Noto Sans for their primary hierarchy; any Noto Serif treatment is limited to the brand, a restrained title moment, or commodity names.
 - Workspace shortcuts, metrics, guidance, and form surfaces are treated as linked trade-register units through fine rules, crop/status bands, explicit record labels, and accountable commercial actions.
 - Marketplace hero surfaces retain at least one visible Balochistan commodity-handling or origin signal, such as produce, storage, transport, harvest timing, or district context, rather than relying on abstract copy alone.
+- Functional pages open with a visible working state and one accountable next action before any broad editorial framing.
+- Dormant states retain the columns and ownership language of a trade register, state the current status, and name one concrete commercial next step.
+- Administrative workspaces lead with their attention queue; static metrics follow as supporting proof rather than defining the first action.
 
 ## UX Redesign Decision — Market Desk
 

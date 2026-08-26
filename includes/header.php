@@ -7,6 +7,7 @@ $pageTitle = $pageTitle ?? APP_NAME;
 $pageDescription = $pageDescription ?? 'The practical post-harvest marketplace for Balochistan growers and trade partners.';
 $user = current_user();
 $notificationSummary = $user === null ? ['count' => 0, 'latest_id' => 0] : unread_notification_summary((int) $user['id']);
+$notificationPreferences = $user === null ? ['browser_chime_enabled' => 0] : notification_preferences_for_user((int) $user['id']);
 function nav_active(string $needle): string { return str_contains($_SERVER['REQUEST_URI'] ?? '', $needle) ? 'is-active' : ''; }
 ?>
 <!doctype html>
@@ -44,7 +45,7 @@ function nav_active(string $needle): string { return str_contains($_SERVER['REQU
                 <a class="notification-link" href="<?= e(app_url('notifications.php')) ?>" aria-label="Notifications" data-notification-link data-notification-latest-id="<?= (int) $notificationSummary['latest_id'] ?>" data-notification-endpoint="<?= e(app_url('ajax/notifications/unread-summary.php')) ?>">
                     Alerts<span data-notification-count<?= $notificationSummary['count'] > 0 ? '' : ' hidden' ?>><?= $notificationSummary['count'] > 9 ? '9+' : (int) $notificationSummary['count'] ?></span>
                 </a>
-                <button class="notification-chime-toggle" type="button" data-notification-chime aria-pressed="false" title="Enable notification sound">Sound off</button>
+                <button class="notification-chime-toggle" type="button" data-notification-chime data-notification-chime-enabled="<?= (int) $notificationPreferences['browser_chime_enabled'] ?>" data-notification-chime-endpoint="<?= e(app_url('ajax/notifications/preferences.php')) ?>" aria-pressed="false" title="Enable notification sound">Sound off</button>
                 <a class="button button-primary" href="<?= e(app_url(dashboard_path($user['role_slug']))) ?>">My workspace</a>
             <?php else: ?>
                 <a class="button button-quiet" href="<?= e(app_url('auth/login.php')) ?>">Sign in</a>
