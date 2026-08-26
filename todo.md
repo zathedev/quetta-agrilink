@@ -87,4 +87,4 @@
 - [x] Add owner-scoped editing for saved marketplace filters, including default-filter continuity.
 - [x] Add farmer-only listing status controls for pausing, reactivating, and marking produce sold out.
 - [x] Validate the local PHP/MySQL workflows. A default saved filter was edited while retaining default state; an associated new listing generated an alert; individual and all-alert read controls completed; and lifecycle transitions reached paused, active, then sold out. Temporary records were removed afterward.
-- [ ] Commit and push the completed account-management update.
+- [x] Commit and push the completed account-management update: `feat: add account management controls`.
