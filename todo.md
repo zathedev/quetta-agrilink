@@ -156,3 +156,9 @@
 - [x] Compare the authoritative PHP/XAMPP public shell, stylesheet load order, font sources, and navigation structure with the managed preview.
 - [x] Correct the local PHP/XAMPP visual delivery so its font system, navigation, and Orchard Ledger style match the approved application direction without making the preview authoritative.
 - [x] Validate local asset URLs and responsive rendering, then commit and push the visual parity correction.
+
+## Local PHP Public-Surface Parity Follow-through
+
+- [x] Align the authoritative PHP marketplace filters, result records, and responsive marketplace presentation with the Orchard Ledger public design language.
+- [x] Align the authoritative PHP listing-detail page and offer surface with the matching typography, information hierarchy, and paper-led record treatment.
+- [x] Validate local XAMPP public-page rendering and preview coherence, then commit and push the completed parity update.
