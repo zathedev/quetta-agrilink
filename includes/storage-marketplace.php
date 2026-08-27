@@ -25,7 +25,42 @@ function storage_marketplace_filters(array $input): array
     ];
 }
 
-function find_storage_facilities(array $filters, int $limit = 24): array
+function saved_storage_searches_ready(): bool
+{
+    try { return (int) (fetch_one('SELECT COUNT(*) AS count FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table', ['table' => 'saved_storage_searches'])['count'] ?? 0) === 1; } catch (Throwable) { return false; }
+}
+
+function saved_storage_searches_for_user(int $userId): array
+{
+    if ($userId < 1 || !saved_storage_searches_ready()) return [];
+    return fetch_all('SELECT ss.*, pc.name AS category_name FROM saved_storage_searches ss LEFT JOIN produce_categories pc ON pc.id = ss.category_id WHERE ss.user_id = :user_id ORDER BY ss.updated_at DESC, ss.id DESC LIMIT 20', ['user_id' => $userId]);
+}
+
+function save_storage_search(int $userId, string $name, array $filters): void
+{
+    if ($userId < 1 || !saved_storage_searches_ready()) throw new RuntimeException('Saved storage searches are not ready. Import database/migrations/20260827_add_saved_storage_searches.sql, then refresh this page.');
+    $name = normalize_text($name, 80); $length = function_exists('mb_strlen') ? mb_strlen($name) : strlen($name);
+    if ($length < 3) throw new RuntimeException('Use at least 3 characters to name this storage search.');
+    if (fetch_one('SELECT id FROM saved_storage_searches WHERE user_id = :user_id AND name = :name LIMIT 1', ['user_id' => $userId, 'name' => $name])) throw new RuntimeException('A saved storage search already uses that name.');
+    execute_query('INSERT INTO saved_storage_searches (user_id, name, category_id, district, storage_type, min_capacity, max_price, sort_key) VALUES (:user_id, :name, :category_id, :district, :storage_type, :min_capacity, :max_price, :sort_key)', ['user_id' => $userId, 'name' => $name, 'category_id' => $filters['category_id'], 'district' => $filters['district'] ?: null, 'storage_type' => $filters['storage_type'] ?: null, 'min_capacity' => $filters['min_capacity'], 'max_price' => $filters['max_price'], 'sort_key' => $filters['sort']]);
+    audit_log($userId, 'storage_search_saved', 'saved_storage_searches', (int) db()->lastInsertId(), ['name' => $name]);
+}
+
+function delete_storage_search(int $userId, int $searchId): void
+{
+    if ($userId < 1 || $searchId < 1 || !saved_storage_searches_ready()) throw new RuntimeException('That saved storage search is not available.');
+    $search = fetch_one('SELECT id, name FROM saved_storage_searches WHERE id = :id AND user_id = :user_id LIMIT 1', ['id' => $searchId, 'user_id' => $userId]);
+    if ($search === null) throw new RuntimeException('That saved storage search is not available.');
+    execute_query('DELETE FROM saved_storage_searches WHERE id = :id AND user_id = :user_id', ['id' => $searchId, 'user_id' => $userId]);
+    audit_log($userId, 'storage_search_deleted', 'saved_storage_searches', $searchId, ['name' => $search['name']]);
+}
+
+function saved_storage_search_query(array $search): string
+{
+    return http_build_query(array_filter(['category_id' => $search['category_id'] ?: null, 'district' => $search['district'] ?: null, 'storage_type' => $search['storage_type'] ?: null, 'min_capacity' => $search['min_capacity'] ?: null, 'max_price' => $search['max_price'] ?: null, 'sort' => $search['sort_key'] ?? 'capacity_high'], static fn($value) => $value !== null && $value !== ''));
+}
+
+function find_storage_facilities(array $filters, int $limit = 24, int $offset = 0): array
 {
     $where = ['sf.status = "active"'];
     $params = [];
@@ -49,8 +84,8 @@ function find_storage_facilities(array $filters, int $limit = 24): array
         $where[] = 'EXISTS (SELECT 1 FROM facility_supported_products fsp_filter WHERE fsp_filter.facility_id = sf.id AND fsp_filter.category_id = :category_id)';
         $params['category_id'] = $filters['category_id'];
     }
-    $limit = max(1, min($limit, 48));
-    $sql = 'SELECT sf.id, sf.provider_id, sf.name, sf.storage_type, sf.total_capacity_kg, sf.available_capacity_kg, sf.price_per_kg_day, sp.business_name, u.full_name AS contact_name, l.district, GROUP_CONCAT(DISTINCT pc.name ORDER BY pc.name SEPARATOR ", ") AS supported_products FROM storage_facilities sf JOIN storage_providers sp ON sp.id = sf.provider_id JOIN users u ON u.id = sp.user_id JOIN locations l ON l.id = sf.location_id LEFT JOIN facility_supported_products fsp ON fsp.facility_id = sf.id LEFT JOIN produce_categories pc ON pc.id = fsp.category_id WHERE ' . implode(' AND ', $where) . ' GROUP BY sf.id, sf.provider_id, sf.name, sf.storage_type, sf.total_capacity_kg, sf.available_capacity_kg, sf.price_per_kg_day, sp.business_name, u.full_name, l.district ORDER BY ' . $filters['order_by'] . ' LIMIT ' . $limit;
+    $limit = max(1, min($limit, 48)); $offset = max(0, min($offset, 10000));
+    $sql = 'SELECT sf.id, sf.provider_id, sf.name, sf.storage_type, sf.total_capacity_kg, sf.available_capacity_kg, sf.price_per_kg_day, sp.business_name, u.full_name AS contact_name, l.district, GROUP_CONCAT(DISTINCT pc.name ORDER BY pc.name SEPARATOR ", ") AS supported_products FROM storage_facilities sf JOIN storage_providers sp ON sp.id = sf.provider_id JOIN users u ON u.id = sp.user_id JOIN locations l ON l.id = sf.location_id LEFT JOIN facility_supported_products fsp ON fsp.facility_id = sf.id LEFT JOIN produce_categories pc ON pc.id = fsp.category_id WHERE ' . implode(' AND ', $where) . ' GROUP BY sf.id, sf.provider_id, sf.name, sf.storage_type, sf.total_capacity_kg, sf.available_capacity_kg, sf.price_per_kg_day, sp.business_name, u.full_name, l.district ORDER BY ' . $filters['order_by'] . ' LIMIT ' . $limit . ' OFFSET ' . $offset;
     return fetch_all($sql, $params);
 }
 

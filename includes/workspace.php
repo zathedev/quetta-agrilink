@@ -231,9 +231,20 @@ function workspace_close(): void
     require __DIR__ . '/footer.php';
 }
 
-function render_status_cards(array $cards): void
+function workspace_summary_window(): array
 {
-    echo '<section class="workspace-overview" aria-labelledby="workspace-overview-title"><header><div><h2 id="workspace-overview-title">At a glance</h2><p>Current records for this account.</p></div></header><div class="status-grid">';
+    $today = new DateTimeImmutable('today'); $defaultStart = $today->modify('-29 days');
+    $parse = static fn(mixed $value): ?DateTimeImmutable => is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) ? DateTimeImmutable::createFromFormat('!Y-m-d', $value) ?: null : null;
+    $start = $parse($_GET['summary_from'] ?? null) ?? $defaultStart; $end = $parse($_GET['summary_to'] ?? null) ?? $today;
+    if ($start > $end || $start < $today->modify('-365 days') || $end > $today) { $start = $defaultStart; $end = $today; }
+    return ['from' => $start->format('Y-m-d 00:00:00'), 'to' => $end->modify('+1 day')->format('Y-m-d 00:00:00'), 'from_input' => $start->format('Y-m-d'), 'to_input' => $end->format('Y-m-d')];
+}
+
+function render_status_cards(array $cards, ?array $summaryWindow = null): void
+{
+    echo '<section class="workspace-overview" aria-labelledby="workspace-overview-title"><header><div><h2 id="workspace-overview-title">At a glance</h2><p>Current records for this account.</p></div>';
+    if ($summaryWindow !== null) echo '<form method="get" class="summary-date-filter"><label>From <input type="date" name="summary_from" value="' . e($summaryWindow['from_input']) . '"></label><label>To <input type="date" name="summary_to" value="' . e($summaryWindow['to_input']) . '"></label><button class="button button-quiet" type="submit">Apply dates</button></form>';
+    echo '</header><div class="status-grid">';
     foreach ($cards as $card) {
         echo '<article class="status-card"><span>' . e($card['label']) . '</span><strong>' . e((string) $card['value']) . '</strong><small>' . e($card['detail']) . '</small></article>';
     }

@@ -299,7 +299,7 @@ function update_produce_listing_quantity(int $farmerId, int $listingId, mixed $r
     return $quantity;
 }
 
-function find_listings(array $filters, int $limit = 24): array
+function find_listings(array $filters, int $limit = 24, int $offset = 0): array
 {
     $where = ['pl.status = "active"'];
     $params = [];
@@ -316,8 +316,8 @@ function find_listings(array $filters, int $limit = 24): array
     if ($filters['min_price'] !== null) { $where[] = 'pl.expected_price >= :min_price'; $params['min_price'] = $filters['min_price']; }
     if ($filters['max_price'] !== null) { $where[] = 'pl.expected_price <= :max_price'; $params['max_price'] = $filters['max_price']; }
     if ($filters['min_quantity'] !== null) { $where[] = 'pl.quantity_available >= :min_quantity'; $params['min_quantity'] = $filters['min_quantity']; }
-    $limit = max(1, min($limit, 48));
-    $sql = 'SELECT pl.id, pl.title, pl.grade, pl.quantity_available, pl.unit, pl.expected_price, pl.harvest_date, pl.minimum_order_quantity, pc.name AS category_name, l.district, u.full_name AS farmer_name, pi.file_path AS image_path FROM produce_listings pl JOIN produce_categories pc ON pc.id = pl.category_id JOIN locations l ON l.id = pl.location_id JOIN users u ON u.id = pl.farmer_id LEFT JOIN produce_images pi ON pi.listing_id = pl.id AND pi.is_primary = 1 WHERE ' . implode(' AND ', $where) . ' ORDER BY ' . $filters['order_by'] . ' LIMIT ' . $limit;
+    $limit = max(1, min($limit, 48)); $offset = max(0, min($offset, 10000));
+    $sql = 'SELECT pl.id, pl.title, pl.grade, pl.quantity_available, pl.unit, pl.expected_price, pl.harvest_date, pl.minimum_order_quantity, pc.name AS category_name, l.district, u.full_name AS farmer_name, pi.file_path AS image_path FROM produce_listings pl JOIN produce_categories pc ON pc.id = pl.category_id JOIN locations l ON l.id = pl.location_id JOIN users u ON u.id = pl.farmer_id LEFT JOIN produce_images pi ON pi.listing_id = pl.id AND pi.is_primary = 1 WHERE ' . implode(' AND ', $where) . ' ORDER BY ' . $filters['order_by'] . ' LIMIT ' . $limit . ' OFFSET ' . $offset;
     return fetch_all($sql, $params);
 }
 

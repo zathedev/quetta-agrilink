@@ -23,8 +23,9 @@ Quetta AgriLink’s deployable application is the PHP/MySQL package in this repo
 | 15 | Run `database/migrations/20260827_add_operator_account_transitions.sql` once. | Administrators can create named local operators and archive only the documented development accounts through a protected audit register. |
 | 16 | Run `database/migrations/20260827_add_market_price_imports.sql` once. | Administrators can validate approved local market-price CSV files and retain source/batch context without storing the uploaded file. |
 | 17 | Run `database/migrations/20260827_add_in_app_support_desk.sql` once. | Authenticated local support requests, messages, assignments, status history, and role-routed in-app alerts are available without external delivery. |
-| 18 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
-| 19 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
+| 18 | Run `database/migrations/20260827_add_saved_storage_searches.sql` once. | Each signed-in account can save, apply, and remove only its own cold-storage search criteria. |
+| 19 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
+| 20 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
 
 ## Local security and maintenance
 
@@ -105,6 +106,7 @@ After recording an offline verification note, an administrator may open **Print 
 | Offer / storage / transport | Each request returns a validated response and creates an account-scoped record. |
 | Attachment | An administrator can attach and download a permitted test file; each download is integrity-checked and appears in the download audit history. |
 | Saved marketplace filter | A signed-in user can save, apply, and remove only their own marketplace criteria. |
+| Saved cold-storage search | A signed-in user can save, apply, and remove only their own cold-storage criteria. |
 | Default listing alerts | A signed-in user can choose one default filter; a farmer publication that matches its criteria creates an in-app alert. Users can enable the optional header bell after a browser interaction. |
 | Listing operations | A farmer can amend an owned record’s available quantity above its minimum order, manage its lifecycle, and export its own listing activity history as CSV. |
 | Notification register | A signed-in user can filter only their own alerts by type or read state, then mark an individual alert or the full unread register as read. |
