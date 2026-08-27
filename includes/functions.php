@@ -523,6 +523,138 @@ function update_account_profile(int $userId, array $input): array
     return [true, 'Your profile details have been updated.', ['changed' => $changed]];
 }
 
+function role_profile_locations(): array
+{
+    return fetch_all('SELECT id, province, district, tehsil, area FROM locations ORDER BY province ASC, district ASC, tehsil ASC, area ASC');
+}
+
+function role_business_profile(int $userId, string $role): ?array
+{
+    return match ($role) {
+        'farmer' => fetch_one('SELECT farm_name, farm_location_id AS location_id, farm_size_acres, bio FROM farmer_profiles WHERE user_id = :user_id LIMIT 1', ['user_id' => $userId]),
+        'buyer' => fetch_one('SELECT business_name, business_type, location_id, tax_reference, bio FROM buyer_profiles WHERE user_id = :user_id LIMIT 1', ['user_id' => $userId]),
+        default => null,
+    };
+}
+
+function initialize_role_business_profile(int $userId, string $role): ?array
+{
+    $table = match ($role) {
+        'farmer' => 'farmer_profiles',
+        'buyer' => 'buyer_profiles',
+        default => null,
+    };
+    if ($userId < 1 || $table === null) {
+        return null;
+    }
+    $statement = db()->prepare("INSERT INTO {$table} (user_id) SELECT u.id FROM users u JOIN roles r ON r.id = u.role_id WHERE u.id = :user_id AND r.slug = :role ON DUPLICATE KEY UPDATE user_id = VALUES(user_id)");
+    $statement->execute(['user_id' => $userId, 'role' => $role]);
+    return role_business_profile($userId, $role);
+}
+
+function role_profile_location_exists(int $locationId): bool
+{
+    return $locationId > 0 && fetch_one('SELECT id FROM locations WHERE id = :location_id LIMIT 1', ['location_id' => $locationId]) !== null;
+}
+
+function optional_profile_decimal(mixed $value): ?float
+{
+    if (!is_scalar($value) || trim((string) $value) === '') {
+        return null;
+    }
+    $number = positive_decimal($value);
+    return $number !== null && $number <= 100000 ? $number : null;
+}
+
+function role_profile_field_changed(string $field, mixed $current, mixed $value): bool
+{
+    if ($field === 'farm_size_acres') {
+        return round((float) ($current ?? 0), 2) !== round((float) ($value ?? 0), 2);
+    }
+    return (string) ($current ?? '') !== (string) ($value ?? '');
+}
+
+function update_farmer_business_profile(int $userId, array $input): array
+{
+    $farmName = normalize_text($input['farm_name'] ?? '', 160);
+    $locationId = filter_var($input['farm_location_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: 0;
+    $farmSizeInput = trim((string) ($input['farm_size_acres'] ?? ''));
+    $farmSize = optional_profile_decimal($farmSizeInput);
+    $bio = normalize_text($input['farm_bio'] ?? '', 1000);
+    $errors = [];
+    if ((function_exists('mb_strlen') ? mb_strlen($farmName) : strlen($farmName)) < 3) {
+        $errors['farm_name'] = 'Enter a farm name using at least 3 characters.';
+    }
+    if (!role_profile_location_exists($locationId)) {
+        $errors['farm_location_id'] = 'Choose a listed farm location.';
+    }
+    if ($farmSizeInput !== '' && $farmSize === null) {
+        $errors['farm_size_acres'] = 'Enter a farm size greater than zero and no more than 100,000 acres.';
+    }
+    if ($errors !== []) {
+        return [false, 'Please correct the highlighted farm details.', ['errors' => $errors, 'values' => ['farm_name' => $farmName, 'location_id' => $locationId, 'farm_size_acres' => $farmSizeInput, 'bio' => $bio]]];
+    }
+    $profile = role_business_profile($userId, 'farmer') ?? initialize_role_business_profile($userId, 'farmer');
+    if ($profile === null) {
+        return [false, 'Your farmer profile is no longer available.', []];
+    }
+    $changed = [];
+    foreach (['farm_name' => $farmName, 'location_id' => $locationId, 'farm_size_acres' => $farmSize, 'bio' => $bio] as $field => $value) {
+        $current = $profile[$field === 'location_id' ? 'location_id' : $field] ?? null;
+        if (role_profile_field_changed($field, $current, $value)) {
+            $changed[] = $field;
+        }
+    }
+    if ($changed === []) {
+        return [true, 'Your farm details are already up to date.', ['changed' => []]];
+    }
+    execute_query('UPDATE farmer_profiles SET farm_name = :farm_name, farm_location_id = :location_id, farm_size_acres = :farm_size_acres, bio = :bio WHERE user_id = :user_id', ['farm_name' => $farmName, 'location_id' => $locationId, 'farm_size_acres' => $farmSize, 'bio' => $bio !== '' ? $bio : null, 'user_id' => $userId]);
+    audit_log($userId, 'farmer_business_profile_updated', 'farmer_profiles', null, ['fields' => $changed]);
+    return [true, 'Your farm details have been updated.', ['changed' => $changed]];
+}
+
+function update_buyer_business_profile(int $userId, array $input): array
+{
+    $businessName = normalize_text($input['business_name'] ?? '', 160);
+    $businessType = normalize_text($input['business_type'] ?? '', 100);
+    $locationId = filter_var($input['business_location_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: 0;
+    $taxReference = normalize_text($input['tax_reference'] ?? '', 80);
+    $bio = normalize_text($input['business_bio'] ?? '', 1000);
+    $errors = [];
+    if ((function_exists('mb_strlen') ? mb_strlen($businessName) : strlen($businessName)) < 3) {
+        $errors['business_name'] = 'Enter a business name using at least 3 characters.';
+    }
+    if ((function_exists('mb_strlen') ? mb_strlen($businessType) : strlen($businessType)) < 3) {
+        $errors['business_type'] = 'Enter a business type using at least 3 characters.';
+    }
+    if (!role_profile_location_exists($locationId)) {
+        $errors['business_location_id'] = 'Choose a listed business location.';
+    }
+    if ($taxReference !== '' && preg_match('/^[A-Za-z0-9\-\/\s]{3,80}$/', $taxReference) !== 1) {
+        $errors['tax_reference'] = 'Use 3–80 letters, numbers, spaces, hyphens, or slashes for the tax reference.';
+    }
+    if ($errors !== []) {
+        return [false, 'Please correct the highlighted business details.', ['errors' => $errors, 'values' => ['business_name' => $businessName, 'business_type' => $businessType, 'location_id' => $locationId, 'tax_reference' => $taxReference, 'bio' => $bio]]];
+    }
+    $profile = role_business_profile($userId, 'buyer') ?? initialize_role_business_profile($userId, 'buyer');
+    if ($profile === null) {
+        return [false, 'Your buyer profile is no longer available.', []];
+    }
+    $changed = [];
+    foreach (['business_name' => $businessName, 'business_type' => $businessType, 'location_id' => $locationId, 'tax_reference' => $taxReference, 'bio' => $bio] as $field => $value) {
+        $current = $profile[$field === 'location_id' ? 'location_id' : $field] ?? null;
+        if (role_profile_field_changed($field, $current, $value)) {
+            $changed[] = $field;
+        }
+    }
+    if ($changed === []) {
+        return [true, 'Your business details are already up to date.', ['changed' => []]];
+    }
+    execute_query('UPDATE buyer_profiles SET business_name = :business_name, business_type = :business_type, location_id = :location_id, tax_reference = :tax_reference, bio = :bio WHERE user_id = :user_id', ['business_name' => $businessName, 'business_type' => $businessType, 'location_id' => $locationId, 'tax_reference' => $taxReference !== '' ? $taxReference : null, 'bio' => $bio !== '' ? $bio : null, 'user_id' => $userId]);
+    audit_log($userId, 'buyer_business_profile_updated', 'buyer_profiles', null, ['fields' => $changed]);
+    return [true, 'Your business details have been updated.', ['changed' => $changed]];
+}
+
 function request_local_password_recovery(string $email): void
 {
     if (!local_password_recovery_is_available()) {

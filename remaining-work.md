@@ -4,7 +4,6 @@ This is the **active work register** for the authoritative PHP/XAMPP application
 
 ## Role-Specific Business and Asset Editors
 
-- Add protected, owner-scoped farmer farm/location and buyer business-detail editors with server validation, prepared updates, and audit entries; validate owner scope and local XAMPP behavior before committing and pushing.
 - Add protected, owner-scoped storage-provider facilities and supported-produce editors, then transport-provider vehicles and service-area editors; include validated, secure media ownership only where required.
 
 ## Commerce Order and Transport Assignment Operations

@@ -103,6 +103,7 @@ After recording an offline verification note, an administrator may open **Print 
 | PHP syntax check | Every `.php` file passes `php -l`. |
 | Database import | Core demo tables load without errors, followed by the attachment and saved-marketplace-filter migrations. |
 | Authentication | A documented development account signs in and reaches its role-specific dashboard. |
+| Farmer and buyer business details | A farmer can update only their own required farm name/location, optional size, and details; a buyer can update only their own required business name/type/location and optional tax reference/details. Both reject invalid locations or fields and record field-only audit metadata. |
 | Offer / storage / transport | Each request returns a validated response and creates an account-scoped record. |
 | Attachment | An administrator can attach and download a permitted test file; each download is integrity-checked and appears in the download audit history. |
 | Saved marketplace filter | A signed-in user can save, apply, and remove only their own marketplace criteria. |
