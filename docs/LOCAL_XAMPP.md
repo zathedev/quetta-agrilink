@@ -70,6 +70,10 @@ pnpm acceptance:local -- --base-url http://localhost/quetta-agrilink/
 
 The command exits unsuccessfully if any access, responsive-layout, focus, local-font, or protected-export check fails. Its JSON evidence is written below `artifacts/acceptance/` and is intentionally ignored by Git.
 
+### Production release gate
+
+For a later public or controlled production deployment, use [`PRODUCTION_RELEASE_CHECKLIST.md`](PRODUCTION_RELEASE_CHECKLIST.md) as the release gate. It records the required backup, migration, configuration, credential, support, data-provenance, acceptance, rollback, and post-release evidence. The current no-channel-yet contact state and the documented development credentials block a public launch until their owners replace or formally disable them.
+
 ### Local password recovery
 
 Password recovery deliberately stays offline for the local XAMPP deployment. A user opens **Sign in → Need to reset your password?** and receives the same confirmation message whether or not an account exists. An authorized administrator verifies the requester through the organisation’s approved local process, records a short verification note, then opens **Workspace → Password recovery** to issue a one-time link. The note must never contain a password, reset link, or token. The link expires after 60 minutes, can be revoked before use, stores only a token hash in MySQL, and must never be copied into unverified channels.

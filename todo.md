@@ -224,4 +224,6 @@
 - [x] Map all fictional seeded operational data and foreign-key dependencies while identifying the minimum reference rows required for registration, roles, and retained demo credentials.
 - [x] Add idempotent cleanup migrations that remove fictional operational records without deleting demo user credentials, role definitions, districts, or required produce categories.
 - [x] Verify empty-state rendering and retained demo account access after the cleanup migration, then remove the completed backlog item after committing and pushing the update.
-- [ ] Prepare and validate the final production release checklist for XAMPP deployment, data migration, configuration, support ownership, backups, cache refresh, and acceptance verification.
+- [x] Draft an ordered release-gate checklist covering XAMPP deployment, database backup and migration, configuration, credentials, support ownership, data provenance, cache refresh, and acceptance verification.
+- [x] Add operator sign-off records for accountable release preparation, technical checks, operational readiness, and post-release verification.
+- [x] Validate the checklist against the authoritative PHP/XAMPP runbook and security boundaries, then remove the final backlog item after committing and pushing it.
