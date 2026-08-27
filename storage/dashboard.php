@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/support-desk.php';
 require_once __DIR__ . '/../includes/workspace.php';
 
 $user = require_role(['storage_provider']);
@@ -12,6 +13,7 @@ $summary = ['total' => 0, 'occupied' => 0, 'available' => 0];
 $pending = ['count' => 0];
 $active = ['count' => 0];
 $recent = [];
+$supportAttention = support_desk_dashboard_attention($user);
 
 if ($providerId > 0) {
     $summary = fetch_one('SELECT COALESCE(SUM(total_capacity_kg),0) AS total,COALESCE(SUM(total_capacity_kg-available_capacity_kg),0) AS occupied,COALESCE(SUM(available_capacity_kg),0) AS available FROM storage_facilities WHERE provider_id=:provider', ['provider' => $providerId]) ?? $summary;
@@ -25,6 +27,7 @@ render_status_cards([
     ['label' => 'Total capacity', 'value' => number_format((float) $summary['total'], 0) . ' kg', 'detail' => 'across listed facilities'],
     ['label' => 'Occupied capacity', 'value' => number_format((float) $summary['occupied'], 0) . ' kg', 'detail' => 'calculated from current availability'],
     ['label' => 'Pending bookings', 'value' => (int) $pending['count'], 'detail' => 'awaiting your review'],
+    ['label' => 'Support attention', 'value' => $supportAttention['queue_open'], 'detail' => $supportAttention['available'] ? 'routed local requests' : 'migration needed'],
     ['label' => 'Active bookings', 'value' => (int) $active['count'], 'detail' => 'approved or in storage'],
 ]);
 ?>

@@ -1,10 +1,11 @@
 <?php
 /** Market Desk workspace shell: role-scoped navigation, task-led framing, and account-owned activity controls support clear local operational work. */
 declare(strict_types=1);
+require_once __DIR__ . '/support-desk.php';
 
 function workspace_links(string $role): array
 {
-    $common = [['Dashboard', dashboard_path($role), 'dashboard'], ['Marketplace', 'marketplace/index.php', 'marketplace'], ['Notifications', 'notifications.php', 'notifications'], ['My profile', 'account/profile.php', 'profile']];
+    $common = [['Dashboard', dashboard_path($role), 'dashboard'], ['Marketplace', 'marketplace/index.php', 'marketplace'], ['Notifications', 'notifications.php', 'notifications'], ['In-app support', 'support.php', 'support'], ['My profile', 'account/profile.php', 'profile']];
     return match ($role) {
         'farmer' => array_merge($common, [['Publish produce', 'farmer/listings.php', 'listings'], ['Offers', 'farmer/offers.php', 'offers'], ['Cold storage', 'storage/index.php', 'storage'], ['Transport', 'transport/index.php', 'transport']]),
         'buyer' => array_merge($common, [['Offers', 'buyer/offers.php', 'offers']]),
@@ -142,6 +143,10 @@ function workspace_activity_summary(int $userId, string $role, ?DateTimeImmutabl
         'listing_published' => 'Produce availability published',
         'listing_quantity_amended' => 'Listing quantity amended',
         'attachment_downloaded' => 'Protected attachment downloaded',
+        'support_request_created' => 'Local support request recorded',
+        'support_request_assigned' => 'Local support request assigned',
+        'support_request_message_added' => 'Local support message recorded',
+        'support_request_status_changed' => 'Local support status updated',
         'dashboard_activity_preset_saved' => 'Activity range saved',
         'dashboard_activity_preset_deleted' => 'Activity range deleted',
     ];

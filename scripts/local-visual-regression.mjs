@@ -180,7 +180,7 @@ const publicCaptures = [
   { name: "market-prices-desktop", path: "market-prices.php", selector: ".price-register-layout", text: "Reference, not a quote", viewport: desktop },
   { name: "how-it-works-desktop", path: "how-it-works.php", selector: ".guide-workflow-section", text: "Each handover makes the next decision more specific", viewport: desktop },
   { name: "about-desktop", path: "about.php", selector: ".about-context-section", text: "One platform for everything after harvest", viewport: desktop },
-  { name: "contact-desktop", path: "contact.php", selector: ".contact-context-section", text: "Support channel awaiting ownership", viewport: desktop },
+  { name: "contact-desktop", path: "contact.php", selector: ".contact-context-section", text: "Keep operational support inside the workspace", viewport: desktop },
   { name: "public-home-mobile", path: "", selector: ".desk-home", text: "Choose the next step", viewport: mobile },
   { name: "market-prices-mobile", path: "market-prices.php", selector: ".price-register-layout", text: "Reference, not a quote", viewport: mobile },
   { name: "how-it-works-mobile", path: "how-it-works.php", selector: ".guide-workflow-section", text: "Each handover makes the next decision more specific", viewport: mobile },
@@ -188,6 +188,8 @@ const publicCaptures = [
 const buyerCaptures = [
   { name: "buyer-workspace-desktop", path: "buyer/dashboard.php", selector: ".workspace", text: "Buyer dashboard", viewport: desktop },
   { name: "buyer-workspace-mobile", path: "buyer/dashboard.php", selector: ".workspace", text: "Buyer dashboard", viewport: mobile },
+  { name: "buyer-support-desktop", path: "support.php", selector: ".support-intro", text: "Keep support work in the accountable workspace", viewport: desktop },
+  { name: "buyer-support-mobile", path: "support.php", selector: ".support-intro", text: "Keep support work in the accountable workspace", viewport: mobile },
 ];
 const administratorCaptures = [
   { name: "administrator-workspace-desktop", path: "admin/dashboard.php", selector: ".workspace", text: "Administrator dashboard", viewport: desktop },
@@ -198,6 +200,8 @@ const administratorCaptures = [
   { name: "market-data-import-mobile", path: "admin/market-price-import.php", selector: ".market-import-intro", text: "Import approved local price references", viewport: mobile },
   { name: "market-data-import-register-desktop", path: "admin/market-price-import.php", selector: ".market-import-history", text: "Source and batch accountability", viewport: desktop },
   { name: "market-data-import-register-mobile", path: "admin/market-price-import.php", selector: ".market-import-history", text: "Source and batch accountability", viewport: mobile },
+  { name: "administrator-support-desktop", path: "support.php", selector: ".support-register", text: "Platform support oversight", viewport: desktop },
+  { name: "administrator-support-mobile", path: "support.php", selector: ".support-register", text: "Platform support oversight", viewport: mobile },
 ];
 
 await mkdir(outputDirectory, { recursive: true });

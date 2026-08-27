@@ -16,8 +16,9 @@ The current codebase is a direct XAMPP-compatible PHP application. It does not r
 | Storage | Facility discovery, compatible-produce checks, requested booking creation, estimated storage cost, provider approval/rejection, activation, completion, and status history. |
 | Transport | Provider discovery, farmer request creation, provider acceptance/decline, and recorded dispatch progression from driver assignment through delivery. |
 | Workspaces | Farmer, buyer, cold-storage provider, transport provider, and administrator dashboards, with account-scoped records. |
-| Notifications | In-app notifications created for offers, booking requests, storage status, transport status, and orders. |
+| Notifications | In-app notifications created for offers, booking requests, storage status, transport status, orders, and local support attention. |
 | Market intelligence | Administrator-recorded reference price ranges and asynchronous product filtering. |
+| Local support | Authenticated, role-routed support requests, conversations, accountable assignment, status history, and dashboard alerts with no external delivery. |
 
 The database includes the broader normalized foundation for messages, announcements, reviews, payments, audit logs, password-reset tokens, and all specified role/profile relationships. **No review, rating, testimonial, or customer-logo data is seeded or displayed.**
 
@@ -36,7 +37,7 @@ Enable Apache `mod_rewrite` if it is available. The project remains usable witho
 
 1. Install XAMPP and start **Apache** and **MySQL** from the XAMPP Control Panel.
 2. Copy or clone this repository into `C:/xampp/htdocs/quetta-agrilink/`.
-3. Open `http://localhost/phpmyadmin/` and import `database/quetta_agrilink.sql`. The script creates and selects the `quetta_agrilink` database, tables, indexes, relationships, and fictional demonstration data.
+3. Open `http://localhost/phpmyadmin/` and import `database/quetta_agrilink.sql`. The script creates and selects the `quetta_agrilink` database, tables, indexes, relationships, required references, and documented development credentials; it inserts no fictional operational data.
 4. Confirm the database settings in `config/config.php`. The default XAMPP values are `127.0.0.1`, port `3306`, database `quetta_agrilink`, username `root`, and a blank password.
 5. If your XAMPP MySQL password differs, copy `config/config.example.php` to `config/config.php` and update `DB_USER` and `DB_PASS`. Keep production credentials outside version control.
 6. Visit [http://localhost/quetta-agrilink/](http://localhost/quetta-agrilink/).
@@ -161,6 +162,8 @@ Before moving the authoritative PHP/XAMPP application beyond a local demonstrati
 Named local operators can replace the documented development credentials through the administrator-only transition register after its migration is applied. See [`docs/LOCAL_OPERATOR_TRANSITION.md`](docs/LOCAL_OPERATOR_TRANSITION.md); the process records accountable changes without showing or exporting passwords or recovery secrets.
 
 Approved local reference prices can be added only through the administrator-managed CSV intake register after its migration is applied. See [`docs/LOCAL_MARKET_DATA_IMPORT.md`](docs/LOCAL_MARKET_DATA_IMPORT.md); the importer validates all rows before saving, retains named source/batch accountability, and never seeds or fabricates market data.
+
+Authenticated accounts can create local in-app support requests after `database/migrations/20260827_add_in_app_support_desk.sql` is imported. See [`docs/LOCAL_IN_APP_SUPPORT.md`](docs/LOCAL_IN_APP_SUPPORT.md); requests route to administrator, cold-storage, or transport workspaces, retain accountable local history, and never send email, SMS, SMTP, webhooks, or external-helpdesk messages.
 
 ## GitHub workflow
 

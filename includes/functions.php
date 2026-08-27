@@ -841,6 +841,7 @@ function generate_reference(string $prefix): string
         'QAL' => 'orders',
         'QAS' => 'storage_bookings',
         'QAT' => 'transport_requests',
+        'QAH' => 'support_requests',
         default => throw new InvalidArgumentException('Unsupported reference prefix.'),
     };
 

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/support-desk.php';
 require_once __DIR__ . '/../includes/workspace.php';
 
 $user = require_role(['transport_provider']);
@@ -13,6 +14,7 @@ $pending = ['count' => 0];
 $active = ['count' => 0];
 $delivered = ['count' => 0];
 $recent = [];
+$supportAttention = support_desk_dashboard_attention($user);
 
 if ($providerId > 0) {
     $vehicles = fetch_one('SELECT COUNT(*) AS count FROM vehicles WHERE provider_id=:provider AND status="available"', ['provider' => $providerId]) ?? $vehicles;
@@ -26,6 +28,7 @@ workspace_open('Transport provider dashboard', 'dashboard');
 render_status_cards([
     ['label' => 'Available vehicles', 'value' => (int) $vehicles['count'], 'detail' => 'ready in your listed fleet'],
     ['label' => 'New requests', 'value' => (int) $pending['count'], 'detail' => 'awaiting a response'],
+    ['label' => 'Support attention', 'value' => $supportAttention['queue_open'], 'detail' => $supportAttention['available'] ? 'routed local requests' : 'migration needed'],
     ['label' => 'Active trips', 'value' => (int) $active['count'], 'detail' => 'accepted through transit'],
     ['label' => 'Delivered trips', 'value' => (int) $delivered['count'], 'detail' => 'recorded as delivered'],
 ]);

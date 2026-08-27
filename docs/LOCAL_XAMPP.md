@@ -22,8 +22,9 @@ Quetta AgriLink’s deployable application is the PHP/MySQL package in this repo
 | 14 | Run `database/migrations/20260827_remove_fictional_demo_data.sql` once only when upgrading an earlier installation that still contains the original fictional records. | Known fictional profiles, listings, facilities, vehicles, transactions, prices, notifications, and related activity are removed while documented user credentials and reference rows remain. |
 | 15 | Run `database/migrations/20260827_add_operator_account_transitions.sql` once. | Administrators can create named local operators and archive only the documented development accounts through a protected audit register. |
 | 16 | Run `database/migrations/20260827_add_market_price_imports.sql` once. | Administrators can validate approved local market-price CSV files and retain source/batch context without storing the uploaded file. |
-| 17 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
-| 18 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
+| 17 | Run `database/migrations/20260827_add_in_app_support_desk.sql` once. | Authenticated local support requests, messages, assignments, status history, and role-routed in-app alerts are available without external delivery. |
+| 18 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
+| 19 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
 
 ## Local security and maintenance
 
@@ -50,6 +51,10 @@ Use the administrator-only **Local operators** workspace entry after importing `
 ### Importing approved local market data
 
 Import `database/migrations/20260827_add_market_price_imports.sql`, then use the administrator-only **Market-data import** workspace entry. The CSV importer validates every row before database changes, records named source and batch context, and does not retain the uploaded CSV. Follow [`LOCAL_MARKET_DATA_IMPORT.md`](LOCAL_MARKET_DATA_IMPORT.md); do not import unapproved, fabricated, credential-bearing, or formula-like values.
+
+### Operating local in-app support
+
+Import `database/migrations/20260827_add_in_app_support_desk.sql`, then use **In-app support** from an authenticated workspace or sign in from the public Contact page. The support register is local-only: it routes requests by category to administrator, cold-storage, or transport workspaces; retains requester-owned conversations, accountable assignment, and status history; and creates only in-app alerts. It does not use email, SMS, SMTP, external helpdesks, webhooks, or external delivery. Follow [`LOCAL_IN_APP_SUPPORT.md`](LOCAL_IN_APP_SUPPORT.md); never enter passwords, reset links, recovery codes, tokens, or other account secrets.
 
 ### Local browser visual regression
 
@@ -113,3 +118,4 @@ After recording an offline verification note, an administrator may open **Print 
 | Local notification preferences | A signed-in account enables or disables default-filter marketplace alerts and the optional browser chime; no email or SMS delivery is added. |
 | Printable recovery handover | An administrator prints a verified recovery record with account and lifecycle context; the output contains no password, reset link, selector, token, or hash. |
 | Recovery discovery filters | An administrator filters the local recovery register and protected CSV by received date, account role, and profile district. A filter never exposes recovery selectors, tokens, hashes, reset links, or passwords. |
+| In-app support register | An authenticated requester creates a category-routed local support case; only the appropriate role can claim it; responses and status updates remain account-scoped; administrators can oversee routed assignments; and no external email, SMS, SMTP, helpdesk, webhook, or secret-bearing content is produced. |
