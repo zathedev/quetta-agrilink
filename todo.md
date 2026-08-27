@@ -180,3 +180,9 @@
 - [x] Align the authoritative PHP password-recovery request and completion surfaces with the Orchard Ledger account-access hierarchy while preserving generic recovery responses and offline reset safeguards.
 - [x] Align the authoritative PHP profile-management surface with the matching account-record typography, contact-review context, and responsive treatment.
 - [x] Validate local XAMPP recovery and profile rendering, then commit and push the completed parity update.
+
+## Local PHP Role-Dashboard Detail Parity Follow-through
+
+- [x] Align shared authenticated workspace record tables, action panels, and attention cues with the approved Orchard Ledger operational hierarchy.
+- [x] Align role-specific listing, storage, and transport detail screens with the same account-scoped record treatment without changing workflow permissions.
+- [x] Validate authenticated local PHP dashboard and detail rendering, then commit and push the completed parity update.
