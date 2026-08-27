@@ -198,3 +198,10 @@
 - [x] Align the authoritative PHP notifications register, local delivery preferences, and read-state controls with the Orchard Ledger operational record hierarchy.
 - [x] Align account-scoped saved marketplace-filter management with the matching brief, status, and action treatment without changing matching or default-filter behavior.
 - [x] Validate authenticated local PHP notification and saved-filter rendering, then commit and push the completed parity update.
+
+## Offline Resilience and Final Visual Assurance
+
+- [x] Maintain `remaining-work.md` as the active, remove-on-completion register for all unfinished work.
+- [x] Bundle the Orchard Ledger font families locally for offline XAMPP operation while retaining the existing type hierarchy.
+- [ ] Add repeatable local-browser visual-regression snapshots for representative PHP/XAMPP surfaces.
+- [ ] Complete the remaining PHP market-price and informational-guide visual-parity pass, then run final XAMPP acceptance validation.

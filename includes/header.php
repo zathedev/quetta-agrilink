@@ -23,10 +23,8 @@ $stylesheet_url = static function (string $relativePath): string {
     <meta name="description" content="<?= e($pageDescription) ?>">
     <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
     <title><?= e($pageTitle) ?> | <?= e(APP_NAME) ?></title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/local-fonts.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/app.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/market-desk.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/workspace-mobile-menu.css')) ?>">

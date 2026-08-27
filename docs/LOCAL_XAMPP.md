@@ -34,6 +34,8 @@ Before attaching files, open XAMPP’s `php/php.ini` and set `upload_max_filesiz
 
 After pulling a visual update, refresh the browser with **Ctrl+F5** once. The PHP header adds the local stylesheet modification time to every CSS URL, so Apache serves the current Orchard Ledger fonts, navigation, and visual-style files rather than an older browser-cached stylesheet.
 
+The required **DM Sans**, **DM Mono**, and **Playfair Display** font variants are bundled in `assets/fonts/`, with their Open Font License notices alongside them. The header loads `assets/css/local-fonts.css` before the application styles, so the deployable PHP/XAMPP interface keeps its established typography without requiring access to Google Fonts. Keep this directory when copying or updating the project folder.
+
 ### Local password recovery
 
 Password recovery deliberately stays offline for the local XAMPP deployment. A user opens **Sign in → Need to reset your password?** and receives the same confirmation message whether or not an account exists. An authorized administrator verifies the requester through the organisation’s approved local process, records a short verification note, then opens **Workspace → Password recovery** to issue a one-time link. The note must never contain a password, reset link, or token. The link expires after 60 minutes, can be revoked before use, stores only a token hash in MySQL, and must never be copied into unverified channels.
