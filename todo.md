@@ -168,3 +168,9 @@
 - [x] Align the authoritative PHP cold-storage directory and request experience with the Orchard Ledger service-page visual language.
 - [x] Align the authoritative PHP transport directory and request experience with the matching service-record hierarchy and responsive treatment.
 - [x] Validate local XAMPP service-page rendering and preview coherence, then commit and push the completed parity update.
+
+## Local PHP Authentication-Surface Parity Follow-through
+
+- [x] Align the authoritative PHP sign-in experience with the Orchard Ledger authentication hierarchy, typography, and responsive treatment.
+- [x] Align the authoritative PHP registration experience with the same account-entry language while preserving validation and role selection behavior.
+- [x] Validate local XAMPP authentication-page rendering and preview coherence, then commit and push the completed parity update.

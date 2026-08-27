@@ -23,7 +23,7 @@ $pageTitle = 'Sign in';
 require __DIR__ . '/../includes/header.php';
 ?>
 <section class="auth-page">
-    <aside class="auth-aside"><span class="desk-kicker">Account access</span><h1>Return to the work that needs you.</h1><p>Sign in to review the offers, capacity, delivery requests, and records connected to your account role.</p></aside>
+    <aside class="auth-aside"><span class="desk-kicker">Account access</span><h1>Return to the work that needs you.</h1><p>Sign in to review the offers, capacity, delivery requests, and records connected to your account role.</p><div class="auth-assurance-points"><div><span aria-hidden="true">01</span><p><strong>One clear workspace</strong>Only the records and tasks relevant to your role are shown.</p></div><div><span aria-hidden="true">02</span><p><strong>Know what comes next</strong>Each recorded status points to a practical next action.</p></div></div></aside>
     <div class="auth-form-wrap">
         <p class="desk-kicker">Sign in</p><h1>Open your workspace</h1><p>Enter your account details to see the records and actions relevant to your role.</p>
         <?php if ($error): ?><div class="flash flash-error"><?= e($error) ?></div><?php endif; ?>

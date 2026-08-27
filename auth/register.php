@@ -23,7 +23,7 @@ $pageTitle = 'Create account';
 require __DIR__ . '/../includes/header.php';
 ?>
 <section class="auth-page">
-    <aside class="auth-aside"><span class="desk-kicker">Create an account</span><h1>Start with the role you have today.</h1><p>Join as a grower, buyer, cold-storage provider, or transport provider. Your workspace will keep the records and next actions for that work clear.</p></aside>
+    <aside class="auth-aside"><span class="desk-kicker">Create an account</span><h1>Start with the role you have today.</h1><p>Join as a grower, buyer, cold-storage provider, or transport provider. Your workspace will keep the records and next actions for that work clear.</p><div class="auth-assurance-points"><div><span aria-hidden="true">01</span><p><strong>Begin with the essentials</strong>Your account opens with the role and contact details needed to organise local trade.</p></div><div><span aria-hidden="true">02</span><p><strong>Complete context later</strong>Operational details can be added once your role workspace is ready.</p></div></div></aside>
     <div class="auth-form-wrap">
         <p class="desk-kicker">Account details</p><h1>Choose your workspace</h1><p>Start with basic details and your account type. You can complete operational information once your workspace opens.</p>
         <?php if (isset($errors['form'])): ?><div class="flash flash-error"><?= e($errors['form']) ?></div><?php endif; ?>
