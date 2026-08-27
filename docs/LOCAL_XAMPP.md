@@ -52,6 +52,19 @@ pnpm visual:local -- --base-url http://localhost/quetta-agrilink/ --out artifact
 
 The second command exits unsuccessfully when a PNG differs from its same-machine baseline. To avoid false differences, the runner normalizes the live account-activity text inside protected dashboard screenshots; it still captures the full dashboard structure, status cards, navigation, task framing, and protected page layout. Review the image pair before deciding whether the interface changed intentionally; refresh the baseline only after that review. You can override `VISUAL_REGRESSION_BUYER_EMAIL` and `VISUAL_REGRESSION_ADMIN_EMAIL` for alternative local development accounts.
 
+### Final controlled local acceptance
+
+Run the final acceptance command only after Apache and MySQL are running, the migrations in this runbook have been imported, and the documented development accounts are available. It checks fresh local stylesheet and font loading, keyboard reachability on public, sign-in, and marketplace controls, responsive public/account-entry layouts, buyer and administrator role scoping, and the two protected administrator CSV exports. It does not submit marketplace, recovery, contact-review, or administrator-management forms. As with visual regression, sign-in itself creates normal local login audit entries and updates `last_login_at`, so use a disposable development database when that is undesirable.
+
+```powershell
+$env:LOCAL_ACCEPTANCE_PASSWORD = 'AgriLinkDemo2026!'
+$env:LOCAL_ACCEPTANCE_ALLOW_AUTH = '1'
+$env:CHROMIUM_BIN = 'C:\Program Files\Google\Chrome\Application\chrome.exe' # only if chromium is not on PATH
+pnpm acceptance:local -- --base-url http://localhost/quetta-agrilink/
+```
+
+The command exits unsuccessfully if any access, responsive-layout, focus, local-font, or protected-export check fails. Its JSON evidence is written below `artifacts/acceptance/` and is intentionally ignored by Git.
+
 ### Local password recovery
 
 Password recovery deliberately stays offline for the local XAMPP deployment. A user opens **Sign in → Need to reset your password?** and receives the same confirmation message whether or not an account exists. An authorized administrator verifies the requester through the organisation’s approved local process, records a short verification note, then opens **Workspace → Password recovery** to issue a one-time link. The note must never contain a password, reset link, or token. The link expires after 60 minutes, can be revoked before use, stores only a token hash in MySQL, and must never be copied into unverified channels.

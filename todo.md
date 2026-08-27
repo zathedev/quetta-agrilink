@@ -209,3 +209,10 @@
 - [x] Align the authoritative PHP market-price index and price-record presentation with the Orchard Ledger reference hierarchy while retaining existing market data and administrator controls.
 - [x] Align the authoritative PHP information and guidance pages with the same paper-led operational framing while retaining their existing navigation and content behavior.
 - [x] Validate local PHP market-price and guide rendering, then remove the completed backlog item after committing and pushing the parity update.
+
+## Final Controlled Local XAMPP Acceptance
+
+- [x] Verify fresh-cache CSS/font loading and desktop/mobile rendering across representative authoritative PHP/XAMPP pages.
+- [x] Verify keyboard navigation and focus visibility through public navigation, authentication, marketplace controls, and authenticated workspace actions.
+- [x] Verify role-scoped authenticated access and protected recovery/contact export boundaries without exposing reset or credential secrets.
+- [x] Record the controlled local XAMPP acceptance result, remove the final completed backlog item, and push the delivery update.

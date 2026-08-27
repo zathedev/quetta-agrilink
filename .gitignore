@@ -111,6 +111,9 @@ temp/
 # Local PHP/XAMPP visual-regression screenshots and manifests
 artifacts/visual-regression/
 
+# Local PHP/XAMPP controlled acceptance evidence
+artifacts/acceptance/
+
 # Manus version file (auto-generated, not part of source)
 client/public/__manus__/version.json
 .project-config.json
