@@ -172,3 +172,15 @@ Noto Serif stays for brand moments and selected page headings, capped to a calm 
 - Review finding: the light workspace rail, single primary action, collapsed supporting activity, direct metric strip, and simpler dashboard titles materially reduce the former dark, dense dashboard treatment and remain the direction for all role pages.
 - Review finding: the administrator dashboard retains a scan-friendly record table and compact task bar even with its larger navigation set. Remaining guidance copy should be reduced to short record-specific sentences rather than editorial explanations.
 - Review finding: the mobile buyer dashboard keeps the active task, two-column status summary, recent record, and direct links visible without the prior dominant sidebar. The shared footer still contained generic brand language and must use the same practical wording.
+
+## Layout Repair Decisions
+
+- Remove all decorative image columns and large dark authentication panels when no useful local content occupies that space.
+- Keep public content inside one responsive working width with a consistent horizontal gutter; service pages use a short text-only heading instead of a full-bleed split hero.
+- Center account forms in a single compact panel and place role guidance inside the form only when it supports completing the task.
+- Keep dashboards as a narrow navigation rail plus a padded, width-limited work area. Tables, summaries, and task panels must align to the same inner edge.
+
+## Layout Repair Review
+
+- The sign-up screen now keeps the form in a single centered work panel, removing the unused dark half-screen and placing every required field inside an easy-to-scan reading width.
+- The buyer dashboard now has a visible inner gutter around the header, task panel, activity controls, summaries, record table, and direct links; its workspace content no longer touches the sidebar or browser edge.

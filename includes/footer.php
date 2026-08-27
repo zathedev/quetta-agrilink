@@ -3,7 +3,7 @@
 <footer class="site-footer">
     <div class="site-container footer-grid">
         <div>
-            <a class="brand brand-footer" href="<?= e(app_url()) ?>"><img src="/manus-storage/quetta-agrilink-mark_a4b760ba.png" alt="" width="42" height="42"><span><strong>Quetta Agri</strong><b>Link</b></span></a>
+            <a class="brand brand-footer" href="<?= e(app_url()) ?>"><span class="brand-mark" aria-hidden="true"></span><span><strong>Quetta Agri</strong><b>Link</b></span></a>
             <p>Local produce, storage and transport records.</p>
         </div>
         <div><h2>Marketplace</h2><a href="<?= e(app_url('marketplace/index.php')) ?>">Browse produce</a><a href="<?= e(app_url('market-prices.php')) ?>">Market prices</a><a href="<?= e(app_url('how-it-works.php')) ?>">How it works</a></div>

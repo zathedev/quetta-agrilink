@@ -248,3 +248,10 @@
 - [x] Replace the eyebrow/kicker visual treatment and generic copy with concise, practical local-market language that explains the next action plainly.
 - [x] Redesign the shared public shell, account entry, dashboard navigation, status summaries, and record surfaces around simple task flows while retaining the Orchard Ledger color foundations.
 - [x] Validate desktop/mobile usability, preserved role/ownership boundaries, local PHP/XAMPP rendering, and existing workflow actions before committing and pushing the redesign. The Quetta Workbench redesign was checked through a clean local database with the full migration set, real public and authenticated buyer/administrator requests, and two 24-snapshot desktop/mobile suites. All rendered documents removed eyebrow and desk-kicker elements, while local test database, credentials, screenshots, cookies, server, and response files were removed before release quality checks.
+
+## Layout Regression Repair
+
+- [x] Restore consistent inner spacing for every public, account, and role-workspace page so content never sits against the browser or panel edges.
+- [x] Replace the oversized authentication split screens and empty public hero/image columns with compact, purposeful layouts that keep forms and records near the visible reading area.
+- [x] Simplify public results and empty-state layouts so filters, data registers, and next actions use the available width without large inactive areas.
+- [x] Verify desktop and mobile authoritative PHP rendering from the actual local XAMPP-style server, preserving form, role, and record workflows before committing and pushing. The repair was checked with a clean schema and full ordered migration set, a 30-snapshot desktop/mobile authoritative PHP suite covering public, account, service, support, buyer, and administrator pages, and full PHP/JavaScript/type/build checks. The local CSS brand mark removed the prior remote-image dependency. The temporary database, account, screenshots, browser state, server, logs, and configuration override were removed after validation.

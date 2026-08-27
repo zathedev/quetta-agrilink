@@ -146,7 +146,7 @@ async function capture(cdp, sessionId, definition, records) {
   const check = await evaluate(cdp, sessionId, `(() => ({ selector: Boolean(document.querySelector(${JSON.stringify(definition.selector)})), text: document.body.innerText.includes(${JSON.stringify(definition.text)}), path: location.pathname, title: document.title }))()`);
   const expectedPath = new URL(definition.path, baseUrl).pathname;
   if (!check?.selector || !check?.text || check.path !== expectedPath) {
-    throw new Error(`Capture assertion failed for ${definition.name}.`);
+    throw new Error(`Capture assertion failed for ${definition.name}: ${JSON.stringify({ expectedPath, check })}`);
   }
   const screenshot = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: true, fromSurface: true }, sessionId);
   const image = Buffer.from(screenshot.data, "base64");
@@ -175,13 +175,19 @@ const desktop = { width: 1440, height: 1200, mobile: false };
 const mobile = { width: 403, height: 874, mobile: true };
 const publicCaptures = [
   { name: "public-home-desktop", path: "", selector: ".desk-home", text: "Manage produce after harvest", viewport: desktop },
-  { name: "sign-in-desktop", path: "auth/login.php", selector: ".auth-page", text: "Sign in to your workspace", viewport: desktop },
+  { name: "sign-in-desktop", path: "auth/login.php", selector: ".auth-page", text: "Enter the email address", viewport: desktop },
+  { name: "sign-up-desktop", path: "auth/register.php", selector: ".auth-page", text: "Account details", viewport: desktop },
   { name: "marketplace-desktop", path: "marketplace/index.php", selector: ".market-layout", text: "Compare available produce", viewport: desktop },
+  { name: "storage-desktop", path: "storage/index.php", selector: ".service-hero", text: "Reserve the capacity", viewport: desktop },
+  { name: "transport-desktop", path: "transport/index.php", selector: ".service-hero", text: "Match the crop", viewport: desktop },
   { name: "market-prices-desktop", path: "market-prices.php", selector: ".price-register-layout", text: "Reference, not a quote", viewport: desktop },
   { name: "how-it-works-desktop", path: "how-it-works.php", selector: ".guide-workflow-section", text: "Each handover makes the next decision more specific", viewport: desktop },
   { name: "about-desktop", path: "about.php", selector: ".about-context-section", text: "One platform for everything after harvest", viewport: desktop },
   { name: "contact-desktop", path: "contact.php", selector: ".contact-context-section", text: "Keep operational support inside the workspace", viewport: desktop },
   { name: "public-home-mobile", path: "", selector: ".desk-home", text: "Manage produce after harvest", viewport: mobile },
+  { name: "sign-up-mobile", path: "auth/register.php", selector: ".auth-page", text: "Account details", viewport: mobile },
+  { name: "storage-mobile", path: "storage/index.php", selector: ".service-hero", text: "Reserve the capacity", viewport: mobile },
+  { name: "transport-mobile", path: "transport/index.php", selector: ".service-hero", text: "Match the crop", viewport: mobile },
   { name: "market-prices-mobile", path: "market-prices.php", selector: ".price-register-layout", text: "Reference, not a quote", viewport: mobile },
   { name: "how-it-works-mobile", path: "how-it-works.php", selector: ".guide-workflow-section", text: "Each handover makes the next decision more specific", viewport: mobile },
 ];

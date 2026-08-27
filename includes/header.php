@@ -48,7 +48,7 @@ $stylesheet_url = static function (string $relativePath): string {
 <header class="site-header">
     <div class="site-container header-inner">
         <a class="brand" href="<?= e(app_url()) ?>" aria-label="Quetta AgriLink home">
-            <img src="/manus-storage/quetta-agrilink-mark_a4b760ba.png" alt="" width="42" height="42">
+            <span class="brand-mark" aria-hidden="true"></span>
             <span><strong>Quetta</strong><b>AgriLink</b></span>
         </a>
         <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" data-menu-toggle>Menu</button>
