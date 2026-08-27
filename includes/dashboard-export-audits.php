@@ -13,6 +13,22 @@ function dashboard_summary_export_audit_roles(): array
     ];
 }
 
+function dashboard_summary_export_audit_event_ranges(): array
+{
+    return ['today' => 'Today', 'last_7_days' => 'Last 7 days', 'this_month' => 'This month'];
+}
+
+function dashboard_summary_export_audit_event_range_bounds(string $preset): ?array
+{
+    $today = new DateTimeImmutable('today');
+    return match ($preset) {
+        'today' => ['from' => $today, 'to' => $today],
+        'last_7_days' => ['from' => $today->modify('-6 days'), 'to' => $today],
+        'this_month' => ['from' => $today->modify('first day of this month'), 'to' => $today],
+        default => null,
+    };
+}
+
 function dashboard_summary_export_audit_sorts(): array
 {
     return [
@@ -40,10 +56,20 @@ function dashboard_summary_export_audit_filters(array $query): array
     if (!array_key_exists($role, dashboard_summary_export_audit_roles())) {
         $role = '';
     }
-    $exportedFrom = $parseDate($query['exported_from'] ?? null);
-    $exportedTo = $parseDate($query['exported_to'] ?? null);
-    if ($exportedFrom !== null && $exportedTo !== null && $exportedFrom > $exportedTo) {
-        [$exportedFrom, $exportedTo] = [$exportedTo, $exportedFrom];
+    $eventRange = normalize_text($query['event_range'] ?? '', 32);
+    if (!array_key_exists($eventRange, dashboard_summary_export_audit_event_ranges())) {
+        $eventRange = '';
+    }
+    $eventRangeBounds = dashboard_summary_export_audit_event_range_bounds($eventRange);
+    if ($eventRangeBounds !== null) {
+        $exportedFrom = $eventRangeBounds['from'];
+        $exportedTo = $eventRangeBounds['to'];
+    } else {
+        $exportedFrom = $parseDate($query['exported_from'] ?? null);
+        $exportedTo = $parseDate($query['exported_to'] ?? null);
+        if ($exportedFrom !== null && $exportedTo !== null && $exportedFrom > $exportedTo) {
+            [$exportedFrom, $exportedTo] = [$exportedTo, $exportedFrom];
+        }
     }
     $summaryFrom = $parseDate($query['summary_from'] ?? null);
     $summaryTo = $parseDate($query['summary_to'] ?? null);
@@ -62,6 +88,7 @@ function dashboard_summary_export_audit_filters(array $query): array
         'exported_to' => $exportedTo,
         'summary_from' => $summaryFrom,
         'summary_to' => $summaryTo,
+        'event_range' => $eventRange,
         'sort' => $sort,
         'page' => (int) $page,
     ];
@@ -73,8 +100,9 @@ function dashboard_summary_export_audit_query(array $filters, array $overrides =
     return http_build_query(array_filter([
         'account' => ($filters['account'] ?? '') !== '' ? $filters['account'] : null,
         'role' => ($filters['role'] ?? '') !== '' ? $filters['role'] : null,
-        'exported_from' => ($filters['exported_from'] ?? null)?->format('Y-m-d'),
-        'exported_to' => ($filters['exported_to'] ?? null)?->format('Y-m-d'),
+        'event_range' => ($filters['event_range'] ?? '') !== '' ? $filters['event_range'] : null,
+        'exported_from' => ($filters['event_range'] ?? '') === '' ? ($filters['exported_from'] ?? null)?->format('Y-m-d') : null,
+        'exported_to' => ($filters['event_range'] ?? '') === '' ? ($filters['exported_to'] ?? null)?->format('Y-m-d') : null,
         'summary_from' => ($filters['summary_from'] ?? null)?->format('Y-m-d'),
         'summary_to' => ($filters['summary_to'] ?? null)?->format('Y-m-d'),
         'sort' => ($filters['sort'] ?? 'exported_at_desc') !== 'exported_at_desc' ? $filters['sort'] : null,
