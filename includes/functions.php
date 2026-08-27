@@ -300,7 +300,8 @@ function record_account_contact_verification(int $userId, int $administratorId, 
 function contact_review_register_filters(array $query): array
 {
     $search = normalize_text($query['search'] ?? '', 80);
-    $status = in_array($query['status'] ?? 'all', ['all', 'needs_review', 'email_reviewed', 'phone_reviewed', 'fully_reviewed'], true) ? (string) $query['status'] : 'all';
+    $statusInput = (string) ($query['status'] ?? 'all');
+    $status = in_array($statusInput, ['all', 'needs_review', 'email_reviewed', 'phone_reviewed', 'fully_reviewed'], true) ? $statusInput : 'all';
     $reason = normalize_text($query['reason'] ?? '', 48);
     if (!array_key_exists($reason, contact_review_reason_catalog())) {
         $reason = '';

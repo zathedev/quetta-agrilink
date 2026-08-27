@@ -186,3 +186,9 @@
 - [x] Align shared authenticated workspace record tables, action panels, and attention cues with the approved Orchard Ledger operational hierarchy.
 - [x] Align role-specific listing, storage, and transport detail screens with the same account-scoped record treatment without changing workflow permissions.
 - [x] Validate authenticated local PHP dashboard and detail rendering, then commit and push the completed parity update.
+
+## Local PHP Administrator Register Parity Follow-through
+
+- [x] Align the authoritative PHP administrator dashboard, audit registers, filters, and export controls with the Orchard Ledger management-record hierarchy.
+- [x] Align protected administrator recovery, contact-review, and attachment surfaces with responsive audit-record treatment while preserving role gates and sensitive-data exclusions.
+- [x] Validate authenticated local PHP administrator-register rendering and protected export boundaries, then commit and push the completed parity update.
