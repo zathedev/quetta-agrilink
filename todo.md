@@ -192,3 +192,9 @@
 - [x] Align the authoritative PHP administrator dashboard, audit registers, filters, and export controls with the Orchard Ledger management-record hierarchy.
 - [x] Align protected administrator recovery, contact-review, and attachment surfaces with responsive audit-record treatment while preserving role gates and sensitive-data exclusions.
 - [x] Validate authenticated local PHP administrator-register rendering and protected export boundaries, then commit and push the completed parity update.
+
+## Local PHP Notification and Saved-Filter Parity Follow-through
+
+- [x] Align the authoritative PHP notifications register, local delivery preferences, and read-state controls with the Orchard Ledger operational record hierarchy.
+- [x] Align account-scoped saved marketplace-filter management with the matching brief, status, and action treatment without changing matching or default-filter behavior.
+- [x] Validate authenticated local PHP notification and saved-filter rendering, then commit and push the completed parity update.
