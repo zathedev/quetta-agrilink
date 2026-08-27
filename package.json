@@ -9,6 +9,7 @@
     "start": "NODE_ENV=production node dist/index.js",
     "preview": "vite preview --host",
     "check": "tsc --noEmit",
+    "visual:local": "node scripts/local-visual-regression.mjs",
     "format": "prettier --write ."
   },
   "dependencies": {

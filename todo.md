@@ -203,5 +203,7 @@
 
 - [x] Maintain `remaining-work.md` as the active, remove-on-completion register for all unfinished work.
 - [x] Bundle the Orchard Ledger font families locally for offline XAMPP operation while retaining the existing type hierarchy.
-- [ ] Add repeatable local-browser visual-regression snapshots for representative PHP/XAMPP surfaces.
+- [x] Add an opt-in local-browser visual-regression runner for the authoritative PHP/XAMPP application without changing production routes or data.
+- [x] Capture and verify deterministic baseline snapshots for representative public, authentication, workspace, and administrator PHP surfaces.
+- [x] Document the local visual-regression command, prerequisite services, and generated-artifact handling for XAMPP operators.
 - [ ] Complete the remaining PHP market-price and informational-guide visual-parity pass, then run final XAMPP acceptance validation.

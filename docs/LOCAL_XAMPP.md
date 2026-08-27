@@ -36,6 +36,22 @@ After pulling a visual update, refresh the browser with **Ctrl+F5** once. The PH
 
 The required **DM Sans**, **DM Mono**, and **Playfair Display** font variants are bundled in `assets/fonts/`, with their Open Font License notices alongside them. The header loads `assets/css/local-fonts.css` before the application styles, so the deployable PHP/XAMPP interface keeps its established typography without requiring access to Google Fonts. Keep this directory when copying or updating the project folder.
 
+### Local browser visual regression
+
+The repository includes an **opt-in** Chromium capture command for the authoritative PHP/XAMPP interface. It records deterministic desktop and mobile PNG snapshots of the public home, sign-in, marketplace, buyer workspace, and administrator workspace into `artifacts/visual-regression/`. The generated screenshots and manifest are intentionally ignored by Git so that local browser output does not become application content.
+
+Start Apache and MySQL first, confirm the imported local database contains the documented development accounts, then set an explicit password and authorization flag. The runner never submits marketplace, recovery, or administrator-management forms. It must sign in to capture protected workspaces, so a run creates the normal login audit entries and updates `last_login_at` for the supplied local accounts. Use a disposable development database when you do not want those local audit changes.
+
+```powershell
+$env:VISUAL_REGRESSION_PASSWORD = 'AgriLinkDemo2026!'
+$env:VISUAL_REGRESSION_ALLOW_AUTH = '1'
+$env:CHROMIUM_BIN = 'C:\Program Files\Google\Chrome\Application\chrome.exe' # only if chromium is not on PATH
+pnpm visual:local -- --base-url http://localhost/quetta-agrilink/ --out artifacts/visual-regression/baseline
+pnpm visual:local -- --base-url http://localhost/quetta-agrilink/ --out artifacts/visual-regression/current --compare artifacts/visual-regression/baseline
+```
+
+The second command exits unsuccessfully when a PNG differs from its same-machine baseline. To avoid false differences, the runner normalizes the live account-activity text inside protected dashboard screenshots; it still captures the full dashboard structure, status cards, navigation, task framing, and protected page layout. Review the image pair before deciding whether the interface changed intentionally; refresh the baseline only after that review. You can override `VISUAL_REGRESSION_BUYER_EMAIL` and `VISUAL_REGRESSION_ADMIN_EMAIL` for alternative local development accounts.
+
 ### Local password recovery
 
 Password recovery deliberately stays offline for the local XAMPP deployment. A user opens **Sign in → Need to reset your password?** and receives the same confirmation message whether or not an account exists. An authorized administrator verifies the requester through the organisation’s approved local process, records a short verification note, then opens **Workspace → Password recovery** to issue a one-time link. The note must never contain a password, reset link, or token. The link expires after 60 minutes, can be revoked before use, stores only a token hash in MySQL, and must never be copied into unverified channels.
