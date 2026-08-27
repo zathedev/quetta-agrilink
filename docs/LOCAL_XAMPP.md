@@ -109,7 +109,7 @@ After recording an offline verification note, an administrator may open **Print 
 | Saved cold-storage search | A signed-in user can save, apply, and remove only their own cold-storage criteria. |
 | Saved cold-storage search editing | A signed-in user can rename and update only an owned saved storage search; another account’s identifier is rejected. |
 | Dashboard CSV summary | A signed-in role can export only its own selected-period factual dashboard summary as CSV; the account audit trail records role and selected date context, not exported values. |
-| Dashboard export audit | Only an administrator can filter dashboard-summary export audit events by account, role, export time, or selected summary period; the register never displays exported values. |
+| Dashboard export audit | Only an administrator can filter dashboard-summary export audit events by account, role, export-event date range, or selected summary period; the table has bounded filter-preserving pages and allowlisted column sorting, and its filtered CSV contains only the displayed accountability columns. |
 | Default listing alerts | A signed-in user can choose one default filter; a farmer publication that matches its criteria creates an in-app alert. Users can enable the optional header bell after a browser interaction. |
 | Listing operations | A farmer can amend an owned record’s available quantity above its minimum order, manage its lifecycle, and export its own listing activity history as CSV. |
 | Notification register | A signed-in user can filter only their own alerts by type or read state, then mark an individual alert or the full unread register as read. |
