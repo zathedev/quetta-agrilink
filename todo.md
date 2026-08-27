@@ -162,3 +162,9 @@
 - [x] Align the authoritative PHP marketplace filters, result records, and responsive marketplace presentation with the Orchard Ledger public design language.
 - [x] Align the authoritative PHP listing-detail page and offer surface with the matching typography, information hierarchy, and paper-led record treatment.
 - [x] Validate local XAMPP public-page rendering and preview coherence, then commit and push the completed parity update.
+
+## Local PHP Service-Surface Parity Follow-through
+
+- [x] Align the authoritative PHP cold-storage directory and request experience with the Orchard Ledger service-page visual language.
+- [x] Align the authoritative PHP transport directory and request experience with the matching service-record hierarchy and responsive treatment.
+- [x] Validate local XAMPP service-page rendering and preview coherence, then commit and push the completed parity update.
