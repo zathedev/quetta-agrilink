@@ -158,6 +158,8 @@ The local configuration defaults to an intentionally **unconfigured** support ch
 
 Before moving the authoritative PHP/XAMPP application beyond a local demonstration, complete [`docs/PRODUCTION_RELEASE_CHECKLIST.md`](docs/PRODUCTION_RELEASE_CHECKLIST.md). It is deliberately a release gate rather than a publishing instruction: the current unconfigured support channel, development credentials, and absence of approved local market data prevent a public launch until their responsible owners resolve them.
 
+Named local operators can replace the documented development credentials through the administrator-only transition register after its migration is applied. See [`docs/LOCAL_OPERATOR_TRANSITION.md`](docs/LOCAL_OPERATOR_TRANSITION.md); the process records accountable changes without showing or exporting passwords or recovery secrets.
+
 ## GitHub workflow
 
 This repository is configured for a private GitHub remote. Each implementation increment is committed with a focused, readable conventional commit and pushed to the `main` branch. The live project history can be reviewed at [github.com/zathedev/quetta-agrilink](https://github.com/zathedev/quetta-agrilink).

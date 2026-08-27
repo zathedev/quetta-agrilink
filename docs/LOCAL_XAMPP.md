@@ -20,8 +20,9 @@ Quetta AgriLink’s deployable application is the PHP/MySQL package in this repo
 | 12 | Run `database/migrations/20260826_add_dashboard_activity_presets.sql` once. | Each signed-in account can save and reuse only its own dashboard activity date ranges. |
 | 13 | Run `database/migrations/20260826_add_user_notification_preferences.sql` once. | Each signed-in account can set local marketplace-match and optional browser-chime preferences. |
 | 14 | Run `database/migrations/20260827_remove_fictional_demo_data.sql` once only when upgrading an earlier installation that still contains the original fictional records. | Known fictional profiles, listings, facilities, vehicles, transactions, prices, notifications, and related activity are removed while documented user credentials and reference rows remain. |
-| 15 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
-| 16 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
+| 15 | Run `database/migrations/20260827_add_operator_account_transitions.sql` once. | Administrators can create named local operators and archive only the documented development accounts through a protected audit register. |
+| 16 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
+| 17 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
 
 ## Local security and maintenance
 
@@ -41,6 +42,10 @@ The required **DM Sans**, **DM Mono**, and **Playfair Display** font variants ar
 
 Fresh imports now include only the role, location, and produce-category references needed to operate the application, plus the five documented development account credentials. They do not include fictional listings, market prices, facilities, vehicles, orders, transport requests, messages, announcements, notifications, profiles, or audit activity. If an earlier local database still contains those original records, run `database/migrations/20260827_remove_fictional_demo_data.sql` **after** the preceding migrations. The cleanup is scoped to the known development accounts and their dependent demo activity; it does not delete the user credentials, roles, locations, or categories. Do not apply it if you deliberately created records through a documented demo account that you want to retain.
 
+### Replacing development credentials
+
+Use the administrator-only **Local operators** workspace entry after importing `database/migrations/20260827_add_operator_account_transitions.sql`. It creates named, role-scoped operator accounts and archives only the documented development credentials after their replacement has been verified. The transition register never displays or exports passwords, password hashes, reset links, selectors, tokens, or recovery data. Follow [`LOCAL_OPERATOR_TRANSITION.md`](LOCAL_OPERATOR_TRANSITION.md) before archiving any development account.
+
 ### Local browser visual regression
 
 The repository includes an **opt-in** Chromium capture command for the authoritative PHP/XAMPP interface. It records deterministic desktop and mobile PNG snapshots of the public home, sign-in, marketplace, buyer workspace, and administrator workspace into `artifacts/visual-regression/`. The generated screenshots and manifest are intentionally ignored by Git so that local browser output does not become application content.
@@ -55,7 +60,7 @@ pnpm visual:local -- --base-url http://localhost/quetta-agrilink/ --out artifact
 pnpm visual:local -- --base-url http://localhost/quetta-agrilink/ --out artifacts/visual-regression/current --compare artifacts/visual-regression/baseline
 ```
 
-The second command exits unsuccessfully when a PNG differs from its same-machine baseline. To avoid false differences, the runner normalizes the live account-activity text inside protected dashboard screenshots; it still captures the full dashboard structure, status cards, navigation, task framing, and protected page layout. Review the image pair before deciding whether the interface changed intentionally; refresh the baseline only after that review. You can override `VISUAL_REGRESSION_BUYER_EMAIL` and `VISUAL_REGRESSION_ADMIN_EMAIL` for alternative local development accounts.
+The second command exits unsuccessfully when a PNG differs from its same-machine baseline. To avoid false differences, the runner normalizes the live account-activity text inside protected dashboard screenshots; it still captures the full dashboard structure, status cards, navigation, task framing, and protected page layout. Review the image pair before deciding whether the interface changed intentionally; refresh the baseline only after that review. You can override `VISUAL_REGRESSION_BUYER_EMAIL` and `VISUAL_REGRESSION_ADMIN_EMAIL` for alternative local development accounts. When those accounts use different passwords, set `VISUAL_REGRESSION_BUYER_PASSWORD` and `VISUAL_REGRESSION_ADMIN_PASSWORD`; otherwise, the existing shared `VISUAL_REGRESSION_PASSWORD` is used for both.
 
 ### Final controlled local acceptance
 

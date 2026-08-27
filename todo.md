@@ -227,3 +227,9 @@
 - [x] Draft an ordered release-gate checklist covering XAMPP deployment, database backup and migration, configuration, credentials, support ownership, data provenance, cache refresh, and acceptance verification.
 - [x] Add operator sign-off records for accountable release preparation, technical checks, operational readiness, and post-release verification.
 - [x] Validate the checklist against the authoritative PHP/XAMPP runbook and security boundaries, then remove the final backlog item after committing and pushing it.
+
+## Accountable Operators, Local Market Data, and In-app Support
+
+- [x] Replace or disable development accounts through an accountable local-operator transition while retaining role boundaries and administrator auditability.
+- [ ] Add an administrator-managed local market-data import workflow with validation, source context, protected import history, and no fabricated data.
+- [ ] Add an in-app support and help-desk register that routes contact messages to the relevant role dashboards without email, SMS, SMTP, or external helpdesk delivery.

@@ -1,0 +1,48 @@
+<?php
+/** Orchard Ledger operator transition register: named local operators replace documented development credentials through an administrator-owned, password-safe audit trail. */
+declare(strict_types=1);
+
+require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/operator-accounts.php';
+require_once __DIR__ . '/../includes/workspace.php';
+
+$administrator = require_role(['admin']);
+$transitionsReady = operator_account_transitions_are_available();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+    try {
+        $action = (string) ($_POST['operator_action'] ?? '');
+        if ($action === 'create') {
+            $operatorId = create_local_operator_account((int) $administrator['id'], $_POST);
+            flash('success', 'Named operator account #' . $operatorId . ' is active. Give the temporary password to its owner through an approved local process, then require a profile review.');
+        } elseif ($action === 'archive_development') {
+            archive_development_account((int) $administrator['id'], (int) ($_POST['target_user_id'] ?? 0));
+            flash('success', 'The documented development account is archived. Its password was not displayed, copied, or exported.');
+        } else {
+            throw new RuntimeException('Choose a valid local operator transition.');
+        }
+    } catch (Throwable $exception) {
+        flash('error', $exception->getMessage());
+    }
+    redirect('admin/operator-accounts.php');
+}
+
+$roles = operator_transition_roles();
+$developmentAccounts = fetch_all('SELECT u.id, u.full_name, u.email, u.status, r.name AS role_name, r.slug AS role_slug FROM users u JOIN roles r ON r.id = u.role_id WHERE u.email LIKE :demo_domain ORDER BY u.id', ['demo_domain' => '%.demo@quettaagrilink.test']);
+$operators = fetch_all('SELECT u.id, u.full_name, u.email, u.phone, u.status, r.name AS role_name, u.created_at FROM users u JOIN roles r ON r.id = u.role_id WHERE u.email NOT LIKE :demo_domain ORDER BY u.status = "active" DESC, u.created_at DESC, u.id DESC', ['demo_domain' => '%.demo@quettaagrilink.test']);
+$transitions = $transitionsReady ? fetch_all('SELECT t.id, t.action, t.details, t.created_at, administrator.full_name AS administrator_name, created_user.full_name AS created_name, archived_user.full_name AS archived_name FROM operator_account_transitions t JOIN users administrator ON administrator.id = t.administrator_id LEFT JOIN users created_user ON created_user.id = t.created_user_id LEFT JOIN users archived_user ON archived_user.id = t.archived_user_id ORDER BY t.created_at DESC, t.id DESC LIMIT 24') : [];
+
+workspace_open('Local operator transition', 'operator_accounts');
+?>
+<section class="workspace-section operator-transition-intro"><div class="workspace-section-header"><div><p class="desk-kicker">Administrator release gate</p><h2>Replace development access with named local operators.</h2><p>Create a traceable role account, confirm it can sign in, then archive the matching development credential. Passwords are accepted only to create the new account; they are never displayed in the transition register, audit detail, export, or handover.</p></div></div><div class="operator-transition-rule"><strong>Current requirement</strong><span>Keep at least one active named administrator before archiving the development administrator.</span></div></section>
+
+<?php if (!$transitionsReady): ?><section class="workspace-section operator-transition-blocker"><h2>Transition register is not ready.</h2><p>Import <code>database/migrations/20260827_add_operator_account_transitions.sql</code>, then refresh this page. No transition can be recorded until the audit register exists.</p></section><?php else: ?>
+<section class="workspace-section operator-transition-create"><div class="workspace-section-header"><div><p class="desk-kicker">Step 1</p><h2>Create a named operator account</h2><p>Use an owned contact address and a temporary password delivered through an approved local process. Public registration does not create administrator accounts; this protected register does.</p></div></div><form class="form-grid operator-transition-form" method="post" autocomplete="off"><input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>"><input type="hidden" name="operator_action" value="create"><div class="form-field"><label for="operator-full-name">Full name</label><input id="operator-full-name" name="full_name" required maxlength="120"></div><div class="form-field"><label for="operator-email">Owned email address</label><input id="operator-email" name="email" type="email" required maxlength="190"></div><div class="form-field"><label for="operator-phone">Contact number</label><input id="operator-phone" name="phone" inputmode="tel" required maxlength="30"></div><div class="form-field"><label for="operator-role">Operational role</label><select id="operator-role" name="role" required><option value="">Choose a role</option><?php foreach ($roles as $role): ?><option value="<?= e($role['slug']) ?>"><?= e($role['name']) ?></option><?php endforeach; ?></select></div><div class="form-field"><label for="operator-password">Temporary password</label><input id="operator-password" name="password" type="password" autocomplete="new-password" required><span class="form-help">At least 10 characters, including a letter and a number. Do not store it in this register or send it through an unverified channel.</span></div><div class="form-actions"><button class="button button-primary" type="submit">Create named operator</button></div></form></section>
+<?php endif; ?>
+
+<section class="workspace-section operator-transition-register"><div class="workspace-section-header"><div><p class="desk-kicker">Step 2</p><h2>Archive documented development credentials</h2><p>Archive only after a named replacement account is active and its owner has verified access. The transition preserves the existing account record for audit history while blocking future sign-in.</p></div></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>Development account</th><th>Role</th><th>State</th><th>Transition</th></tr></thead><tbody><?php foreach ($developmentAccounts as $account): ?><tr><td><strong><?= e($account['full_name']) ?></strong><br><span class="muted"><?= e($account['email']) ?></span></td><td><?= e($account['role_name']) ?></td><td><span class="status-pill <?= e($account['status']) ?>"><?= e(ucfirst($account['status'])) ?></span></td><td><?php if ($transitionsReady && $account['status'] !== 'archived'): ?><form method="post" data-confirm="Archive this documented development account after confirming its named replacement can sign in?"><input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>"><input type="hidden" name="operator_action" value="archive_development"><input type="hidden" name="target_user_id" value="<?= (int) $account['id'] ?>"><button class="button button-outline" type="submit" <?= (int) $account['id'] === (int) $administrator['id'] ? 'disabled title="Sign in with a separate named administrator first"' : '' ?>>Archive development account</button></form><?php else: ?><span class="muted">No action available</span><?php endif; ?></td></tr><?php endforeach; ?></tbody></table></div></section>
+
+<section class="workspace-section operator-transition-register"><div class="workspace-section-header"><div><p class="desk-kicker">Named operator directory</p><h2>Accounts created for local operation</h2><p>These accounts are kept separate from the documented development credentials and must remain role-scoped.</p></div></div><div class="data-table-wrap"><table class="data-table"><thead><tr><th>Operator</th><th>Role</th><th>Contact</th><th>State</th><th>Created</th></tr></thead><tbody><?php if ($operators === []): ?><tr><td colspan="5">No named local operator accounts have been created.</td></tr><?php else: foreach ($operators as $operator): ?><tr><td><?= e($operator['full_name']) ?></td><td><?= e($operator['role_name']) ?></td><td><?= e($operator['email']) ?><br><span class="muted"><?= e($operator['phone']) ?></span></td><td><span class="status-pill <?= e($operator['status']) ?>"><?= e(ucfirst($operator['status'])) ?></span></td><td><?= e(date('j M Y', strtotime((string) $operator['created_at']))) ?></td></tr><?php endforeach; endif; ?></tbody></table></div></section>
+
+<section class="workspace-section operator-transition-register"><div class="workspace-section-header"><div><p class="desk-kicker">Protected transition history</p><h2>Who changed local access</h2><p>This register shows accountable identifiers and role context only. It never stores or displays passwords, password hashes, reset links, selectors, tokens, or recovery data.</p></div></div><?php if (!$transitionsReady): ?><p class="muted">Import the operator-transition migration before protected history can be recorded.</p><?php else: ?><div class="data-table-wrap"><table class="data-table"><thead><tr><th>When</th><th>Action</th><th>Administrator</th><th>Account</th></tr></thead><tbody><?php if ($transitions === []): ?><tr><td colspan="4">No local operator transitions have been recorded.</td></tr><?php else: foreach ($transitions as $transition): ?><tr><td><?= e(date('j M Y H:i', strtotime((string) $transition['created_at']))) ?></td><td><?= e($transition['action'] === 'operator_created' ? 'Named operator created' : 'Development account archived') ?></td><td><?= e($transition['administrator_name']) ?></td><td><?= e($transition['created_name'] ?? $transition['archived_name'] ?? 'Account record retained') ?></td></tr><?php endforeach; endif; ?></tbody></table></div><?php endif; ?></section>
+<?php workspace_close(); ?>

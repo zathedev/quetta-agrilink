@@ -29,8 +29,10 @@ if (!allowedHosts.has(baseUrl.hostname.toLowerCase())) {
 const buyerEmail = process.env.VISUAL_REGRESSION_BUYER_EMAIL || "buyer.demo@quettaagrilink.test";
 const administratorEmail = process.env.VISUAL_REGRESSION_ADMIN_EMAIL || "admin.demo@quettaagrilink.test";
 const password = process.env.VISUAL_REGRESSION_PASSWORD || "";
-if (process.env.VISUAL_REGRESSION_ALLOW_AUTH !== "1" || password === "") {
-  throw new Error("Set VISUAL_REGRESSION_ALLOW_AUTH=1 and VISUAL_REGRESSION_PASSWORD before capturing authenticated local workspaces.");
+const buyerPassword = process.env.VISUAL_REGRESSION_BUYER_PASSWORD || password;
+const administratorPassword = process.env.VISUAL_REGRESSION_ADMIN_PASSWORD || password;
+if (process.env.VISUAL_REGRESSION_ALLOW_AUTH !== "1" || buyerPassword === "" || administratorPassword === "") {
+  throw new Error("Set VISUAL_REGRESSION_ALLOW_AUTH=1 plus VISUAL_REGRESSION_PASSWORD, or role-specific buyer and administrator passwords, before capturing authenticated local workspaces.");
 }
 
 const browserCommand = process.env.CHROMIUM_BIN || "chromium";
@@ -153,10 +155,10 @@ async function capture(cdp, sessionId, definition, records) {
   records.push({ name: definition.name, file: fileName, path: definition.path, viewport: definition.viewport, title: check.title, bytes: image.length, sha256: sha256(image) });
 }
 
-async function authenticate(cdp, sessionId, email) {
+async function authenticate(cdp, sessionId, email, accountPassword) {
   await cdp.send("Network.clearBrowserCookies", {}, sessionId);
   await visit(cdp, sessionId, "auth/login.php", { width: 1440, height: 1200, mobile: false });
-  const result = await evaluate(cdp, sessionId, `(() => { const csrf = document.querySelector('input[name="_csrf"]')?.value; if (!csrf) throw new Error("Login CSRF token is unavailable."); const body = new URLSearchParams({ _csrf: csrf, email: ${JSON.stringify(email)}, password: ${JSON.stringify(password)} }); return fetch(location.href, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body, credentials: "same-origin" }).then((response) => ({ ok: response.ok, url: response.url })); })()`);
+  const result = await evaluate(cdp, sessionId, `(() => { const csrf = document.querySelector('input[name="_csrf"]')?.value; if (!csrf) throw new Error("Login CSRF token is unavailable."); const body = new URLSearchParams({ _csrf: csrf, email: ${JSON.stringify(email)}, password: ${JSON.stringify(accountPassword)} }); return fetch(location.href, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body, credentials: "same-origin" }).then((response) => ({ ok: response.ok, url: response.url })); })()`);
   if (!result?.ok || result.url.endsWith("auth/login.php")) {
     throw new Error(`Local authentication failed for ${email}. Confirm the local test database and VISUAL_REGRESSION_PASSWORD.`);
   }
@@ -190,6 +192,8 @@ const buyerCaptures = [
 const administratorCaptures = [
   { name: "administrator-workspace-desktop", path: "admin/dashboard.php", selector: ".workspace", text: "Administrator dashboard", viewport: desktop },
   { name: "administrator-workspace-mobile", path: "admin/dashboard.php", selector: ".workspace", text: "Administrator dashboard", viewport: mobile },
+  { name: "local-operator-transition-desktop", path: "admin/operator-accounts.php", selector: ".operator-transition-intro", text: "Create a named operator account", viewport: desktop },
+  { name: "local-operator-transition-mobile", path: "admin/operator-accounts.php", selector: ".operator-transition-intro", text: "Create a named operator account", viewport: mobile },
 ];
 
 await mkdir(outputDirectory, { recursive: true });
@@ -207,9 +211,9 @@ try {
 
   const records = [];
   for (const definition of publicCaptures) await capture(cdp, sessionId, definition, records);
-  await authenticate(cdp, sessionId, buyerEmail);
+  await authenticate(cdp, sessionId, buyerEmail, buyerPassword);
   for (const definition of buyerCaptures) await capture(cdp, sessionId, definition, records);
-  await authenticate(cdp, sessionId, administratorEmail);
+  await authenticate(cdp, sessionId, administratorEmail, administratorPassword);
   for (const definition of administratorCaptures) await capture(cdp, sessionId, definition, records);
 
   const comparison = [];
