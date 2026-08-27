@@ -174,3 +174,9 @@
 - [x] Align the authoritative PHP sign-in experience with the Orchard Ledger authentication hierarchy, typography, and responsive treatment.
 - [x] Align the authoritative PHP registration experience with the same account-entry language while preserving validation and role selection behavior.
 - [x] Validate local XAMPP authentication-page rendering and preview coherence, then commit and push the completed parity update.
+
+## Local PHP Recovery and Profile-Surface Parity Follow-through
+
+- [x] Align the authoritative PHP password-recovery request and completion surfaces with the Orchard Ledger account-access hierarchy while preserving generic recovery responses and offline reset safeguards.
+- [x] Align the authoritative PHP profile-management surface with the matching account-record typography, contact-review context, and responsive treatment.
+- [x] Validate local XAMPP recovery and profile rendering, then commit and push the completed parity update.
