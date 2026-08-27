@@ -124,3 +124,51 @@ Controls are grouped by intent, inline validation explains recovery, filter chip
 ### Typography refinement
 
 Noto Serif stays for brand moments and selected page headings, capped to a calm 42–48px desktop range. Noto Sans becomes the dominant operational face, with 16px body copy, 14px labels, high-contrast form text, and clear section labels. Italics are removed from functional screens.
+
+## Redesign Decision — Quetta Workbench
+
+### Three candidate approaches
+
+| Theme Name | Very Brief Intro | Probability |
+|---|---|---:|
+| Quetta Workbench | A quiet local-market work tool that puts one real task, readable records, and short language ahead of decorative framing. | 0.04 |
+| Civic Service Desk | A public-service-inspired system of simple panels and unambiguous steps, built for first-time users. | 0.07 |
+| Field Notebook | A practical, tactile record book with calm paper surfaces and clear handwritten-scale emphasis. | 0.02 |
+
+### Chosen approach: Quetta Workbench
+
+**Design Movement.** Swiss service design and practical regional-market signage replace the previous editorial-commerce emphasis. The product should read as an ordinary working tool, not as a branded concept page.
+
+**Core Principles.** Every screen names the current task in a plain heading, shows one primary action, keeps related controls together, and moves supporting details below the working record. Navigation is short and consistent. Tables, forms, and status rows use familiar office-tool patterns rather than ornamental cards.
+
+**Color Philosophy.** Retain Quetta Canopy as the ownership and action color, but move it out of large dark surfaces. Pale mineral backgrounds, white work panels, charcoal text, and a single restrained clay accent make the interface lighter, calmer, and easier to scan.
+
+**Layout Paradigm.** Public pages use a short task bar followed by a single primary work area. Authenticated pages use a slim light navigation rail, a compact page bar, and stacked work panels. Dashboards lead with an actionable queue and simple numeric strips; large introductory blocks, decorative hero cards, and repeated explanatory bands are removed.
+
+**Signature Elements.** A small green action marker identifies the active task; one-pixel rules separate records; and compact status chips give state meaning without large colored containers. These motifs must remain subtle and functional.
+
+**Interaction Philosophy.** Each click should answer a practical question: where to go, what requires attention, or what happens next. Forms give labels, a short helper sentence only where needed, and one concrete submit label. Hover and motion are restrained; keyboard focus stays prominent.
+
+**Animation.** Use only 120–160ms opacity and transform feedback on buttons and menus. No entrance reveals, parallax, pulsing, or decorative motion. Respect reduced-motion preferences.
+
+**Typography System.** DM Sans is the default UI face for all headings, records, forms, and actions. DM Mono is reserved for dates, references, and compact metadata. Playfair Display remains only in the existing brand wordmark; it must not lead operational pages. Page titles range from 28–36px, section titles from 18–22px, and body text defaults to 14–16px.
+
+**Brand Essence.** Quetta AgriLink is the local working place for growers and trade partners to manage produce, storage, transport, and support. Personality: **clear, practical, dependable**.
+
+**Brand Voice.** Use short verbs, familiar nouns, and direct outcomes. Headlines say what a person can do, and helper text tells them only what is needed. Examples: “Review new storage requests.” and “Add a price record from an approved source.” Generic slogans, development language, and fabricated reassurance are prohibited.
+
+**Wordmark & Logo.** Keep the existing leaf-route mark and two-line Quetta AgriLink wordmark, but present it as a compact navigation anchor—not a dominant decorative feature.
+
+**Signature Brand Color.** Quetta Canopy — `#1D4A36` — is reserved for active navigation, primary actions, and meaningful data emphasis.
+
+## Quetta Workbench Style Decisions
+
+- Remove every rendered `.eyebrow` and `.desk-kicker` label from authoritative PHP pages; do not merely hide them with CSS.
+- Use plain-language page titles and compact helper text; keep explanatory paragraphs to one or two sentences.
+- Replace dark, dominant workspace rails with light navigation and a clear active task marker.
+- Keep one primary task panel per page above supporting records and avoid large decorative hero treatments on operational screens.
+- Use DM Sans in operational and account screens; reserve Playfair only for the fixed brand wordmark.
+- Review finding: the local PHP home capture showed that the former remote image path can render as an empty dark block in an XAMPP context. The public entry panel must communicate through useful local-work context without relying on a remote hero image.
+- Review finding: the light workspace rail, single primary action, collapsed supporting activity, direct metric strip, and simpler dashboard titles materially reduce the former dark, dense dashboard treatment and remain the direction for all role pages.
+- Review finding: the administrator dashboard retains a scan-friendly record table and compact task bar even with its larger navigation set. Remaining guidance copy should be reduced to short record-specific sentences rather than editorial explanations.
+- Review finding: the mobile buyer dashboard keeps the active task, two-column status summary, recent record, and direct links visible without the prior dominant sidebar. The shared footer still contained generic brand language and must use the same practical wording.

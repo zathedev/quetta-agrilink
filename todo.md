@@ -241,3 +241,10 @@
 ## Notification Register Warning Repair
 
 - [x] Guard the optional `state` query parameter in the local notification register so opening `notifications.php` without a filter cannot emit an undefined-array-key warning. Local HTTP validation confirmed unfiltered, valid-filter, and invalid-filter notification requests render without PHP warnings; the isolated database, account, cookies, server, and response artifacts were removed afterward.
+
+## Practical Local-Market Experience Redesign
+
+- [x] Audit every authoritative public, sign-in, registration, and role-workspace journey for unnecessary density, AI-styled copy, confusing hierarchy, and complex dashboard navigation.
+- [x] Replace the eyebrow/kicker visual treatment and generic copy with concise, practical local-market language that explains the next action plainly.
+- [x] Redesign the shared public shell, account entry, dashboard navigation, status summaries, and record surfaces around simple task flows while retaining the Orchard Ledger color foundations.
+- [x] Validate desktop/mobile usability, preserved role/ownership boundaries, local PHP/XAMPP rendering, and existing workflow actions before committing and pushing the redesign. The Quetta Workbench redesign was checked through a clean local database with the full migration set, real public and authenticated buyer/administrator requests, and two 24-snapshot desktop/mobile suites. All rendered documents removed eyebrow and desk-kicker elements, while local test database, credentials, screenshots, cookies, server, and response files were removed before release quality checks.

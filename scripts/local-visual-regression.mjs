@@ -174,14 +174,14 @@ async function stopBrowser(browser) {
 const desktop = { width: 1440, height: 1200, mobile: false };
 const mobile = { width: 403, height: 874, mobile: true };
 const publicCaptures = [
-  { name: "public-home-desktop", path: "", selector: ".desk-home", text: "Choose the next step", viewport: desktop },
-  { name: "sign-in-desktop", path: "auth/login.php", selector: ".auth-page", text: "Open your workspace", viewport: desktop },
+  { name: "public-home-desktop", path: "", selector: ".desk-home", text: "Manage produce after harvest", viewport: desktop },
+  { name: "sign-in-desktop", path: "auth/login.php", selector: ".auth-page", text: "Sign in to your workspace", viewport: desktop },
   { name: "marketplace-desktop", path: "marketplace/index.php", selector: ".market-layout", text: "Compare available produce", viewport: desktop },
   { name: "market-prices-desktop", path: "market-prices.php", selector: ".price-register-layout", text: "Reference, not a quote", viewport: desktop },
   { name: "how-it-works-desktop", path: "how-it-works.php", selector: ".guide-workflow-section", text: "Each handover makes the next decision more specific", viewport: desktop },
   { name: "about-desktop", path: "about.php", selector: ".about-context-section", text: "One platform for everything after harvest", viewport: desktop },
   { name: "contact-desktop", path: "contact.php", selector: ".contact-context-section", text: "Keep operational support inside the workspace", viewport: desktop },
-  { name: "public-home-mobile", path: "", selector: ".desk-home", text: "Choose the next step", viewport: mobile },
+  { name: "public-home-mobile", path: "", selector: ".desk-home", text: "Manage produce after harvest", viewport: mobile },
   { name: "market-prices-mobile", path: "market-prices.php", selector: ".price-register-layout", text: "Reference, not a quote", viewport: mobile },
   { name: "how-it-works-mobile", path: "how-it-works.php", selector: ".guide-workflow-section", text: "Each handover makes the next decision more specific", viewport: mobile },
 ];

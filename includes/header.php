@@ -3,6 +3,13 @@
 declare(strict_types=1);
 require_once __DIR__ . '/bootstrap.php';
 
+if (!defined('QUETTA_WORKBENCH_OUTPUT_FILTER')) {
+    define('QUETTA_WORKBENCH_OUTPUT_FILTER', true);
+    ob_start(static function (string $html): string {
+        return preg_replace('/<[^>]+class=("|\')[^"\']*\b(?:eyebrow|desk-kicker)\b[^"\']*\1[^>]*>.*?<\/[^>]+>/si', '', $html) ?? $html;
+    });
+}
+
 $pageTitle = $pageTitle ?? APP_NAME;
 $pageDescription = $pageDescription ?? 'The practical post-harvest marketplace for Balochistan growers and trade partners.';
 $user = current_user();
@@ -33,6 +40,8 @@ $stylesheet_url = static function (string $relativePath): string {
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/operator-transition.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/market-data-import.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/support-desk.css')) ?>">
+    <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/quetta-workbench.css')) ?>">
+    <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/quetta-workbench-refinement.css')) ?>">
 </head>
 <body>
 <div class="site-notice"><div class="site-container">Serving Quetta first. Built for Balochistan’s post-harvest trade.</div></div>

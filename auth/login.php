@@ -1,39 +1,19 @@
 <?php
-/** Market Desk sign-in: clear account orientation and a focused secure return to role-scoped work. */
+/** Quetta Workbench account entry: direct sign-in instructions and a compact secure form. */
 declare(strict_types=1);
 require_once __DIR__ . '/../includes/bootstrap.php';
-
-if (is_logged_in()) {
-    redirect(dashboard_path(current_user()['role_slug']));
-}
-
+if (is_logged_in()) { redirect(dashboard_path(current_user()['role_slug'])); }
 $error = null;
 $email = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();
     $email = trim((string) ($_POST['email'] ?? ''));
     [$success, $message, $data] = authenticate($email, (string) ($_POST['password'] ?? ''));
-    if ($success) {
-        flash('success', 'You are signed in.');
-        redirect(dashboard_path($data['role']));
-    }
+    if ($success) { flash('success', 'You are signed in.'); redirect(dashboard_path($data['role'])); }
     $error = $message;
 }
 $pageTitle = 'Sign in';
 require __DIR__ . '/../includes/header.php';
 ?>
-<section class="auth-page">
-    <aside class="auth-aside"><span class="desk-kicker">Account access</span><h1>Return to the work that needs you.</h1><p>Sign in to review the offers, capacity, delivery requests, and records connected to your account role.</p><div class="auth-assurance-points"><div><span aria-hidden="true">01</span><p><strong>One clear workspace</strong>Only the records and tasks relevant to your role are shown.</p></div><div><span aria-hidden="true">02</span><p><strong>Know what comes next</strong>Each recorded status points to a practical next action.</p></div></div></aside>
-    <div class="auth-form-wrap">
-        <p class="desk-kicker">Sign in</p><h1>Open your workspace</h1><p>Enter your account details to see the records and actions relevant to your role.</p>
-        <?php if ($error): ?><div class="flash flash-error"><?= e($error) ?></div><?php endif; ?>
-        <form method="post" class="form-grid" novalidate>
-            <input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>">
-            <div class="form-field"><label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" required value="<?= e($email) ?>"></div>
-            <div class="form-field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required></div>
-            <div class="form-actions"><span><a class="muted" href="<?= e(app_url('auth/register.php')) ?>">New here? Create an account</a><br><a class="muted" href="<?= e(app_url('auth/recover.php')) ?>">Need to reset your password?</a></span><button class="button button-primary" type="submit">Open workspace</button></div>
-        </form>
-        <p class="auth-role-note">Your workspace is scoped to your role. You will see only the operational records and actions your account is permitted to manage.</p>
-    </div>
-</section>
+<main class="auth-page"><aside class="auth-aside"><h1>Sign in to your workspace.</h1><p>Review the records and actions assigned to your account.</p><div class="auth-assurance-points"><div><span aria-hidden="true">1</span><p><strong>Your role sets the workspace</strong>You only see the records and actions your account can manage.</p></div><div><span aria-hidden="true">2</span><p><strong>Use your local account details</strong>Ask your administrator if you need a local recovery request.</p></div></div></aside><section class="auth-form-wrap"><h1>Sign in</h1><p>Enter the email address and password for this account.</p><?php if ($error): ?><div class="flash flash-error"><?= e($error) ?></div><?php endif; ?><form method="post" class="form-grid" novalidate><input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>"><div class="form-field"><label for="email">Email address</label><input id="email" name="email" type="email" autocomplete="email" required value="<?= e($email) ?>"></div><div class="form-field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required></div><div class="form-actions"><span><a class="muted" href="<?= e(app_url('auth/register.php')) ?>">Create an account</a><br><a class="muted" href="<?= e(app_url('auth/recover.php')) ?>">Reset password</a></span><button class="button button-primary" type="submit">Sign in</button></div></form><p class="auth-role-note">This local workspace does not expose another account’s records.</p></section></main>
 <?php require __DIR__ . '/../includes/footer.php'; ?>
