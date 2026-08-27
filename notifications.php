@@ -9,7 +9,8 @@ $availableTypes = fetch_all('SELECT DISTINCT type FROM notifications WHERE user_
 $typeValues = array_column($availableTypes, 'type');
 $selectedType = normalize_text($_GET['type'] ?? '', 80);
 if (!in_array($selectedType, $typeValues, true)) { $selectedType = ''; }
-$selectedState = in_array($_GET['state'] ?? 'all', ['all', 'unread', 'read'], true) ? $_GET['state'] : 'all';
+$requestedState = $_GET['state'] ?? 'all';
+$selectedState = is_string($requestedState) && in_array($requestedState, ['all', 'unread', 'read'], true) ? $requestedState : 'all';
 $filterQuery = static function (string $type, string $state): string { return http_build_query(array_filter(['type' => $type !== '' ? $type : null, 'state' => $state !== 'all' ? $state : null], static fn (mixed $value): bool => $value !== null)); };
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();

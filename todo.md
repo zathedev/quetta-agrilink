@@ -237,3 +237,7 @@
   - [x] Add account-scoped support-request creation and conversation views, with administrator oversight and deterministic role routing.
   - [x] Add recipient dashboard attention registers and role-safe status/assignment controls with no off-platform delivery path.
   - [x] Validate CSRF, role and account boundaries, no-external-delivery safeguards, local XAMPP migrations, browser rendering, and audit history before committing and pushing. Real isolated HTTP validation confirmed storage routing, wrong-role 403 denial, provider claiming, requester/provider conversation, administrator wrong-role-assignment rejection, resolution/closure history, closed-case reply denial, only in-app notifications, no external delivery calls, clean schema/migration preflight, and 24 desktop/mobile snapshots. Temporary records, database, credentials, files, cookies, server, screenshots, and visual-review note were removed afterward.
+
+## Notification Register Warning Repair
+
+- [x] Guard the optional `state` query parameter in the local notification register so opening `notifications.php` without a filter cannot emit an undefined-array-key warning. Local HTTP validation confirmed unfiltered, valid-filter, and invalid-filter notification requests render without PHP warnings; the isolated database, account, cookies, server, and response artifacts were removed afterward.
