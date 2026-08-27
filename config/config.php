@@ -16,5 +16,9 @@ const DB_PASS = '';
 const SESSION_IDLE_MINUTES = 60;
 const MAX_UPLOAD_BYTES = 5_242_880;
 const UPLOAD_STORAGE_PATH = __DIR__ . '/../uploads';
+// Keep this as 'unconfigured' until an owned, monitored support channel is approved.
+const SUPPORT_CHANNEL_MODE = 'unconfigured'; // 'unconfigured', 'email', or 'helpdesk'
+const SUPPORT_EMAIL = '';
+const SUPPORT_HELPDESK_URL = '';
 
 date_default_timezone_set('Asia/Karachi');

@@ -178,7 +178,7 @@ const publicCaptures = [
   { name: "market-prices-desktop", path: "market-prices.php", selector: ".price-register-layout", text: "Reference, not a quote", viewport: desktop },
   { name: "how-it-works-desktop", path: "how-it-works.php", selector: ".guide-workflow-section", text: "Each handover makes the next decision more specific", viewport: desktop },
   { name: "about-desktop", path: "about.php", selector: ".about-context-section", text: "One platform for everything after harvest", viewport: desktop },
-  { name: "contact-desktop", path: "contact.php", selector: ".contact-context-section", text: "Set up a verified support channel", viewport: desktop },
+  { name: "contact-desktop", path: "contact.php", selector: ".contact-context-section", text: "Support channel awaiting ownership", viewport: desktop },
   { name: "public-home-mobile", path: "", selector: ".desk-home", text: "Choose the next step", viewport: mobile },
   { name: "market-prices-mobile", path: "market-prices.php", selector: ".price-register-layout", text: "Reference, not a quote", viewport: mobile },
   { name: "how-it-works-mobile", path: "how-it-works.php", selector: ".guide-workflow-section", text: "Each handover makes the next decision more specific", viewport: mobile },

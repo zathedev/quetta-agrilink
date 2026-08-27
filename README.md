@@ -150,6 +150,10 @@ This foundation is intended for a demonstrable commercial MVP. A production laun
 
 Do not replace the fictional demo records with real customer information until consent, data governance, verified support operations, and appropriate production controls are in place.
 
+### Current support-channel state
+
+The local configuration defaults to an intentionally **unconfigured** support channel. The public contact page therefore publishes no invented address and accepts no simulated message. When an organization-owned, monitored support email or authenticated helpdesk is available, follow [`docs/PRODUCTION_SUPPORT.md`](docs/PRODUCTION_SUPPORT.md) to activate it through the production configuration and verify the route before publishing.
+
 ## GitHub workflow
 
 This repository is configured for a private GitHub remote. Each implementation increment is committed with a focused, readable conventional commit and pushed to the `main` branch. The live project history can be reviewed at [github.com/zathedev/quetta-agrilink](https://github.com/zathedev/quetta-agrilink).

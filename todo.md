@@ -216,3 +216,10 @@
 - [x] Verify keyboard navigation and focus visibility through public navigation, authentication, marketplace controls, and authenticated workspace actions.
 - [x] Verify role-scoped authenticated access and protected recovery/contact export boundaries without exposing reset or credential secrets.
 - [x] Record the controlled local XAMPP acceptance result, remove the final completed backlog item, and push the delivery update.
+
+## Production-readiness Follow-through
+
+- [x] Prepare a no-channel-yet support configuration that explicitly stays unverified and prevents publication of invented email or helpdesk details.
+- [x] Document the minimal future activation steps for adding an owned support email or authenticated helpdesk without changing the safe no-submission contact boundary.
+- [ ] Replace demo marketplace and market-price records with approved local market data while retaining validation, role controls, and audit behavior.
+- [ ] Prepare and validate the final production release checklist for XAMPP deployment, data migration, configuration, support ownership, backups, cache refresh, and acceptance verification.
