@@ -21,8 +21,9 @@ Quetta AgriLink’s deployable application is the PHP/MySQL package in this repo
 | 13 | Run `database/migrations/20260826_add_user_notification_preferences.sql` once. | Each signed-in account can set local marketplace-match and optional browser-chime preferences. |
 | 14 | Run `database/migrations/20260827_remove_fictional_demo_data.sql` once only when upgrading an earlier installation that still contains the original fictional records. | Known fictional profiles, listings, facilities, vehicles, transactions, prices, notifications, and related activity are removed while documented user credentials and reference rows remain. |
 | 15 | Run `database/migrations/20260827_add_operator_account_transitions.sql` once. | Administrators can create named local operators and archive only the documented development accounts through a protected audit register. |
-| 16 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
-| 17 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
+| 16 | Run `database/migrations/20260827_add_market_price_imports.sql` once. | Administrators can validate approved local market-price CSV files and retain source/batch context without storing the uploaded file. |
+| 17 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
+| 18 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
 
 ## Local security and maintenance
 
@@ -45,6 +46,10 @@ Fresh imports now include only the role, location, and produce-category referenc
 ### Replacing development credentials
 
 Use the administrator-only **Local operators** workspace entry after importing `database/migrations/20260827_add_operator_account_transitions.sql`. It creates named, role-scoped operator accounts and archives only the documented development credentials after their replacement has been verified. The transition register never displays or exports passwords, password hashes, reset links, selectors, tokens, or recovery data. Follow [`LOCAL_OPERATOR_TRANSITION.md`](LOCAL_OPERATOR_TRANSITION.md) before archiving any development account.
+
+### Importing approved local market data
+
+Import `database/migrations/20260827_add_market_price_imports.sql`, then use the administrator-only **Market-data import** workspace entry. The CSV importer validates every row before database changes, records named source and batch context, and does not retain the uploaded CSV. Follow [`LOCAL_MARKET_DATA_IMPORT.md`](LOCAL_MARKET_DATA_IMPORT.md); do not import unapproved, fabricated, credential-bearing, or formula-like values.
 
 ### Local browser visual regression
 

@@ -15,8 +15,8 @@ function market_price_rows(array $prices): string
     if ($prices === []) return '<tr><td colspan="6">No recorded market prices match this product.</td></tr>';
     $rows = '';
     foreach ($prices as $price) {
-        $rows .= '<tr><td><strong>' . e($price['category_name']) . '</strong></td><td>' . e($price['district']) . '</td><td>Rs. ' . number_format((float)$price['min_price'],0) . '</td><td>Rs. ' . number_format((float)$price['max_price'],0) . '</td><td><strong>Rs. ' . number_format((float)$price['average_price'],0) . '/' . e($price['unit']) . '</strong></td><td>' . e(date('j M Y',strtotime($price['price_date']))) . '</td></tr>';
+        $source = (string) ($price['source_name'] ?? 'Administrator-provided local record');
+        $rows .= '<tr><td><strong>' . e($price['category_name']) . '</strong></td><td>' . e($price['district']) . '</td><td>Rs. ' . number_format((float)$price['min_price'],0) . '</td><td>Rs. ' . number_format((float)$price['max_price'],0) . '</td><td><strong>Rs. ' . number_format((float)$price['average_price'],0) . '/' . e($price['unit']) . '</strong></td><td>' . e(date('j M Y',strtotime($price['price_date']))) . '</td><td>' . e($source) . '</td></tr>';
     }
     return $rows;
 }
-

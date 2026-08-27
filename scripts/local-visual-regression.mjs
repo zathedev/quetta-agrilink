@@ -194,6 +194,10 @@ const administratorCaptures = [
   { name: "administrator-workspace-mobile", path: "admin/dashboard.php", selector: ".workspace", text: "Administrator dashboard", viewport: mobile },
   { name: "local-operator-transition-desktop", path: "admin/operator-accounts.php", selector: ".operator-transition-intro", text: "Create a named operator account", viewport: desktop },
   { name: "local-operator-transition-mobile", path: "admin/operator-accounts.php", selector: ".operator-transition-intro", text: "Create a named operator account", viewport: mobile },
+  { name: "market-data-import-desktop", path: "admin/market-price-import.php", selector: ".market-import-intro", text: "Import approved local price references", viewport: desktop },
+  { name: "market-data-import-mobile", path: "admin/market-price-import.php", selector: ".market-import-intro", text: "Import approved local price references", viewport: mobile },
+  { name: "market-data-import-register-desktop", path: "admin/market-price-import.php", selector: ".market-import-history", text: "Source and batch accountability", viewport: desktop },
+  { name: "market-data-import-register-mobile", path: "admin/market-price-import.php", selector: ".market-import-history", text: "Source and batch accountability", viewport: mobile },
 ];
 
 await mkdir(outputDirectory, { recursive: true });

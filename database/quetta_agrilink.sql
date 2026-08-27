@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS reviews;
 DROP TABLE IF EXISTS announcements;
 DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS messages;
+DROP TABLE IF EXISTS market_price_import_batches;
 DROP TABLE IF EXISTS market_prices;
 DROP TABLE IF EXISTS transport_status_history;
 DROP TABLE IF EXISTS transport_requests;
@@ -431,6 +432,8 @@ CREATE TABLE market_prices (
     average_price DECIMAL(14,2) NOT NULL,
     unit VARCHAR(30) NOT NULL DEFAULT 'kg',
     notes VARCHAR(500) NULL,
+    source_name VARCHAR(160) NOT NULL DEFAULT 'Administrator-provided local record',
+    source_reference VARCHAR(255) NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_market_price_category FOREIGN KEY (category_id) REFERENCES produce_categories(id),
@@ -438,6 +441,21 @@ CREATE TABLE market_prices (
     CONSTRAINT fk_market_price_recorder FOREIGN KEY (recorded_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
     UNIQUE KEY uq_market_price_daily (category_id, location_id, price_date, unit),
     INDEX idx_market_prices_date (price_date, category_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE market_price_import_batches (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    imported_by_user_id BIGINT UNSIGNED NOT NULL,
+    source_name VARCHAR(160) NOT NULL,
+    source_reference VARCHAR(255) NULL,
+    original_filename VARCHAR(190) NOT NULL,
+    total_rows INT UNSIGNED NOT NULL,
+    inserted_rows INT UNSIGNED NOT NULL DEFAULT 0,
+    updated_rows INT UNSIGNED NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_market_price_batch_importer FOREIGN KEY (imported_by_user_id) REFERENCES users(id),
+    INDEX idx_market_price_batches_created (created_at),
+    INDEX idx_market_price_batches_importer (imported_by_user_id, created_at)
 ) ENGINE=InnoDB;
 
 CREATE TABLE messages (
