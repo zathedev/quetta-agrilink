@@ -2,9 +2,7 @@
 
 This is the **active work register** for the authoritative PHP/XAMPP application and its managed UI mirror. It contains only unfinished items. When an item is completed, validated, committed, and pushed, it is **removed from this file** and retained in `todo.md` as delivery history.
 
-## Role-Specific Business and Asset Editors
-
-- Add protected, owner-scoped transport-provider vehicles and service-area editors; include validated, secure media ownership only where required.
+There are currently no unfinished role-specific business-editor items in the active register.
 
 ## Commerce Order and Transport Assignment Operations
 

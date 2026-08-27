@@ -105,6 +105,7 @@ After recording an offline verification note, an administrator may open **Print 
 | Authentication | A documented development account signs in and reaches its role-specific dashboard. |
 | Farmer and buyer business details | A farmer can update only their own required farm name/location, optional size, and details; a buyer can update only their own required business name/type/location and optional tax reference/details. Both reject invalid locations or fields and record field-only audit metadata. |
 | Storage facility editor | A storage provider can add or update only its own facility records, capacity, daily price, location, status, and compatible produce. Total capacity cannot be reduced below capacity reserved by approved or active bookings, and audits retain only field names. |
+| Transport fleet editor | A transport provider can add or update only its own vehicles and listed reference service areas. Vehicle registration remains unique, invalid capacity/status/area inputs are rejected, active-request vehicles cannot be marked maintenance or inactive, and audits retain only field names. |
 | Offer / storage / transport | Each request returns a validated response and creates an account-scoped record. |
 | Attachment | An administrator can attach and download a permitted test file; each download is integrity-checked and appears in the download audit history. |
 | Saved marketplace filter | A signed-in user can save, apply, and remove only their own marketplace criteria. |

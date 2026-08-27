@@ -10,7 +10,7 @@ function workspace_links(string $role): array
         'farmer' => array_merge($common, [['Publish produce', 'farmer/listings.php', 'listings'], ['Offers', 'farmer/offers.php', 'offers'], ['Cold storage', 'storage/index.php', 'storage'], ['Transport', 'transport/index.php', 'transport']]),
         'buyer' => array_merge($common, [['Offers', 'buyer/offers.php', 'offers']]),
         'storage_provider' => array_merge($common, [['Facility records', 'storage/facilities.php', 'facilities'], ['Storage marketplace', 'storage/index.php', 'storage']]),
-        'transport_provider' => array_merge($common, [['Transport marketplace', 'transport/index.php', 'transport']]),
+        'transport_provider' => array_merge($common, [['Fleet and service areas', 'transport/fleet.php', 'fleet'], ['Transport marketplace', 'transport/index.php', 'transport']]),
         'admin' => array_merge($common, [['Market prices', 'market-prices.php', 'prices'], ['Market-data import', 'admin/market-price-import.php', 'market_price_import'], ['Local operators', 'admin/operator-accounts.php', 'operator_accounts'], ['Attachments', 'admin/attachments.php', 'attachments'], ['Password recovery', 'admin/password-recovery.php', 'recovery'], ['Contact verification', 'admin/contact-verification.php', 'contact_verification'], ['Export audit', 'admin/dashboard-export-audit.php', 'dashboard_export_audit']]),
         default => $common,
     };
