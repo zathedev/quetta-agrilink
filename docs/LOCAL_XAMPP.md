@@ -8,7 +8,7 @@ Quetta AgriLink’s deployable application is the PHP/MySQL package in this repo
 |---|---|---|
 | 1 | Copy this repository folder to `C:\xampp\htdocs\quetta-agrilink` on Windows, or the equivalent `htdocs/quetta-agrilink` directory on your XAMPP installation. | Apache can serve `http://localhost/quetta-agrilink/`. |
 | 2 | Start **Apache** and **MySQL** from the XAMPP Control Panel. | Both services show as running. |
-| 3 | Import `database/quetta_agrilink.sql` with phpMyAdmin or the MySQL command line. | The `quetta_agrilink` database and initial development records exist. |
+| 3 | Import `database/quetta_agrilink.sql` with phpMyAdmin or the MySQL command line. | The `quetta_agrilink` database, required role/location/category references, and documented development credentials exist; no fictional operational records are inserted. |
 | 4 | Run `database/migrations/20260825_add_record_attachments.sql` once. | The `record_attachments` table exists. |
 | 5 | Run `database/migrations/20260825_add_saved_marketplace_filters.sql` once. | The `saved_marketplace_filters` table exists. |
 | 6 | Run `database/migrations/20260825_add_default_saved_marketplace_filters.sql` once. | Each account can mark one saved filter as its default alert criteria. |
@@ -19,8 +19,9 @@ Quetta AgriLink’s deployable application is the PHP/MySQL package in this repo
 | 11 | Run `database/migrations/20260826_add_contact_review_reason_codes.sql` once. | The administrator contact register requires a controlled local-evidence reason before saving a review. |
 | 12 | Run `database/migrations/20260826_add_dashboard_activity_presets.sql` once. | Each signed-in account can save and reuse only its own dashboard activity date ranges. |
 | 13 | Run `database/migrations/20260826_add_user_notification_preferences.sql` once. | Each signed-in account can set local marketplace-match and optional browser-chime preferences. |
-| 14 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
-| 15 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
+| 14 | Run `database/migrations/20260827_remove_fictional_demo_data.sql` once only when upgrading an earlier installation that still contains the original fictional records. | Known fictional profiles, listings, facilities, vehicles, transactions, prices, notifications, and related activity are removed while documented user credentials and reference rows remain. |
+| 15 | Copy `config/config.example.php` to `config/config.php` if the local file is absent; set `APP_URL` to `/quetta-agrilink` and use your local MySQL credentials. | PHP loads the expected database and route base path. |
+| 16 | Visit `http://localhost/quetta-agrilink/`. | The PHP home page renders. |
 
 ## Local security and maintenance
 
@@ -35,6 +36,10 @@ Before attaching files, open XAMPP’s `php/php.ini` and set `upload_max_filesiz
 After pulling a visual update, refresh the browser with **Ctrl+F5** once. The PHP header adds the local stylesheet modification time to every CSS URL, so Apache serves the current Orchard Ledger fonts, navigation, and visual-style files rather than an older browser-cached stylesheet.
 
 The required **DM Sans**, **DM Mono**, and **Playfair Display** font variants are bundled in `assets/fonts/`, with their Open Font License notices alongside them. The header loads `assets/css/local-fonts.css` before the application styles, so the deployable PHP/XAMPP interface keeps its established typography without requiring access to Google Fonts. Keep this directory when copying or updating the project folder.
+
+### Removing legacy fictional records
+
+Fresh imports now include only the role, location, and produce-category references needed to operate the application, plus the five documented development account credentials. They do not include fictional listings, market prices, facilities, vehicles, orders, transport requests, messages, announcements, notifications, profiles, or audit activity. If an earlier local database still contains those original records, run `database/migrations/20260827_remove_fictional_demo_data.sql` **after** the preceding migrations. The cleanup is scoped to the known development accounts and their dependent demo activity; it does not delete the user credentials, roles, locations, or categories. Do not apply it if you deliberately created records through a documented demo account that you want to retain.
 
 ### Local browser visual regression
 

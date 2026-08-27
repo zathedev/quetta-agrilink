@@ -148,7 +148,7 @@ The shared `assets/js/app.js` helper sends same-origin requests with `Accept: ap
 
 This foundation is intended for a demonstrable commercial MVP. A production launch should add a verified public support channel, secure image resize/processing service, password-reset delivery, complete admin CRUD controls, provider facility and vehicle editors, customer-controlled notification preferences, privacy/legal notices, rate limiting, backup strategy, HTTPS enforcement, monitoring, and a payment provider selected for the intended operating market.
 
-Do not replace the fictional demo records with real customer information until consent, data governance, verified support operations, and appropriate production controls are in place.
+Fresh database imports intentionally contain no fictional operational records. Before adding real customer information, ensure consent, data governance, verified support operations, and appropriate production controls are in place.
 
 ### Current support-channel state
 

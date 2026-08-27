@@ -221,5 +221,7 @@
 
 - [x] Prepare a no-channel-yet support configuration that explicitly stays unverified and prevents publication of invented email or helpdesk details.
 - [x] Document the minimal future activation steps for adding an owned support email or authenticated helpdesk without changing the safe no-submission contact boundary.
-- [ ] Replace demo marketplace and market-price records with approved local market data while retaining validation, role controls, and audit behavior.
+- [x] Map all fictional seeded operational data and foreign-key dependencies while identifying the minimum reference rows required for registration, roles, and retained demo credentials.
+- [x] Add idempotent cleanup migrations that remove fictional operational records without deleting demo user credentials, role definitions, districts, or required produce categories.
+- [x] Verify empty-state rendering and retained demo account access after the cleanup migration, then remove the completed backlog item after committing and pushing the update.
 - [ ] Prepare and validate the final production release checklist for XAMPP deployment, data migration, configuration, support ownership, backups, cache refresh, and acceptance verification.

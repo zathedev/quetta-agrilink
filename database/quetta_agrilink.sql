@@ -548,7 +548,7 @@ CREATE TABLE password_reset_tokens (
     INDEX idx_reset_token_expiry (expires_at)
 ) ENGINE=InnoDB;
 
--- Fictional development-only data. All five accounts use the password: AgriLinkDemo2026!
+-- Required reference rows and development-only credentials. All five accounts use the password: AgriLinkDemo2026! No fictional operational records are seeded.
 INSERT INTO roles (id, slug, name, description) VALUES
 (1, 'farmer', 'Farmer', 'Grower and produce supplier'),
 (2, 'buyer', 'Buyer', 'Produce buyer or business purchaser'),
@@ -570,15 +570,6 @@ INSERT INTO users (id, role_id, full_name, email, phone, password_hash, status) 
 (4, 4, 'Demo Transport Operator', 'transport.demo@quettaagrilink.test', '03000000004', '$2y$12$qJm7GaKM2DY7An3gwVcYcusm3n16fpAOM8UU/ZdQHZraOUtXG1dsa', 'active'),
 (5, 5, 'Demo Administrator', 'admin.demo@quettaagrilink.test', '03000000005', '$2y$12$qJm7GaKM2DY7An3gwVcYcusm3n16fpAOM8UU/ZdQHZraOUtXG1dsa', 'active');
 
-INSERT INTO farmer_profiles (user_id, farm_name, farm_location_id, farm_size_acres, bio, verified_at) VALUES
-(1, 'Demo Orchard Cooperative', 2, 24.50, 'Fictional local demonstration grower profile.', NOW());
-INSERT INTO buyer_profiles (user_id, business_name, business_type, location_id, bio, verified_at) VALUES
-(2, 'Demo Produce Trading', 'Wholesale Buyer', 1, 'Fictional local demonstration buyer profile.', NOW());
-INSERT INTO storage_providers (id, user_id, business_name, location_id, bio, verified_at) VALUES
-(1, 3, 'Demo Quetta Cold Store', 1, 'Fictional local demonstration storage operator.', NOW());
-INSERT INTO transport_providers (id, user_id, company_name, location_id, bio, verified_at) VALUES
-(1, 4, 'Demo Valley Logistics', 1, 'Fictional local demonstration transport operator.', NOW());
-
 INSERT INTO produce_categories (id, name, slug, description) VALUES
 (1, 'Apples', 'apples', 'Apples grown in Balochistan.'),
 (2, 'Grapes', 'grapes', 'Table and processing grapes.'),
@@ -590,63 +581,4 @@ INSERT INTO produce_categories (id, name, slug, description) VALUES
 (8, 'Pomegranates', 'pomegranates', 'Fresh pomegranates.'),
 (9, 'Vegetables', 'vegetables', 'Seasonal vegetables.');
 
-INSERT INTO produce_listings (id, farmer_id, category_id, location_id, title, description, grade, quantity_available, unit, expected_price, harvest_date, available_from, minimum_order_quantity, status, published_at) VALUES
-(1, 1, 1, 2, 'Pishin Apples', 'Fictional demo listing for crisp apples sorted for wholesale buyers.', 'A', 2500.00, 'kg', 180.00, '2026-09-04', '2026-09-08', 100.00, 'active', NOW()),
-(2, 1, 2, 2, 'Pishin Table Grapes', 'Fictional demo listing for carefully packed table grapes.', 'A', 1200.00, 'kg', 240.00, '2026-08-20', '2026-08-25', 50.00, 'active', NOW()),
-(3, 1, 3, 4, 'Ziarat Apricots', 'Fictional demo listing for fresh seasonal apricots.', 'A', 800.00, 'kg', 220.00, '2026-08-18', '2026-08-23', 40.00, 'active', NOW()),
-(4, 1, 8, 5, 'Mastung Pomegranates', 'Fictional demo listing for export-grade pomegranates.', 'B', 1500.00, 'kg', 165.00, '2026-09-10', '2026-09-14', 100.00, 'active', NOW());
-
-INSERT INTO storage_facilities (id, provider_id, location_id, name, description, storage_type, total_capacity_kg, available_capacity_kg, price_per_kg_day, status) VALUES
-(1, 1, 1, 'Demo Quetta Cold Store — Sariab', 'Fictional demo cold-storage facility for local project walkthroughs.', 'cold_storage', 100000.00, 76000.00, 1.2500, 'active');
-INSERT INTO facility_supported_products (facility_id, category_id) VALUES (1,1),(1,2),(1,3),(1,4),(1,6),(1,7),(1,8),(1,9);
-
-INSERT INTO vehicles (id, provider_id, vehicle_type, registration_number, capacity_kg, is_refrigerated, price_per_km, status) VALUES
-(1, 1, 'Refrigerated 6-Wheeler', 'DEMO-QTA-001', 5000.00, 1, 95.00, 'available'),
-(2, 1, 'Covered Pickup', 'DEMO-QTA-002', 1500.00, 0, 58.00, 'available');
-INSERT INTO transport_service_areas (provider_id, location_id) VALUES (1,1),(1,2),(1,3),(1,4),(1,5);
-
-INSERT INTO offers (id, listing_id, buyer_id, farmer_id, quantity, offered_price, total_amount, message, status, responded_at) VALUES
-(1, 1, 2, 1, 500.00, 175.00, 87500.00, 'Fictional demo offer for the application walkthrough.', 'accepted', NOW());
-INSERT INTO offer_events (offer_id, actor_user_id, event_type, quantity, price, note) VALUES
-(1, 2, 'created', 500.00, 175.00, 'Demo offer submitted.'),
-(1, 1, 'accepted', 500.00, 175.00, 'Demo offer accepted.');
-INSERT INTO orders (id, reference_code, offer_id, buyer_id, farmer_id, status, subtotal, storage_cost, transport_cost, total_amount, confirmed_at) VALUES
-(1, 'QAL-2026-0001', 1, 2, 1, 'transport_required', 87500.00, 0.00, 0.00, 87500.00, NOW());
-INSERT INTO order_items (order_id, listing_id, category_id, produce_name, grade, quantity, unit, unit_price, line_total) VALUES
-(1, 1, 1, 'Pishin Apples', 'A', 500.00, 'kg', 175.00, 87500.00);
-INSERT INTO order_status_history (order_id, status, changed_by_user_id, notes) VALUES
-(1, 'pending', 2, 'Demo order created from accepted offer.'),
-(1, 'confirmed', 1, 'Demo order confirmed by farmer.'),
-(1, 'transport_required', 1, 'Transport is required for the demo order.');
-
-INSERT INTO storage_bookings (id, reference_code, farmer_id, facility_id, listing_id, category_id, quantity_kg, start_date, end_date, price_per_kg_day, estimated_cost, status) VALUES
-(1, 'QAS-2026-0001', 1, 1, 2, 2, 300.00, '2026-08-25', '2026-08-30', 1.2500, 1875.00, 'approved');
-INSERT INTO storage_booking_status_history (booking_id, status, changed_by_user_id, note) VALUES
-(1, 'requested', 1, 'Demo booking requested.'),
-(1, 'approved', 3, 'Demo booking approved.');
-
-INSERT INTO transport_requests (id, reference_code, farmer_id, provider_id, vehicle_id, order_id, listing_id, pickup_location_id, delivery_location_id, produce_description, quantity_kg, required_vehicle_type, requires_refrigeration, pickup_date, estimated_price, final_price, driver_name, driver_phone, status) VALUES
-(1, 'QAT-2026-0001', 1, 1, 1, 1, 1, 2, 1, 'Pishin Apples', 500.00, 'Refrigerated 6-Wheeler', 1, '2026-09-09', 8200.00, 8200.00, 'Demo Driver', '03000000006', 'accepted');
-INSERT INTO transport_status_history (transport_request_id, status, changed_by_user_id, note) VALUES
-(1, 'requested', 1, 'Demo request created.'),
-(1, 'accepted', 4, 'Demo request accepted.');
-
-INSERT INTO market_prices (category_id, location_id, recorded_by_user_id, price_date, min_price, max_price, average_price, unit, notes) VALUES
-(1, 1, 5, '2026-08-25', 160.00, 200.00, 180.00, 'kg', 'Fictional demo price entry.'),
-(2, 1, 5, '2026-08-25', 210.00, 270.00, 240.00, 'kg', 'Fictional demo price entry.'),
-(3, 1, 5, '2026-08-25', 190.00, 250.00, 220.00, 'kg', 'Fictional demo price entry.'),
-(8, 1, 5, '2026-08-25', 145.00, 185.00, 165.00, 'kg', 'Fictional demo price entry.');
-
-INSERT INTO messages (sender_id, recipient_id, listing_id, order_id, body, read_at) VALUES
-(2, 1, 1, 1, 'This fictional demo message confirms the requested delivery arrangement.', NULL);
-INSERT INTO notifications (user_id, type, title, body, action_url, entity_type, entity_id) VALUES
-(1, 'offer_accepted', 'Offer accepted', 'The fictional demo buyer offer has been accepted.', '/quetta-agrilink/farmer/offers.php', 'offer', 1),
-(1, 'transport_accepted', 'Transport request accepted', 'A fictional demo transport provider accepted the delivery request.', '/quetta-agrilink/farmer/transport.php', 'transport_request', 1),
-(2, 'order_confirmed', 'Order confirmed', 'The fictional demo order is confirmed and transport is being arranged.', '/quetta-agrilink/buyer/orders.php', 'order', 1);
-INSERT INTO announcements (author_id, title, body, audience_role, starts_at, is_active) VALUES
-(5, 'Demo environment notice', 'All current data is fictional and provided only to demonstrate Quetta AgriLink workflows.', NULL, NOW(), 1);
-INSERT INTO audit_logs (actor_user_id, action, entity_type, entity_id, metadata, ip_address) VALUES
-(5, 'seeded_demo_environment', 'database', NULL, JSON_OBJECT('purpose', 'local demonstration only'), '127.0.0.1');
-
 SET FOREIGN_KEY_CHECKS = 1;
-
