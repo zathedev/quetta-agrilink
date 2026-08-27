@@ -299,3 +299,7 @@
 ## Requirements Comparison and Active Work Reconciliation
 
 - [x] Compare the supplied Quetta AgriLink specification against the authoritative PHP/XAMPP application and completed delivery history; update `remaining-work.md` with only verified unfinished requirements, then commit and push the tracker reconciliation. The detailed evidence-based matrix is retained in `docs/REQUIREMENTS_COMPARISON.md`. The review confirmed completed PHP/XAMPP core discovery, offer/order creation, storage, transport progression, notifications, local support, market-price intake, audit, exports, and responsive workflow surfaces; it identified verified remaining role-asset editors, full order desks/lifecycle, transport assignment details, commercial messaging, genuine review/payment workflows, comprehensive administrator controls/analytics, media processing, branded error routes, and documented production hardening. The original request for fictional operational seeds remains intentionally superseded by the user’s no-mock-data instruction.
+
+## Farmer and Buyer Business-Detail Editors
+
+- [ ] Add protected owner-scoped farmer farm/location and buyer business-detail editors with server validation, prepared updates, and audit records; validate owner scope and local PHP/XAMPP behavior before committing and pushing.
