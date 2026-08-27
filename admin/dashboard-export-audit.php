@@ -1,0 +1,15 @@
+<?php
+/** Quetta Workbench administrator register: inspect minimal dashboard-summary export accountability events, never exported values. */
+declare(strict_types=1);
+require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/workspace.php';
+require_once __DIR__ . '/../includes/dashboard-export-audits.php';
+
+require_role(['admin']);
+$filters = dashboard_summary_export_audit_filters($_GET);
+$records = dashboard_summary_export_audit_rows($filters);
+$roles = dashboard_summary_export_audit_roles();
+workspace_open('Dashboard export audit', 'dashboard_export_audit');
+?>
+<section class="workspace-section"><div class="workspace-section-header"><div><h2>Dashboard summary exports</h2><p>Review accountable export events by account, role, export time, or the selected summary period. This register never displays exported values.</p></div><div class="workspace-section-actions"><span class="status-pill"><?= count($records) ?> shown</span></div></div><form class="activity-date-filter" method="get"><label>Account<input name="account" value="<?= e($filters['account']) ?>" maxlength="80" placeholder="Account name"></label><label>Role<select name="role"><option value="">All roles</option><?php foreach ($roles as $slug => $label): ?><option value="<?= e($slug) ?>" <?= $filters['role'] === $slug ? 'selected' : '' ?>><?= e($label) ?></option><?php endforeach; ?></select></label><label>Exported from<input type="date" name="exported_from" value="<?= e($filters['exported_from']?->format('Y-m-d') ?? '') ?>"></label><label>Exported to<input type="date" name="exported_to" value="<?= e($filters['exported_to']?->format('Y-m-d') ?? '') ?>"></label><label>Summary from<input type="date" name="summary_from" value="<?= e($filters['summary_from']?->format('Y-m-d') ?? '') ?>"></label><label>Summary to<input type="date" name="summary_to" value="<?= e($filters['summary_to']?->format('Y-m-d') ?? '') ?>"></label><button class="button button-quiet" type="submit">Filter exports</button><a href="<?= e(app_url('admin/dashboard-export-audit.php')) ?>">Clear filters</a></form><div class="data-table-wrap"><table class="data-table"><thead><tr><th>Account</th><th>Role at export</th><th>Selected summary period</th><th>Exported</th></tr></thead><tbody><?php if ($records === []): ?><tr><td colspan="4">No dashboard-summary exports match these filters.</td></tr><?php else: foreach ($records as $record): ?><tr><td><strong><?= e($record['actor_name']) ?></strong><br><span class="muted">Account #<?= (int) $record['actor_user_id'] ?></span></td><td><?= e($roles[$record['exported_role']] ?? 'Unavailable role') ?></td><td><?= e(($record['period_start'] ?? '') !== '' ? date('j M Y', strtotime((string) $record['period_start'])) : 'Unavailable') ?> to <?= e(($record['period_end'] ?? '') !== '' ? date('j M Y', strtotime((string) $record['period_end'])) : 'Unavailable') ?></td><td><?= e(date('j M Y H:i', strtotime((string) $record['created_at']))) ?></td></tr><?php endforeach; endif; ?></tbody></table></div></section>
+<?php workspace_close(); ?>
