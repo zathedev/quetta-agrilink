@@ -66,7 +66,68 @@
     });
   });
 
+  document.querySelectorAll('[data-account-form]').forEach((form) => {
+    const mode = form.dataset.accountForm;
+    const errorFor = (field) => form.querySelector(`[data-field-error="${field.name}"]`);
+    const messageFor = (field) => {
+      const value = field.value.trim();
+      if (field.name === 'full_name') return value.length < 3 ? 'Enter at least 3 characters for your name.' : '';
+      if (field.name === 'email') return value === '' ? 'Enter your email address.' : (!field.validity.valid ? 'Enter a valid email address.' : '');
+      if (field.name === 'phone') return value === '' ? 'Enter a contact number.' : (!/^[0-9+()\-\s]{7,25}$/.test(value) ? 'Use 7–25 digits and standard phone symbols only.' : '');
+      if (field.name === 'role') return field.value === '' ? 'Choose the role for this account.' : '';
+      if (field.name === 'password') {
+        if (value === '') return 'Enter your password.';
+        if (mode === 'register' && (value.length < 10 || !/[A-Za-z]/.test(value) || !/\d/.test(value))) return 'Use at least 10 characters with a letter and a number.';
+      }
+      return '';
+    };
+    const validate = (field) => {
+      if (!field || !['full_name', 'email', 'phone', 'role', 'password'].includes(field.name)) return true;
+      const message = messageFor(field);
+      const error = errorFor(field);
+      field.classList.toggle('is-invalid', message !== '');
+      field.setAttribute('aria-invalid', String(message !== ''));
+      if (error) {
+        error.textContent = message;
+        error.hidden = message === '';
+      }
+      return message === '';
+    };
+    form.querySelectorAll('input, select').forEach((field) => {
+      field.addEventListener('blur', () => validate(field));
+      field.addEventListener('input', () => validate(field));
+      field.addEventListener('change', () => validate(field));
+    });
+    form.addEventListener('submit', (event) => {
+      const invalid = [...form.querySelectorAll('input, select')].find((field) => !validate(field));
+      if (invalid) {
+        event.preventDefault();
+        invalid.focus();
+      }
+    });
+  });
+
   document.querySelectorAll('[data-marketplace-filter]').forEach((form) => {
+    const heading = form.querySelector('h2');
+    if (heading && !form.querySelector('[name="search"]')) {
+      const field = document.createElement('div');
+      field.className = 'form-field marketplace-search-field';
+      const label = document.createElement('label');
+      label.htmlFor = 'marketplace-search';
+      label.textContent = 'Search produce';
+      const input = document.createElement('input');
+      input.id = 'marketplace-search';
+      input.name = 'search';
+      input.type = 'search';
+      input.maxLength = 80;
+      input.autocomplete = 'off';
+      input.placeholder = 'Crop or listing name';
+      const help = document.createElement('span');
+      help.className = 'form-help';
+      help.textContent = 'Results update as you type.';
+      field.append(label, input, help);
+      heading.insertAdjacentElement('afterend', field);
+    }
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const resultTarget = document.querySelector('[data-marketplace-results]');
@@ -93,8 +154,45 @@
       }
     });
 
+    let marketplaceSearchDelay;
+    form.addEventListener('input', (event) => {
+      if (!event.target.matches('[name="search"], [name="min_price"], [name="max_price"], [name="min_quantity"]')) return;
+      window.clearTimeout(marketplaceSearchDelay);
+      marketplaceSearchDelay = window.setTimeout(() => form.requestSubmit(), 280);
+    });
     form.addEventListener('change', (event) => {
-      if (event.target.matches('[name="category_id"], [name="sort"]')) form.requestSubmit();
+      if (event.target.matches('select')) form.requestSubmit();
+    });
+  });
+
+  document.querySelectorAll('[data-storage-filter]').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const resultTarget = document.querySelector('[data-storage-results]');
+      const feedback = document.querySelector('[data-storage-feedback]');
+      const submit = form.querySelector('[type="submit"]');
+      const query = new URLSearchParams(new FormData(form));
+      submit.disabled = true;
+      if (feedback) feedback.textContent = 'Refreshing available storage…';
+      try {
+        const payload = await window.qliFetch(`${form.dataset.endpoint}?${query.toString()}`);
+        if (resultTarget) resultTarget.innerHTML = payload.data.html;
+        if (feedback) feedback.textContent = payload.message;
+        window.history.replaceState({}, '', `${window.location.pathname}?${query.toString()}`);
+      } catch (error) {
+        if (feedback) feedback.textContent = error.message;
+      } finally {
+        submit.disabled = false;
+      }
+    });
+    let storageFilterDelay;
+    form.addEventListener('input', (event) => {
+      if (!event.target.matches('input[type="number"]')) return;
+      window.clearTimeout(storageFilterDelay);
+      storageFilterDelay = window.setTimeout(() => form.requestSubmit(), 280);
+    });
+    form.addEventListener('change', (event) => {
+      if (event.target.matches('select')) form.requestSubmit();
     });
   });
 

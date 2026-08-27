@@ -96,7 +96,8 @@ function validate_registration(array $input): array
     $password = (string) ($input['password'] ?? '');
     $allowedRoles = ['farmer', 'buyer', 'storage_provider', 'transport_provider'];
 
-    if (mb_strlen($fullName) < 3) {
+    $fullNameLength = function_exists('mb_strlen') ? mb_strlen($fullName) : strlen($fullName);
+    if ($fullNameLength < 3) {
         $errors['full_name'] = 'Enter your full name using at least 3 characters.';
     }
     if ($email === false) {

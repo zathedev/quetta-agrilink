@@ -255,3 +255,11 @@
 - [x] Replace the oversized authentication split screens and empty public hero/image columns with compact, purposeful layouts that keep forms and records near the visible reading area.
 - [x] Simplify public results and empty-state layouts so filters, data registers, and next actions use the available width without large inactive areas.
 - [x] Verify desktop and mobile authoritative PHP rendering from the actual local XAMPP-style server, preserving form, role, and record workflows before committing and pushing. The repair was checked with a clean schema and full ordered migration set, a 30-snapshot desktop/mobile authoritative PHP suite covering public, account, service, support, buyer, and administrator pages, and full PHP/JavaScript/type/build checks. The local CSS brand mark removed the prior remote-image dependency. The temporary database, account, screenshots, browser state, server, logs, and configuration override were removed after validation.
+
+## Faster Discovery and Account Feedback
+
+- [x] Add clear, server-safe filtering and sorting controls to the produce marketplace, retaining saved-filter and active-listing behavior.
+- [x] Add clear, server-safe filtering and sorting controls to the cold-storage register, covering location, compatible produce, storage type, available capacity, and daily price.
+- [x] Add real-time, accessible client-side validation for sign-in and account creation, keeping server-side CSRF and validation authoritative and providing plain inline error messages.
+- [x] Refine every role dashboard’s factual summary statistics into a quick, consistently styled overview without fabricating any operational data.
+- [x] Validate filtering, ordering, empty states, form feedback, role boundaries, desktop/mobile rendering, local PHP/XAMPP behavior, and no fabricated data before committing and pushing. Isolated testing used only temporary records: marketplace keyword filtering and price order, storage crop/district/type/order filters, unrecognized-order fallback, no-JavaScript server errors, browser-level real-time sign-in and account-creation feedback, and “At a glance” dashboard summaries for all five roles passed. The final 30-snapshot local PHP suite and release checks passed; temporary records, database, credentials, browser state, server, responses, and screenshots were removed afterward.

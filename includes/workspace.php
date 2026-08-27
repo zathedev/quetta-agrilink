@@ -233,9 +233,9 @@ function workspace_close(): void
 
 function render_status_cards(array $cards): void
 {
-    echo '<div class="status-grid">';
+    echo '<section class="workspace-overview" aria-labelledby="workspace-overview-title"><header><div><h2 id="workspace-overview-title">At a glance</h2><p>Current records for this account.</p></div></header><div class="status-grid">';
     foreach ($cards as $card) {
         echo '<article class="status-card"><span>' . e($card['label']) . '</span><strong>' . e((string) $card['value']) . '</strong><small>' . e($card['detail']) . '</small></article>';
     }
-    echo '</div>';
+    echo '</div></section>';
 }

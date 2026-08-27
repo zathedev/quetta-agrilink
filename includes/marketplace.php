@@ -8,6 +8,7 @@ function marketplace_filters(array $input): array
     $requestedSort = is_string($input['sort'] ?? null) ? $input['sort'] : 'recent';
     $sort = array_key_exists($requestedSort, $sorts) ? $requestedSort : 'recent';
     return [
+        'search' => normalize_text($input['search'] ?? '', 80),
         'category_id' => filter_var($input['category_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: null,
         'district' => normalize_text($input['district'] ?? '', 100),
         'grade' => in_array(($input['grade'] ?? ''), ['A', 'B', 'C', 'Mixed'], true) ? $input['grade'] : '',
@@ -302,6 +303,13 @@ function find_listings(array $filters, int $limit = 24): array
 {
     $where = ['pl.status = "active"'];
     $params = [];
+    if ($filters['search'] !== '') {
+        $where[] = '(pl.title LIKE :search_title OR pl.description LIKE :search_description OR pc.name LIKE :search_category)';
+        $searchTerm = '%' . $filters['search'] . '%';
+        $params['search_title'] = $searchTerm;
+        $params['search_description'] = $searchTerm;
+        $params['search_category'] = $searchTerm;
+    }
     if ($filters['category_id'] !== null) { $where[] = 'pl.category_id = :category_id'; $params['category_id'] = $filters['category_id']; }
     if ($filters['district'] !== '') { $where[] = 'l.district = :district'; $params['district'] = $filters['district']; }
     if ($filters['grade'] !== '') { $where[] = 'pl.grade = :grade'; $params['grade'] = $filters['grade']; }

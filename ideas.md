@@ -184,3 +184,8 @@ Noto Serif stays for brand moments and selected page headings, capped to a calm 
 
 - The sign-up screen now keeps the form in a single centered work panel, removing the unused dark half-screen and placing every required field inside an easy-to-scan reading width.
 - The buyer dashboard now has a visible inner gutter around the header, task panel, activity controls, summaries, record table, and direct links; its workspace content no longer touches the sidebar or browser edge.
+
+## Discovery and Summary Review
+
+- Storage discovery keeps filters in a compact left rail and renders populated facilities as independent vertical cards with capacity, price, compatible produce, and a clear next action.
+- Role dashboards group factual record counts beneath one “At a glance” heading, preserving the existing account-scoped figures while making the first scan more direct.

@@ -164,6 +164,20 @@ async function authenticate(cdp, sessionId, email, accountPassword) {
   }
 }
 
+async function assertAccountFormFeedback(cdp, sessionId) {
+  await visit(cdp, sessionId, "auth/login.php", desktop);
+  const login = await evaluate(cdp, sessionId, `(() => { const email = document.querySelector('[name="email"]'); const password = document.querySelector('[name="password"]'); email.value = 'not-an-email'; email.dispatchEvent(new Event('input', { bubbles: true })); password.value = ''; password.dispatchEvent(new Event('blur', { bubbles: true })); return { email: document.querySelector('[data-field-error="email"]')?.textContent.trim(), password: document.querySelector('[data-field-error="password"]')?.textContent.trim(), blocked: email.getAttribute('aria-invalid') === 'true' && password.getAttribute('aria-invalid') === 'true' }; })()`);
+  if (login?.email !== "Enter a valid email address." || login?.password !== "Enter your password." || !login?.blocked) {
+    throw new Error(`Sign-in form validation check failed: ${JSON.stringify(login)}`);
+  }
+  await visit(cdp, sessionId, "auth/register.php", desktop);
+  const register = await evaluate(cdp, sessionId, `(() => { const values = { full_name: 'A', email: 'invalid', phone: 'letters', password: 'short' }; for (const [name, value] of Object.entries(values)) { const field = document.querySelector('[name="' + name + '"]'); field.value = value; field.dispatchEvent(new Event('input', { bubbles: true })); } return Object.fromEntries(Object.keys(values).map((name) => [name, document.querySelector('[data-field-error="' + name + '"]')?.textContent.trim()])); })()`);
+  const expected = { full_name: "Enter at least 3 characters for your name.", email: "Enter a valid email address.", phone: "Use 7–25 digits and standard phone symbols only.", password: "Use at least 10 characters with a letter and a number." };
+  if (JSON.stringify(register) !== JSON.stringify(expected)) {
+    throw new Error(`Account-creation form validation check failed: ${JSON.stringify(register)}`);
+  }
+}
+
 async function stopBrowser(browser) {
   if (browser.exitCode !== null) return;
   browser.kill("SIGTERM");
@@ -178,7 +192,7 @@ const publicCaptures = [
   { name: "sign-in-desktop", path: "auth/login.php", selector: ".auth-page", text: "Enter the email address", viewport: desktop },
   { name: "sign-up-desktop", path: "auth/register.php", selector: ".auth-page", text: "Account details", viewport: desktop },
   { name: "marketplace-desktop", path: "marketplace/index.php", selector: ".market-layout", text: "Compare available produce", viewport: desktop },
-  { name: "storage-desktop", path: "storage/index.php", selector: ".service-hero", text: "Reserve the capacity", viewport: desktop },
+  { name: "storage-desktop", path: "storage/index.php", selector: ".storage-discovery-layout", text: "Find storage that fits the harvest", viewport: desktop },
   { name: "transport-desktop", path: "transport/index.php", selector: ".service-hero", text: "Match the crop", viewport: desktop },
   { name: "market-prices-desktop", path: "market-prices.php", selector: ".price-register-layout", text: "Reference, not a quote", viewport: desktop },
   { name: "how-it-works-desktop", path: "how-it-works.php", selector: ".guide-workflow-section", text: "Each handover makes the next decision more specific", viewport: desktop },
@@ -186,7 +200,7 @@ const publicCaptures = [
   { name: "contact-desktop", path: "contact.php", selector: ".contact-context-section", text: "Keep operational support inside the workspace", viewport: desktop },
   { name: "public-home-mobile", path: "", selector: ".desk-home", text: "Manage produce after harvest", viewport: mobile },
   { name: "sign-up-mobile", path: "auth/register.php", selector: ".auth-page", text: "Account details", viewport: mobile },
-  { name: "storage-mobile", path: "storage/index.php", selector: ".service-hero", text: "Reserve the capacity", viewport: mobile },
+  { name: "storage-mobile", path: "storage/index.php", selector: ".storage-discovery-layout", text: "Find storage that fits the harvest", viewport: mobile },
   { name: "transport-mobile", path: "transport/index.php", selector: ".service-hero", text: "Match the crop", viewport: mobile },
   { name: "market-prices-mobile", path: "market-prices.php", selector: ".price-register-layout", text: "Reference, not a quote", viewport: mobile },
   { name: "how-it-works-mobile", path: "how-it-works.php", selector: ".guide-workflow-section", text: "Each handover makes the next decision more specific", viewport: mobile },
@@ -224,6 +238,7 @@ try {
   await cdp.send("Network.enable", {}, sessionId);
 
   const records = [];
+  await assertAccountFormFeedback(cdp, sessionId);
   for (const definition of publicCaptures) await capture(cdp, sessionId, definition, records);
   await authenticate(cdp, sessionId, buyerEmail, buyerPassword);
   for (const definition of buyerCaptures) await capture(cdp, sessionId, definition, records);
