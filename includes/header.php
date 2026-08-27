@@ -29,6 +29,7 @@ $stylesheet_url = static function (string $relativePath): string {
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/market-desk.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/workspace-mobile-menu.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/preview-parity.css')) ?>">
+    <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/public-information-parity.css')) ?>">
 </head>
 <body>
 <div class="site-notice"><div class="site-container">Serving Quetta first. Built for Balochistan’s post-harvest trade.</div></div>

@@ -206,4 +206,6 @@
 - [x] Add an opt-in local-browser visual-regression runner for the authoritative PHP/XAMPP application without changing production routes or data.
 - [x] Capture and verify deterministic baseline snapshots for representative public, authentication, workspace, and administrator PHP surfaces.
 - [x] Document the local visual-regression command, prerequisite services, and generated-artifact handling for XAMPP operators.
-- [ ] Complete the remaining PHP market-price and informational-guide visual-parity pass, then run final XAMPP acceptance validation.
+- [x] Align the authoritative PHP market-price index and price-record presentation with the Orchard Ledger reference hierarchy while retaining existing market data and administrator controls.
+- [x] Align the authoritative PHP information and guidance pages with the same paper-led operational framing while retaining their existing navigation and content behavior.
+- [x] Validate local PHP market-price and guide rendering, then remove the completed backlog item after committing and pushing the parity update.
