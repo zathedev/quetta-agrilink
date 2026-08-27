@@ -243,7 +243,7 @@ function workspace_summary_window(): array
 function render_status_cards(array $cards, ?array $summaryWindow = null): void
 {
     echo '<section class="workspace-overview" aria-labelledby="workspace-overview-title"><header><div><h2 id="workspace-overview-title">At a glance</h2><p>Current records for this account.</p></div>';
-    if ($summaryWindow !== null) echo '<form method="get" class="summary-date-filter"><label>From <input type="date" name="summary_from" value="' . e($summaryWindow['from_input']) . '"></label><label>To <input type="date" name="summary_to" value="' . e($summaryWindow['to_input']) . '"></label><button class="button button-quiet" type="submit">Apply dates</button></form>';
+    if ($summaryWindow !== null) echo '<form method="get" class="summary-date-filter"><label>From <input type="date" name="summary_from" value="' . e($summaryWindow['from_input']) . '"></label><label>To <input type="date" name="summary_to" value="' . e($summaryWindow['to_input']) . '"></label><button class="button button-quiet" type="submit">Apply dates</button><a class="button button-outline" href="' . e(app_url('dashboard/export-summary.php?summary_from=' . rawurlencode($summaryWindow['from_input']) . '&summary_to=' . rawurlencode($summaryWindow['to_input']))) . '">Export CSV</a></form>';
     echo '</header><div class="status-grid">';
     foreach ($cards as $card) {
         echo '<article class="status-card"><span>' . e($card['label']) . '</span><strong>' . e((string) $card['value']) . '</strong><small>' . e($card['detail']) . '</small></article>';

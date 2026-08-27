@@ -321,6 +321,19 @@ function find_listings(array $filters, int $limit = 24, int $offset = 0): array
     return fetch_all($sql, $params);
 }
 
+function count_listings(array $filters): int
+{
+    $where = ['pl.status = "active"']; $params = [];
+    if ($filters['search'] !== '') { $where[] = '(pl.title LIKE :search_title OR pl.description LIKE :search_description OR pc.name LIKE :search_category)'; $term = '%' . $filters['search'] . '%'; $params = ['search_title' => $term, 'search_description' => $term, 'search_category' => $term]; }
+    if ($filters['category_id'] !== null) { $where[] = 'pl.category_id = :category_id'; $params['category_id'] = $filters['category_id']; }
+    if ($filters['district'] !== '') { $where[] = 'l.district = :district'; $params['district'] = $filters['district']; }
+    if ($filters['grade'] !== '') { $where[] = 'pl.grade = :grade'; $params['grade'] = $filters['grade']; }
+    if ($filters['min_price'] !== null) { $where[] = 'pl.expected_price >= :min_price'; $params['min_price'] = $filters['min_price']; }
+    if ($filters['max_price'] !== null) { $where[] = 'pl.expected_price <= :max_price'; $params['max_price'] = $filters['max_price']; }
+    if ($filters['min_quantity'] !== null) { $where[] = 'pl.quantity_available >= :min_quantity'; $params['min_quantity'] = $filters['min_quantity']; }
+    return (int) (fetch_one('SELECT COUNT(*) AS count FROM produce_listings pl JOIN produce_categories pc ON pc.id = pl.category_id JOIN locations l ON l.id = pl.location_id WHERE ' . implode(' AND ', $where), $params)['count'] ?? 0);
+}
+
 function listing_card_html(array $listing, int $index = 0): string
 {
     $image = $listing['image_path'] ?: '/manus-storage/quetta-agrilink-market_4c9d82f8.jpg';
