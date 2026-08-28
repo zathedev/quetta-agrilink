@@ -13,6 +13,8 @@ $summaryWindow = workspace_summary_window(); $range = ['provider' => $providerId
 $summary = ['total' => 0, 'occupied' => 0, 'available' => 0];
 $pending = ['count' => 0];
 $active = ['count' => 0];
+$completed = ['count' => 0];
+$revenue = ['total' => 0];
 $recent = [];
 $supportAttention = support_desk_dashboard_attention($user);
 
@@ -20,6 +22,8 @@ if ($providerId > 0) {
     $summary = fetch_one('SELECT COALESCE(SUM(total_capacity_kg),0) AS total,COALESCE(SUM(total_capacity_kg-available_capacity_kg),0) AS occupied,COALESCE(SUM(available_capacity_kg),0) AS available FROM storage_facilities WHERE provider_id=:provider', ['provider' => $providerId]) ?? $summary;
     $pending = fetch_one('SELECT COUNT(*) AS count FROM storage_bookings sb JOIN storage_facilities sf ON sf.id=sb.facility_id WHERE sf.provider_id=:provider AND sb.status="requested" AND sb.created_at >= :from AND sb.created_at < :to', $range) ?? $pending;
     $active = fetch_one('SELECT COUNT(*) AS count FROM storage_bookings sb JOIN storage_facilities sf ON sf.id=sb.facility_id WHERE sf.provider_id=:provider AND sb.status IN("approved","active") AND sb.created_at >= :from AND sb.created_at < :to', $range) ?? $active;
+    $completed = fetch_one('SELECT COUNT(*) AS count FROM storage_bookings sb JOIN storage_facilities sf ON sf.id=sb.facility_id WHERE sf.provider_id=:provider AND sb.status="completed" AND sb.created_at >= :from AND sb.created_at < :to', $range) ?? $completed;
+    $revenue = fetch_one('SELECT COALESCE(SUM(sb.estimated_cost),0) AS total FROM storage_bookings sb JOIN storage_facilities sf ON sf.id=sb.facility_id WHERE sf.provider_id=:provider AND sb.status="completed" AND sb.created_at >= :from AND sb.created_at < :to', $range) ?? $revenue;
     $recent = fetch_all('SELECT sb.id,sb.reference_code,sb.quantity_kg,sb.start_date,sb.end_date,sb.status,u.full_name,sf.name FROM storage_bookings sb JOIN storage_facilities sf ON sf.id=sb.facility_id JOIN users u ON u.id=sb.farmer_id WHERE sf.provider_id=:provider ORDER BY sb.created_at DESC LIMIT 6', ['provider' => $providerId]);
 }
 
@@ -27,9 +31,12 @@ workspace_open('Storage provider dashboard', 'dashboard');
 render_status_cards([
     ['label' => 'Total capacity', 'value' => number_format((float) $summary['total'], 0) . ' kg', 'detail' => 'across listed facilities'],
     ['label' => 'Occupied capacity', 'value' => number_format((float) $summary['occupied'], 0) . ' kg', 'detail' => 'calculated from current availability'],
+    ['label' => 'Available capacity', 'value' => number_format((float) $summary['available'], 0) . ' kg', 'detail' => 'currently listed for booking'],
     ['label' => 'Pending bookings', 'value' => (int) $pending['count'], 'detail' => 'awaiting your review'],
     ['label' => 'Support attention', 'value' => $supportAttention['queue_open'], 'detail' => $supportAttention['available'] ? 'routed local requests' : 'migration needed'],
     ['label' => 'Active bookings', 'value' => (int) $active['count'], 'detail' => 'approved or in storage'],
+    ['label' => 'Completed bookings', 'value' => (int) $completed['count'], 'detail' => 'finished in selected period'],
+    ['label' => 'Revenue', 'value' => 'Rs. ' . number_format((float) $revenue['total'], 0), 'detail' => 'completed booking estimates'],
 ], $summaryWindow);
 ?>
 <?php if ($providerId === 0): ?><section class="workspace-focus"><span>Account setup pending</span><h2>No facility profile has been added for this account.</h2><p>This retained development credential has no fictional storage operation. Add verified organisation details and a real facility before using the account for live capacity or booking work.</p><a class="button button-primary" href="<?= e(app_url('storage/facilities.php')) ?>">Add facility</a></section><?php endif; ?>

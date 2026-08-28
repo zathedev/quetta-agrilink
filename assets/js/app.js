@@ -128,6 +128,12 @@
       field.append(label, input, help);
       heading.insertAdjacentElement('afterend', field);
     }
+    if (!form.querySelector('[name="harvest_from"]')) {
+      const quantity = form.querySelector('[name="min_quantity"]')?.closest('.form-field');
+      const from = document.createElement('div'); from.className = 'form-field'; from.innerHTML = '<label for="harvest-from">Harvested from</label><input id="harvest-from" name="harvest_from" type="date">';
+      const to = document.createElement('div'); to.className = 'form-field'; to.innerHTML = '<label for="harvest-to">Harvested to</label><input id="harvest-to" name="harvest_to" type="date">';
+      quantity?.insertAdjacentElement('afterend', to); quantity?.insertAdjacentElement('afterend', from);
+    }
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const resultTarget = document.querySelector('[data-marketplace-results]');
@@ -156,7 +162,7 @@
 
     let marketplaceSearchDelay;
     form.addEventListener('input', (event) => {
-      if (!event.target.matches('[name="search"], [name="min_price"], [name="max_price"], [name="min_quantity"]')) return;
+      if (!event.target.matches('[name="search"], [name="min_price"], [name="max_price"], [name="min_quantity"], [name="harvest_from"], [name="harvest_to"]')) return;
       window.clearTimeout(marketplaceSearchDelay);
       marketplaceSearchDelay = window.setTimeout(() => form.requestSubmit(), 280);
     });
@@ -195,6 +201,15 @@
       if (event.target.matches('select')) form.requestSubmit();
     });
   });
+
+  const facilitySelect = document.querySelector('#facility_id');
+  if (facilitySelect) {
+    const requestedFacility = new URLSearchParams(window.location.search).get('facility');
+    if (requestedFacility && facilitySelect.querySelector(`option[value="${CSS.escape(requestedFacility)}"]`)) facilitySelect.value = requestedFacility;
+    document.querySelectorAll('[data-facility-id]').forEach((link) => link.addEventListener('click', () => {
+      if (facilitySelect.querySelector(`option[value="${CSS.escape(link.dataset.facilityId)}"]`)) facilitySelect.value = link.dataset.facilityId;
+    }));
+  }
 
   document.querySelectorAll('[data-saved-marketplace-filter]').forEach((form) => {
     form.addEventListener('submit', () => {

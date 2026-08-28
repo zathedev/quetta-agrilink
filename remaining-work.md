@@ -1,20 +1,11 @@
-# Quetta AgriLink — Remaining Work
+# Quetta AgriLink — Production Release Gates
 
-This is the **active work register** for the authoritative PHP/XAMPP application and its managed UI mirror. It contains only unfinished items. When an item is completed, validated, committed, and pushed, it is **removed from this file** and retained in `todo.md` as delivery history.
+The requested local XAMPP MVP workflows are implemented. The items below are deployment decisions that cannot be truthfully completed with placeholder data or invented third-party credentials.
 
-There are currently no unfinished role-specific business-editor items in the active register.
+- Assign and verify an organization-owned public support channel.
+- Select and contract a Pakistan-appropriate regulated payment provider before enabling online fund movement; the application currently records manual payment instructions and farmer-confirmed receipt only.
+- Configure production HTTPS, rate limiting, backups, monitoring, privacy/legal notices, retention rules, and password-reset delivery.
+- Replace the clearly labelled fictional demo records with approved live accounts, facilities, fleet, produce, and market-source data before launch.
+- Run an accessibility/security review and user acceptance testing with representative farmers, buyers, storage operators, and transport operators.
 
-## Commerce Order and Transport Assignment Operations
-
-- Add account-scoped farmer and buyer order/history desks with validated order-status progression and order-status-history records.
-- Extend transport-provider operations to record protected vehicle assignment, driver assignment, and provider quote/estimated-price decisions alongside allowed request-status changes.
-
-## Internal Commercial Messaging, Reviews, and Payments
-
-- Add account-scoped buyer–farmer listing/order message threads with protected persistence, notifications, and no external delivery dependency.
-- Add a genuine, transaction-linked review/rating flow without seeding invented reviews or testimonials, and define a locally appropriate payment-provider workflow before any payments are processed.
-
-## Administrator Operations and Launch Hardening
-
-- Add administrator CRUD/status control surfaces for produce categories, listings, offers, orders, storage facilities/bookings, vehicles, transport requests/trips, and announcements; expand factual analytics with useful time-series, category, top-product, and activity views.
-- Add protected, owner-scoped produce/facility/vehicle media management with safe image processing; add branded 403/404/500 error routes and complete the documented production release gate for support ownership, reset delivery, rate limiting, privacy/legal notices, backup, HTTPS, monitoring, verified data, and payment decisions.
+These are intentionally release blockers, not simulated application features.

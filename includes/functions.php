@@ -815,7 +815,8 @@ function require_role(array $roles): array
             json_response(false, 'You are not authorized to perform this action.', [], 403);
         }
         http_response_code(403);
-        exit('You are not authorized to access this page.');
+        require dirname(__DIR__) . '/403.php';
+        exit;
     }
     return $user;
 }

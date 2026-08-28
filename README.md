@@ -6,15 +6,16 @@ Quetta AgriLink is a PHP and MySQL agricultural marketplace designed for Quetta 
 
 ## Product scope
 
-The current codebase is a direct XAMPP-compatible PHP application. It does not require Docker, Composer, Node.js, npm, or a frontend build process. It uses HTML5, CSS3, Tailwind CSS in browser mode, vanilla JavaScript, protected AJAX endpoints, PHP 8+, PDO, and MySQL/MariaDB.
+The current codebase is a direct XAMPP-compatible PHP application. It does not require Docker, Composer, Node.js, npm, a CDN, or a frontend build process. It uses HTML5, project-local CSS3, vanilla JavaScript, protected AJAX endpoints, PHP 8+, PDO, and MySQL/MariaDB.
 
 | Area | Current working capability |
 |---|---|
 | Public experience | Homepage, About, How It Works, Contact, marketplace, cold storage, transport, and market-price pages. |
 | Identity | Registration, login, logout, session expiry, role-aware authorization, secure password hashing, and demo accounts. |
 | Marketplace | Active listing discovery, server-side filtering, listing detail, buyer favourites, buyer offers, farmer counteroffers, acceptance/rejection, and order creation. |
+| Commerce | Farmer/buyer order desks, validated lifecycle updates, permanent status history, sales/purchase history, verified-order reviews, commercial messaging, and manual payment evidence. |
 | Storage | Facility discovery, compatible-produce checks, requested booking creation, estimated storage cost, provider approval/rejection, activation, completion, and status history. |
-| Transport | Provider discovery, farmer request creation, provider acceptance/decline, and recorded dispatch progression from driver assignment through delivery. |
+| Transport | Provider discovery, farmer request creation/status tracking, provider quote, protected vehicle/driver assignment, and recorded dispatch progression through delivery. |
 | Workspaces | Farmer, buyer, cold-storage provider, transport provider, and administrator dashboards, with account-scoped records. |
 | Notifications | In-app notifications created for offers, booking requests, storage status, transport status, orders, and local support attention. |
 | Market intelligence | Administrator-recorded reference price ranges and asynchronous product filtering. |
@@ -37,7 +38,7 @@ Enable Apache `mod_rewrite` if it is available. The project remains usable witho
 
 1. Install XAMPP and start **Apache** and **MySQL** from the XAMPP Control Panel.
 2. Copy or clone this repository into `C:/xampp/htdocs/quetta-agrilink/`.
-3. Open `http://localhost/phpmyadmin/` and import `database/quetta_agrilink.sql`. The script creates and selects the `quetta_agrilink` database, tables, indexes, relationships, required references, and documented development credentials; it inserts no fictional operational data.
+3. Open `http://localhost/phpmyadmin/` and import `database/quetta_agrilink.sql`. The one script creates and selects the `quetta_agrilink` database, all feature tables, indexes, relationships, documented development credentials, and clearly labelled fictional demo operations.
 4. Confirm the database settings in `config/config.php`. The default XAMPP values are `127.0.0.1`, port `3306`, database `quetta_agrilink`, username `root`, and a blank password.
 5. If your XAMPP MySQL password differs, copy `config/config.example.php` to `config/config.php` and update `DB_USER` and `DB_PASS`. Keep production credentials outside version control.
 6. Visit [http://localhost/quetta-agrilink/](http://localhost/quetta-agrilink/).
@@ -76,6 +77,11 @@ quetta-agrilink/
 ├── farmer/                 # Farmer dashboard and offer desk
 ├── includes/               # PDO, authentication, services, and reusable layout
 ├── marketplace/            # Listing discovery and listing detail
+├── orders.php              # Farmer/buyer/admin order desk and status history
+├── messages.php            # Account-scoped commercial conversations
+├── payments.php            # Manual payment evidence and receipt confirmation
+├── reviews.php             # Completed-order review workflow
+├── media.php               # Secure listing/facility/vehicle image management
 ├── storage/                # Storage discovery and provider workspace
 ├── transport/              # Transport discovery and provider workspace
 ├── uploads/                # Non-executable user-upload directory
@@ -130,6 +136,7 @@ The shared `assets/js/app.js` helper sends same-origin requests with `Accept: ap
 | Workflow | Supported progression |
 |---|---|
 | Offer | Pending → Countered, Accepted, Rejected. An accepted offer creates an order and deducts the relevant listing quantity transactionally. |
+| Order | Pending → Confirmed → storage/transport planning → pickup → transit → Delivered → Completed, with every change stored in `order_status_history`. |
 | Storage booking | Requested → Approved or Rejected → Active → Completed. Approval reserves available facility capacity; completion returns capacity. |
 | Transport request | Requested → Accepted or Cancelled → Driver Assigned → Pickup Scheduled → Picked Up → In Transit → Delivered. |
 | Notifications | Created unread; each is owner-scoped and may be marked read using the protected JSON endpoint. |
@@ -147,9 +154,9 @@ The shared `assets/js/app.js` helper sends same-origin requests with `Accept: ap
 
 ## Future improvements before a live production launch
 
-This foundation is intended for a demonstrable commercial MVP. A production launch should add a verified public support channel, secure image resize/processing service, password-reset delivery, complete admin CRUD controls, provider facility and vehicle editors, customer-controlled notification preferences, privacy/legal notices, rate limiting, backup strategy, HTTPS enforcement, monitoring, and a payment provider selected for the intended operating market.
+This foundation is intended for a demonstrable commercial MVP. A public production launch still requires an organization-owned support channel, external password-reset delivery, privacy/legal approval, rate limiting, backups, HTTPS enforcement, monitoring, verified live market data, and a regulated payment provider selected for the intended operating market.
 
-Fresh database imports intentionally contain no fictional operational records. Before adding real customer information, ensure consent, data governance, verified support operations, and appropriate production controls are in place.
+Fresh imports contain only clearly labelled fictional demo accounts and operations; they must be replaced or removed before using real customer information. Establish consent, data governance, verified support operations, and appropriate production controls first.
 
 ### Current support-channel state
 
@@ -159,12 +166,8 @@ The local configuration defaults to an intentionally **unconfigured** support ch
 
 Before moving the authoritative PHP/XAMPP application beyond a local demonstration, complete [`docs/PRODUCTION_RELEASE_CHECKLIST.md`](docs/PRODUCTION_RELEASE_CHECKLIST.md). It is deliberately a release gate rather than a publishing instruction: the current unconfigured support channel, development credentials, and absence of approved local market data prevent a public launch until their responsible owners resolve them.
 
-Named local operators can replace the documented development credentials through the administrator-only transition register after its migration is applied. See [`docs/LOCAL_OPERATOR_TRANSITION.md`](docs/LOCAL_OPERATOR_TRANSITION.md); the process records accountable changes without showing or exporting passwords or recovery secrets.
+Named local operators can replace the documented development credentials through the administrator-only transition register included in the main schema. See [`docs/LOCAL_OPERATOR_TRANSITION.md`](docs/LOCAL_OPERATOR_TRANSITION.md).
 
-Approved local reference prices can be added only through the administrator-managed CSV intake register after its migration is applied. See [`docs/LOCAL_MARKET_DATA_IMPORT.md`](docs/LOCAL_MARKET_DATA_IMPORT.md); the importer validates all rows before saving, retains named source/batch accountability, and never seeds or fabricates market data.
+Approved local reference prices can be added through the administrator-managed CSV intake register included in the main schema. See [`docs/LOCAL_MARKET_DATA_IMPORT.md`](docs/LOCAL_MARKET_DATA_IMPORT.md).
 
-Authenticated accounts can create local in-app support requests after `database/migrations/20260827_add_in_app_support_desk.sql` is imported. See [`docs/LOCAL_IN_APP_SUPPORT.md`](docs/LOCAL_IN_APP_SUPPORT.md); requests route to administrator, cold-storage, or transport workspaces, retain accountable local history, and never send email, SMS, SMTP, webhooks, or external-helpdesk messages.
-
-## GitHub workflow
-
-This repository is configured for a private GitHub remote. Each implementation increment is committed with a focused, readable conventional commit and pushed to the `main` branch. The live project history can be reviewed at [github.com/zathedev/quetta-agrilink](https://github.com/zathedev/quetta-agrilink).
+Authenticated accounts can create local in-app support requests immediately after the main schema import. See [`docs/LOCAL_IN_APP_SUPPORT.md`](docs/LOCAL_IN_APP_SUPPORT.md); requests route to administrator, cold-storage, or transport workspaces and never claim external delivery.

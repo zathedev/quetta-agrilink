@@ -133,6 +133,7 @@ function storage_facility_cards_html(array $facilities, ?array $user = null): st
                 <li><span>Daily price</span><strong>Rs. <?= number_format((float) $facility['price_per_kg_day'], 2) ?>/kg</strong></li>
                 <li><span>Supported produce</span><strong><?= e((string) ($facility['supported_products'] ?: 'Provider to confirm')) ?></strong></li>
             </ul>
+            <a class="button button-quiet" href="<?= e(app_url('storage/facility.php?id='.(int)$facility['id'])) ?>">View facility details</a>
             <?php if ($user !== null && $user['role_slug'] === 'farmer'): ?>
                 <a class="button button-primary" href="#book-storage" data-facility-id="<?= (int) $facility['id'] ?>">Request this capacity</a>
             <?php else: ?>

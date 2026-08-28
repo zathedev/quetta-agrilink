@@ -6,6 +6,7 @@ require_once __DIR__ . '/bootstrap.php';
 if (!defined('QUETTA_WORKBENCH_OUTPUT_FILTER')) {
     define('QUETTA_WORKBENCH_OUTPUT_FILTER', true);
     ob_start(static function (string $html): string {
+        $html = preg_replace('#/manus-storage/[^"\')]+#', '', $html) ?? $html;
         return preg_replace('/<[^>]+class=("|\')[^"\']*\b(?:eyebrow|desk-kicker)\b[^"\']*\1[^>]*>.*?<\/[^>]+>/si', '', $html) ?? $html;
     });
 }
@@ -30,7 +31,6 @@ $stylesheet_url = static function (string $relativePath): string {
     <meta name="description" content="<?= e($pageDescription) ?>">
     <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
     <title><?= e($pageTitle) ?> | <?= e(APP_NAME) ?></title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/local-fonts.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/app.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/market-desk.css')) ?>">

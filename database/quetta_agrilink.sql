@@ -316,6 +316,18 @@ CREATE TABLE facility_supported_products (
     CONSTRAINT fk_facility_product_category FOREIGN KEY (category_id) REFERENCES produce_categories(id)
 ) ENGINE=InnoDB;
 
+CREATE TABLE storage_facility_images (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    facility_id BIGINT UNSIGNED NOT NULL,
+    file_path VARCHAR(255) NOT NULL,
+    alt_text VARCHAR(180) NULL,
+    is_primary TINYINT(1) NOT NULL DEFAULT 0,
+    sort_order SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_facility_image_facility FOREIGN KEY (facility_id) REFERENCES storage_facilities(id) ON DELETE CASCADE,
+    INDEX idx_facility_images (facility_id, is_primary, sort_order)
+) ENGINE=InnoDB;
+
 CREATE TABLE storage_bookings (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     reference_code VARCHAR(32) NOT NULL UNIQUE,
@@ -614,7 +626,8 @@ CREATE TABLE password_reset_tokens (
     INDEX idx_reset_token_expiry (expires_at)
 ) ENGINE=InnoDB;
 
--- Required reference rows and development-only credentials. All five accounts use the password: AgriLinkDemo2026! No fictional operational records are seeded.
+-- Required reference rows and clearly labelled fictional demonstration data.
+-- All five accounts use the password: AgriLinkDemo2026!
 INSERT INTO roles (id, slug, name, description) VALUES
 (1, 'farmer', 'Farmer', 'Grower and produce supplier'),
 (2, 'buyer', 'Buyer', 'Produce buyer or business purchaser'),
@@ -647,6 +660,58 @@ INSERT INTO produce_categories (id, name, slug, description) VALUES
 (8, 'Pomegranates', 'pomegranates', 'Fresh pomegranates.'),
 (9, 'Vegetables', 'vegetables', 'Seasonal vegetables.');
 
+-- Fictional demo profiles and operational records for local evaluation only.
+INSERT INTO farmer_profiles (id,user_id,farm_name,farm_location_id,farm_size_acres,bio) VALUES
+(1,1,'Quetta Valley Demo Orchard',2,18.50,'Fictional demonstration orchard record for local product evaluation.');
+INSERT INTO buyer_profiles (id,user_id,business_name,business_type,location_id,bio) VALUES
+(1,2,'Balochistan Fresh Trade Demo','Wholesale buyer',1,'Fictional demonstration buyer record.');
+INSERT INTO storage_providers (id,user_id,business_name,registration_number,location_id,bio) VALUES
+(1,3,'Quetta Cold Chain Demo','DEMO-ST-001',1,'Fictional demonstration cold-storage operator.');
+INSERT INTO transport_providers (id,user_id,company_name,registration_number,location_id,bio) VALUES
+(1,4,'Balochistan Produce Logistics Demo','DEMO-TR-001',1,'Fictional demonstration transport operator.');
+
+INSERT INTO produce_listings (id,farmer_id,category_id,location_id,title,description,grade,quantity_available,unit,expected_price,harvest_date,available_from,minimum_order_quantity,status,published_at) VALUES
+(1,1,1,2,'Pishin Grade A Apples','Demo listing: packed orchard apples available for wholesale collection.','A',2500,'kg',180,'2026-08-20','2026-08-22',250,'active','2026-08-22 09:00:00'),
+(2,1,2,1,'Quetta Table Grapes','Demo listing: table grapes in ventilated crates.','A',1200,'kg',220,'2026-08-24','2026-08-25',100,'active','2026-08-25 10:30:00'),
+(3,1,3,4,'Ziarat Fresh Apricots','Demo listing retained as a completed seasonal supply record.','B',0,'kg',145,'2026-06-12','2026-06-13',150,'sold_out','2026-06-13 08:00:00');
+
+INSERT INTO storage_facilities (id,provider_id,location_id,name,description,storage_type,total_capacity_kg,available_capacity_kg,price_per_kg_day,status) VALUES
+(1,1,1,'Quetta Produce Cold Store — Demo','Demo multi-crop cold room near the Quetta trade corridor.','cold_storage',50000,42000,0.85,'active'),
+(2,1,2,'Pishin Orchard Store — Demo','Demo seasonal controlled-atmosphere capacity.','controlled_atmosphere',30000,30000,1.10,'active');
+INSERT INTO facility_supported_products (facility_id,category_id) VALUES (1,1),(1,2),(1,3),(1,4),(2,1),(2,2);
+
+INSERT INTO vehicles (id,provider_id,vehicle_type,registration_number,capacity_kg,is_refrigerated,price_per_km,status) VALUES
+(1,1,'Medium reefer truck','DEMO-QTA-001',8000,1,185,'busy'),
+(2,1,'Open-body pickup','DEMO-QTA-002',2500,0,95,'available');
+INSERT INTO transport_service_areas (provider_id,location_id) VALUES (1,1),(1,2),(1,3),(1,4),(1,5);
+
+INSERT INTO offers (id,listing_id,buyer_id,farmer_id,quantity,offered_price,total_amount,message,status,responded_at,created_at,updated_at) VALUES
+(1,3,2,1,1000,140,140000,'Demo wholesale offer for the completed apricot trade.','accepted','2026-06-13 12:00:00','2026-06-13 10:00:00','2026-06-13 12:00:00'),
+(2,1,2,1,500,170,85000,'Demo pending apple offer.','pending',NULL,'2026-08-27 11:00:00','2026-08-27 11:00:00');
+INSERT INTO offer_events (offer_id,actor_user_id,event_type,quantity,price,note,created_at) VALUES
+(1,2,'created',1000,140,'Demo buyer offer.','2026-06-13 10:00:00'),(1,1,'accepted',1000,140,'Demo accepted terms.','2026-06-13 12:00:00'),(2,2,'created',500,170,'Demo offer awaiting farmer response.','2026-08-27 11:00:00');
+INSERT INTO orders (id,reference_code,offer_id,buyer_id,farmer_id,status,subtotal,total_amount,confirmed_at,completed_at,created_at,updated_at) VALUES
+(1,'QAL-DEMO-0001',1,2,1,'completed',140000,140000,'2026-06-13 12:00:00','2026-06-18 16:00:00','2026-06-13 12:00:00','2026-06-18 16:00:00');
+INSERT INTO order_items (order_id,listing_id,category_id,produce_name,grade,quantity,unit,unit_price,line_total) VALUES
+(1,3,3,'Ziarat Fresh Apricots','B',1000,'kg',140,140000);
+INSERT INTO order_status_history (order_id,status,changed_by_user_id,notes,created_at) VALUES
+(1,'confirmed',1,'Demo order created from accepted offer.','2026-06-13 12:00:00'),(1,'ready_for_pickup',1,'Demo produce prepared for collection.','2026-06-15 09:00:00'),(1,'picked_up',1,'Demo pickup recorded.','2026-06-16 08:00:00'),(1,'in_transit',1,'Demo load in transit.','2026-06-16 09:00:00'),(1,'delivered',2,'Demo buyer recorded delivery.','2026-06-18 15:30:00'),(1,'completed',2,'Demo trade completed.','2026-06-18 16:00:00');
+
+INSERT INTO storage_bookings (id,reference_code,farmer_id,facility_id,listing_id,category_id,quantity_kg,start_date,end_date,price_per_kg_day,estimated_cost,status) VALUES
+(1,'QAS-DEMO-0001',1,1,1,1,8000,'2026-09-01','2026-09-10',0.85,68000,'approved');
+INSERT INTO storage_booking_status_history (booking_id,status,changed_by_user_id,note,created_at) VALUES
+(1,'requested',1,'Demo farmer request.','2026-08-26 09:00:00'),(1,'approved',3,'Demo capacity approved.','2026-08-26 12:00:00');
+INSERT INTO transport_requests (id,reference_code,farmer_id,provider_id,vehicle_id,listing_id,pickup_location_id,delivery_location_id,produce_description,quantity_kg,required_vehicle_type,requires_refrigeration,pickup_date,estimated_price,driver_name,driver_phone,status,provider_note) VALUES
+(1,'QAT-DEMO-0001',1,1,1,1,2,1,'Grade A apples',2000,'Reefer truck',1,'2026-09-02',32000,'Demo Driver','03000000006','driver_assigned','Demo assignment for local evaluation.');
+INSERT INTO transport_status_history (transport_request_id,status,changed_by_user_id,note,created_at) VALUES
+(1,'requested',1,'Demo request submitted.','2026-08-27 08:00:00'),(1,'accepted',4,'Demo quote accepted by provider.','2026-08-27 10:00:00'),(1,'driver_assigned',4,'Demo vehicle and driver assigned.','2026-08-28 09:00:00');
+
+INSERT INTO market_prices (category_id,location_id,recorded_by_user_id,price_date,min_price,max_price,average_price,unit,notes,source_name) VALUES
+(1,1,5,'2026-08-27',160,195,178,'kg','Fictional demo price range.','DEMO — Quetta reference record'),
+(2,1,5,'2026-08-27',190,245,218,'kg','Fictional demo price range.','DEMO — Quetta reference record'),
+(3,1,5,'2026-06-12',125,160,143,'kg','Fictional demo price range.','DEMO — Quetta reference record'),
+(9,1,5,'2026-08-27',65,110,88,'kg','Fictional demo mixed-vegetable range.','DEMO — Quetta reference record');
+
 CREATE TABLE saved_storage_searches (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT UNSIGNED NOT NULL,
@@ -663,5 +728,79 @@ CREATE TABLE saved_storage_searches (
     INDEX idx_saved_storage_search_user (user_id, updated_at),
     CONSTRAINT fk_saved_storage_search_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_saved_storage_search_category FOREIGN KEY (category_id) REFERENCES produce_categories(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- Consolidated feature tables: included here so phpMyAdmin needs only this file.
+ALTER TABLE users ADD COLUMN onboarding_completed_at DATETIME NULL AFTER last_login_at;
+
+CREATE TABLE saved_marketplace_filters (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL,
+    name VARCHAR(80) NOT NULL, category_id BIGINT UNSIGNED NULL, district VARCHAR(100) NULL,
+    grade VARCHAR(10) NULL, min_price DECIMAL(12,2) NULL, max_price DECIMAL(12,2) NULL,
+    min_quantity DECIMAL(12,2) NULL, sort_key VARCHAR(30) NOT NULL DEFAULT 'recent',
+    is_default TINYINT(1) NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_saved_marketplace_filter_name (user_id,name),
+    INDEX idx_saved_marketplace_filter_user (user_id,created_at), INDEX idx_saved_marketplace_filter_default (user_id,is_default),
+    CONSTRAINT fk_saved_marketplace_filter_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_saved_marketplace_filter_category FOREIGN KEY (category_id) REFERENCES produce_categories(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE record_attachments (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, entity_type VARCHAR(40) NOT NULL, entity_id BIGINT UNSIGNED NOT NULL,
+    uploader_user_id BIGINT UNSIGNED NOT NULL, original_name VARCHAR(180) NOT NULL, stored_name VARCHAR(80) NOT NULL UNIQUE,
+    relative_path VARCHAR(255) NOT NULL UNIQUE, mime_type VARCHAR(100) NOT NULL, file_size INT UNSIGNED NOT NULL,
+    sha256 CHAR(64) NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_record_attachment_entity (entity_type,entity_id), INDEX idx_record_attachment_uploader (uploader_user_id),
+    CONSTRAINT fk_record_attachment_uploader FOREIGN KEY (uploader_user_id) REFERENCES users(id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE account_contact_verifications (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL,
+    verified_email_at DATETIME NULL, verified_phone_at DATETIME NULL, verification_notes VARCHAR(800) NOT NULL,
+    review_reason_code VARCHAR(48) NULL, verified_by_user_id BIGINT UNSIGNED NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_account_contact_verifications_user (user_id), KEY idx_account_contact_verifications_admin (verified_by_user_id),
+    CONSTRAINT fk_account_contact_verifications_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_account_contact_verifications_admin FOREIGN KEY (verified_by_user_id) REFERENCES users(id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE dashboard_activity_presets (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL, preset_name VARCHAR(60) NOT NULL,
+    activity_from DATE NULL, activity_to DATE NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_dashboard_activity_preset_user_name (user_id,preset_name),
+    CONSTRAINT fk_dashboard_activity_presets_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE local_password_recovery_requests (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL,
+    requested_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, requested_ip VARCHAR(45) NULL, verification_notes TEXT NULL,
+    verified_by_user_id BIGINT UNSIGNED NULL, verified_at DATETIME NULL, issued_by_user_id BIGINT UNSIGNED NULL,
+    issued_at DATETIME NULL, selector CHAR(24) NULL UNIQUE, token_hash CHAR(64) NULL, expires_at DATETIME NULL,
+    used_at DATETIME NULL, revoked_at DATETIME NULL, revoked_by_user_id BIGINT UNSIGNED NULL,
+    INDEX idx_local_recovery_user_requested (user_id,requested_at), INDEX idx_local_recovery_active (expires_at,used_at,revoked_at),
+    CONSTRAINT fk_local_recovery_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_local_recovery_verifier FOREIGN KEY (verified_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT fk_local_recovery_issuer FOREIGN KEY (issued_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT fk_local_recovery_revoker FOREIGN KEY (revoked_by_user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE user_notification_preferences (
+    user_id BIGINT UNSIGNED PRIMARY KEY, marketplace_match_alerts_enabled TINYINT(1) NOT NULL DEFAULT 1,
+    browser_chime_enabled TINYINT(1) NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user_notification_preferences_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE operator_account_transitions (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, administrator_id BIGINT UNSIGNED NOT NULL,
+    created_user_id BIGINT UNSIGNED NULL, archived_user_id BIGINT UNSIGNED NULL,
+    action ENUM('operator_created','development_account_archived') NOT NULL, details JSON NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_operator_transition_administrator FOREIGN KEY (administrator_id) REFERENCES users(id),
+    CONSTRAINT fk_operator_transition_created_user FOREIGN KEY (created_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT fk_operator_transition_archived_user FOREIGN KEY (archived_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_operator_transition_created (created_at), INDEX idx_operator_transition_action (action)
 ) ENGINE=InnoDB;
 SET FOREIGN_KEY_CHECKS = 1;

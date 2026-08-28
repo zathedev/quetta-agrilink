@@ -7,6 +7,7 @@ function marketplace_filters(array $input): array
     $sorts = ['recent' => 'pl.published_at DESC', 'price_low' => 'pl.expected_price ASC', 'price_high' => 'pl.expected_price DESC', 'quantity_high' => 'pl.quantity_available DESC'];
     $requestedSort = is_string($input['sort'] ?? null) ? $input['sort'] : 'recent';
     $sort = array_key_exists($requestedSort, $sorts) ? $requestedSort : 'recent';
+    $validDate = static function(mixed $value): ?string { if(!is_string($value)||$value==='')return null;$date=DateTimeImmutable::createFromFormat('!Y-m-d',$value);return $date!==false&&$date->format('Y-m-d')===$value?$value:null; };
     return [
         'search' => normalize_text($input['search'] ?? '', 80),
         'category_id' => filter_var($input['category_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: null,
@@ -15,6 +16,8 @@ function marketplace_filters(array $input): array
         'min_price' => positive_decimal($input['min_price'] ?? null),
         'max_price' => positive_decimal($input['max_price'] ?? null),
         'min_quantity' => positive_decimal($input['min_quantity'] ?? null),
+        'harvest_from' => $validDate($input['harvest_from'] ?? null),
+        'harvest_to' => $validDate($input['harvest_to'] ?? null),
         'sort' => $sort,
         'order_by' => $sorts[$sort],
     ];
@@ -278,6 +281,15 @@ function update_produce_listing_status(int $farmerId, int $listingId, string $st
     return $status;
 }
 
+function delete_produce_listing(int $farmerId, int $listingId): void
+{
+    $listing = fetch_one('SELECT pl.id,pl.title,EXISTS(SELECT 1 FROM offers o WHERE o.listing_id=pl.id) AS has_trade_history FROM produce_listings pl WHERE pl.id=:id AND pl.farmer_id=:farmer LIMIT 1',['id'=>$listingId,'farmer'=>$farmerId]);
+    if($listing===null)throw new RuntimeException('That produce record is not available in your workspace.');
+    if((int)$listing['has_trade_history']===1){execute_query('UPDATE produce_listings SET status="archived" WHERE id=:id',['id'=>$listingId]);$action='produce_listing_archived';}
+    else{execute_query('DELETE FROM produce_listings WHERE id=:id AND farmer_id=:farmer',['id'=>$listingId,'farmer'=>$farmerId]);$action='produce_listing_deleted';}
+    audit_log($farmerId,$action,'produce_listings',$listingId,['title'=>$listing['title']]);
+}
+
 function update_produce_listing_quantity(int $farmerId, int $listingId, mixed $requestedQuantity): float
 {
     $quantity = positive_decimal($requestedQuantity);
@@ -316,6 +328,8 @@ function find_listings(array $filters, int $limit = 24, int $offset = 0): array
     if ($filters['min_price'] !== null) { $where[] = 'pl.expected_price >= :min_price'; $params['min_price'] = $filters['min_price']; }
     if ($filters['max_price'] !== null) { $where[] = 'pl.expected_price <= :max_price'; $params['max_price'] = $filters['max_price']; }
     if ($filters['min_quantity'] !== null) { $where[] = 'pl.quantity_available >= :min_quantity'; $params['min_quantity'] = $filters['min_quantity']; }
+    if ($filters['harvest_from'] !== null) { $where[] = 'pl.harvest_date >= :harvest_from'; $params['harvest_from'] = $filters['harvest_from']; }
+    if ($filters['harvest_to'] !== null) { $where[] = 'pl.harvest_date <= :harvest_to'; $params['harvest_to'] = $filters['harvest_to']; }
     $limit = max(1, min($limit, 48)); $offset = max(0, min($offset, 10000));
     $sql = 'SELECT pl.id, pl.title, pl.grade, pl.quantity_available, pl.unit, pl.expected_price, pl.harvest_date, pl.minimum_order_quantity, pc.name AS category_name, l.district, u.full_name AS farmer_name, pi.file_path AS image_path FROM produce_listings pl JOIN produce_categories pc ON pc.id = pl.category_id JOIN locations l ON l.id = pl.location_id JOIN users u ON u.id = pl.farmer_id LEFT JOIN produce_images pi ON pi.listing_id = pl.id AND pi.is_primary = 1 WHERE ' . implode(' AND ', $where) . ' ORDER BY ' . $filters['order_by'] . ' LIMIT ' . $limit . ' OFFSET ' . $offset;
     return fetch_all($sql, $params);
@@ -331,12 +345,14 @@ function count_listings(array $filters): int
     if ($filters['min_price'] !== null) { $where[] = 'pl.expected_price >= :min_price'; $params['min_price'] = $filters['min_price']; }
     if ($filters['max_price'] !== null) { $where[] = 'pl.expected_price <= :max_price'; $params['max_price'] = $filters['max_price']; }
     if ($filters['min_quantity'] !== null) { $where[] = 'pl.quantity_available >= :min_quantity'; $params['min_quantity'] = $filters['min_quantity']; }
+    if ($filters['harvest_from'] !== null) { $where[] = 'pl.harvest_date >= :harvest_from'; $params['harvest_from'] = $filters['harvest_from']; }
+    if ($filters['harvest_to'] !== null) { $where[] = 'pl.harvest_date <= :harvest_to'; $params['harvest_to'] = $filters['harvest_to']; }
     return (int) (fetch_one('SELECT COUNT(*) AS count FROM produce_listings pl JOIN produce_categories pc ON pc.id = pl.category_id JOIN locations l ON l.id = pl.location_id WHERE ' . implode(' AND ', $where), $params)['count'] ?? 0);
 }
 
 function listing_card_html(array $listing, int $index = 0): string
 {
-    $image = $listing['image_path'] ?: '/manus-storage/quetta-agrilink-market_4c9d82f8.jpg';
+    $image = $listing['image_path'] ? app_url((string) $listing['image_path']) : '';
     $tone = ['', 'grape', 'apricot', 'pomegranate'][$index % 4];
     ob_start(); ?>
     <article class="listing-card"><div class="listing-card-media" style="background-image:url('<?= e($image) ?>')"><span class="badge">Grade <?= e($listing['grade']) ?></span></div><div class="listing-card-body"><div class="listing-card-top"><h2><?= e($listing['title']) ?></h2><div class="commodity-mark <?= e($tone) ?>" aria-hidden="true"></div></div><p class="origin-stamp"><?= e($listing['district']) ?>, Balochistan · <?= e($listing['farmer_name']) ?></p><div class="listing-data"><div><span>Available</span><strong><?= e((string) $listing['quantity_available']) ?> <?= e($listing['unit']) ?></strong></div><div><span>Expected price</span><strong>Rs. <?= number_format((float) $listing['expected_price'], 0) ?>/<?= e($listing['unit']) ?></strong></div><div><span>Minimum order</span><strong><?= e((string) $listing['minimum_order_quantity']) ?> <?= e($listing['unit']) ?></strong></div><div><span>Harvest</span><strong><?= $listing['harvest_date'] ? e(date('j M Y', strtotime($listing['harvest_date']))) : 'Not stated' ?></strong></div></div><div class="listing-card-actions"><span class="muted" style="font-size:12px"><?= e($listing['category_name']) ?></span><a class="button button-quiet" href="<?= e(app_url('marketplace/listing.php?id=' . (int) $listing['id'])) ?>">View listing</a></div></div></article>

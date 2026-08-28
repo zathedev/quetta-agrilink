@@ -1,0 +1,3 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__.'/../includes/bootstrap.php';require_method('POST');verify_csrf();$admin=require_role(['admin']);$id=filter_input(INPUT_POST,'announcement_id',FILTER_VALIDATE_INT,['options'=>['min_range'=>1]]);$active=(int)($_POST['is_active']??0)===1?1:0;if(!$id||!execute_query('UPDATE announcements SET is_active=:active WHERE id=:id',['active'=>$active,'id'=>$id]))flash('error','That announcement could not be updated.');else{audit_log((int)$admin['id'],'announcement_status_changed','announcements',(int)$id,['active'=>$active]);flash('success','Announcement visibility updated.');}redirect('admin/management.php');

@@ -26,4 +26,16 @@ $_SESSION['last_activity_at'] = time();
 
 require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/functions.php';
+require_once __DIR__ . '/commerce.php';
+
+set_exception_handler(static function (Throwable $exception): void {
+    error_log('Unhandled application error: ' . $exception->getMessage());
+    if (is_ajax_request()) {
+        json_response(false, 'The server could not complete this request.', [], 500);
+    }
+    http_response_code(500);
+    $errorReference = strtoupper(substr(hash('sha256', $exception->getMessage() . microtime(true)), 0, 10));
+    require dirname(__DIR__) . '/500.php';
+    exit;
+});
 

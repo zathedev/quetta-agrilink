@@ -5,13 +5,13 @@ require_once __DIR__ . '/support-desk.php';
 
 function workspace_links(string $role): array
 {
-    $common = [['Dashboard', dashboard_path($role), 'dashboard'], ['Marketplace', 'marketplace/index.php', 'marketplace'], ['Notifications', 'notifications.php', 'notifications'], ['In-app support', 'support.php', 'support'], ['My profile', 'account/profile.php', 'profile']];
+    $common = [['Dashboard', dashboard_path($role), 'dashboard'], ['Marketplace', 'marketplace/index.php', 'marketplace'], ['Notifications', 'notifications.php', 'notifications'], ['In-app support', 'support.php', 'support'], ['My profile', 'account/profile.php', 'profile'], ['Settings', 'account/settings.php', 'settings']];
     return match ($role) {
-        'farmer' => array_merge($common, [['Publish produce', 'farmer/listings.php', 'listings'], ['Offers', 'farmer/offers.php', 'offers'], ['Cold storage', 'storage/index.php', 'storage'], ['Transport', 'transport/index.php', 'transport']]),
-        'buyer' => array_merge($common, [['Offers', 'buyer/offers.php', 'offers']]),
-        'storage_provider' => array_merge($common, [['Facility records', 'storage/facilities.php', 'facilities'], ['Storage marketplace', 'storage/index.php', 'storage']]),
-        'transport_provider' => array_merge($common, [['Fleet and service areas', 'transport/fleet.php', 'fleet'], ['Transport marketplace', 'transport/index.php', 'transport']]),
-        'admin' => array_merge($common, [['Market prices', 'market-prices.php', 'prices'], ['Market-data import', 'admin/market-price-import.php', 'market_price_import'], ['Local operators', 'admin/operator-accounts.php', 'operator_accounts'], ['Attachments', 'admin/attachments.php', 'attachments'], ['Password recovery', 'admin/password-recovery.php', 'recovery'], ['Contact verification', 'admin/contact-verification.php', 'contact_verification'], ['Export audit', 'admin/dashboard-export-audit.php', 'dashboard_export_audit']]),
+        'farmer' => array_merge($common, [['Publish produce', 'farmer/listings.php', 'listings'], ['Offers', 'farmer/offers.php', 'offers'], ['Orders & sales', 'orders.php', 'orders'], ['Messages', 'messages.php', 'messages'], ['Reviews', 'reviews.php', 'reviews'], ['Transactions', 'payments.php', 'payments'], ['Media', 'media.php', 'media'], ['Cold storage', 'storage/index.php', 'storage'], ['Transport', 'transport/index.php', 'transport']]),
+        'buyer' => array_merge($common, [['Offers', 'buyer/offers.php', 'offers'], ['Orders & purchases', 'orders.php', 'orders'], ['Messages', 'messages.php', 'messages'], ['Reviews', 'reviews.php', 'reviews'], ['Transactions', 'payments.php', 'payments']]),
+        'storage_provider' => array_merge($common, [['Facility records', 'storage/facilities.php', 'facilities'], ['Facility media', 'media.php', 'media'], ['Storage marketplace', 'storage/index.php', 'storage']]),
+        'transport_provider' => array_merge($common, [['Fleet and service areas', 'transport/fleet.php', 'fleet'], ['Vehicle media', 'media.php', 'media'], ['Transport marketplace', 'transport/index.php', 'transport']]),
+        'admin' => array_merge($common, [['Operations', 'admin/management.php', 'management'], ['Orders', 'orders.php', 'orders'], ['Market prices', 'market-prices.php', 'prices'], ['Market-data import', 'admin/market-price-import.php', 'market_price_import'], ['Local operators', 'admin/operator-accounts.php', 'operator_accounts'], ['Attachments', 'admin/attachments.php', 'attachments'], ['Password recovery', 'admin/password-recovery.php', 'recovery'], ['Contact verification', 'admin/contact-verification.php', 'contact_verification'], ['Export audit', 'admin/dashboard-export-audit.php', 'dashboard_export_audit']]),
         default => $common,
     };
 }

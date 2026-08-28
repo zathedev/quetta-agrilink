@@ -1,5 +1,8 @@
 Options -Indexes
 AddDefaultCharset UTF-8
+ErrorDocument 403 /quetta-agrilink/403.php
+ErrorDocument 404 /quetta-agrilink/404.php
+ErrorDocument 500 /quetta-agrilink/500.php
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
