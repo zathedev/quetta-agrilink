@@ -176,7 +176,7 @@ try {
   await assert(cdp, sessionId, "marketplace control focus", `(${await focusIsVisible(cdp, sessionId)})`);
   completedChecks.push("public, sign-in, and marketplace keyboard navigation");
 
-  for (const [path, selector] of [["", ".desk-home"], ["market-prices.php", ".price-register-layout"], ["how-it-works.php", ".guide-workflow-section"], ["auth/login.php", ".auth-page"]]) {
+  for (const [path, selector] of [["", ".desk-home"], ["marketplace/index.php", ".market-layout"], ["storage/index.php", ".storage-discovery-layout"], ["market-prices.php", ".price-register-layout"], ["how-it-works.php", ".guide-workflow-section"], ["auth/login.php", ".auth-page"]]) {
     await visit(cdp, sessionId, path, mobile);
     await assert(cdp, sessionId, `mobile ${path || "home"} layout`, `document.querySelector(${JSON.stringify(selector)}) !== null && document.documentElement.scrollWidth <= window.innerWidth + 1`);
   }

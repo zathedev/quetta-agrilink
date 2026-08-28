@@ -1,19 +1,50 @@
 <?php
-/** Market Desk workspace shell: role-scoped navigation, task-led framing, and account-owned activity controls support clear local operational work. */
+/** Role-scoped workspace shell with grouped navigation and task-led operational hierarchy. */
 declare(strict_types=1);
 require_once __DIR__ . '/support-desk.php';
 
 function workspace_links(string $role): array
 {
-    $common = [['Dashboard', dashboard_path($role), 'dashboard'], ['Marketplace', 'marketplace/index.php', 'marketplace'], ['Notifications', 'notifications.php', 'notifications'], ['In-app support', 'support.php', 'support'], ['My profile', 'account/profile.php', 'profile'], ['Settings', 'account/settings.php', 'settings']];
+    $overview = [['Overview', dashboard_path($role), 'dashboard', 'Workspace']];
+    $market = [['Produce marketplace', 'marketplace/index.php', 'marketplace', 'Trade']];
+    $account = [
+        ['Notifications', 'notifications.php', 'notifications', 'Account'],
+        ['Support desk', 'support.php', 'support', 'Account'],
+        ['Business profile', 'account/profile.php', 'profile', 'Account'],
+        ['Account settings', 'account/settings.php', 'settings', 'Account'],
+    ];
     return match ($role) {
-        'farmer' => array_merge($common, [['Publish produce', 'farmer/listings.php', 'listings'], ['Offers', 'farmer/offers.php', 'offers'], ['Orders & sales', 'orders.php', 'orders'], ['Messages', 'messages.php', 'messages'], ['Reviews', 'reviews.php', 'reviews'], ['Transactions', 'payments.php', 'payments'], ['Media', 'media.php', 'media'], ['Cold storage', 'storage/index.php', 'storage'], ['Transport', 'transport/index.php', 'transport']]),
-        'buyer' => array_merge($common, [['Offers', 'buyer/offers.php', 'offers'], ['Orders & purchases', 'orders.php', 'orders'], ['Messages', 'messages.php', 'messages'], ['Reviews', 'reviews.php', 'reviews'], ['Transactions', 'payments.php', 'payments']]),
-        'storage_provider' => array_merge($common, [['Facility records', 'storage/facilities.php', 'facilities'], ['Facility media', 'media.php', 'media'], ['Storage marketplace', 'storage/index.php', 'storage']]),
-        'transport_provider' => array_merge($common, [['Fleet and service areas', 'transport/fleet.php', 'fleet'], ['Vehicle media', 'media.php', 'media'], ['Transport marketplace', 'transport/index.php', 'transport']]),
-        'admin' => array_merge($common, [['Operations', 'admin/management.php', 'management'], ['Orders', 'orders.php', 'orders'], ['Market prices', 'market-prices.php', 'prices'], ['Market-data import', 'admin/market-price-import.php', 'market_price_import'], ['Local operators', 'admin/operator-accounts.php', 'operator_accounts'], ['Attachments', 'admin/attachments.php', 'attachments'], ['Password recovery', 'admin/password-recovery.php', 'recovery'], ['Contact verification', 'admin/contact-verification.php', 'contact_verification'], ['Export audit', 'admin/dashboard-export-audit.php', 'dashboard_export_audit']]),
-        default => $common,
+        'farmer' => array_merge($overview, $market, [
+            ['Produce records', 'farmer/listings.php', 'listings', 'Trade'], ['Buyer offers', 'farmer/offers.php', 'offers', 'Trade'], ['Orders & sales', 'orders.php', 'orders', 'Trade'], ['Messages', 'messages.php', 'messages', 'Trade'], ['Transactions', 'payments.php', 'payments', 'Trade'], ['Reviews', 'reviews.php', 'reviews', 'Trade'],
+            ['Media library', 'media.php', 'media', 'Operations'], ['Cold storage', 'storage/index.php', 'storage', 'Operations'], ['Transport', 'transport/index.php', 'transport', 'Operations'],
+        ], $account),
+        'buyer' => array_merge($overview, $market, [
+            ['Offers', 'buyer/offers.php', 'offers', 'Trade'], ['Orders & purchases', 'orders.php', 'orders', 'Trade'], ['Messages', 'messages.php', 'messages', 'Trade'], ['Transactions', 'payments.php', 'payments', 'Trade'], ['Reviews', 'reviews.php', 'reviews', 'Trade'],
+        ], $account),
+        'storage_provider' => array_merge($overview, $market, [
+            ['Facility records', 'storage/facilities.php', 'facilities', 'Operations'], ['Facility media', 'media.php', 'media', 'Operations'], ['Storage marketplace', 'storage/index.php', 'storage', 'Operations'],
+        ], $account),
+        'transport_provider' => array_merge($overview, $market, [
+            ['Fleet & service areas', 'transport/fleet.php', 'fleet', 'Operations'], ['Vehicle media', 'media.php', 'media', 'Operations'], ['Transport marketplace', 'transport/index.php', 'transport', 'Operations'],
+        ], $account),
+        'admin' => array_merge($overview, [
+            ['Operations register', 'admin/management.php', 'management', 'Platform'], ['Orders', 'orders.php', 'orders', 'Platform'], ['Market prices', 'market-prices.php', 'prices', 'Platform'], ['Market-data import', 'admin/market-price-import.php', 'market_price_import', 'Platform'],
+            ['Local operators', 'admin/operator-accounts.php', 'operator_accounts', 'Governance'], ['Attachments', 'admin/attachments.php', 'attachments', 'Governance'], ['Password recovery', 'admin/password-recovery.php', 'recovery', 'Governance'], ['Contact verification', 'admin/contact-verification.php', 'contact_verification', 'Governance'], ['Export audit', 'admin/dashboard-export-audit.php', 'dashboard_export_audit', 'Governance'],
+        ], $account),
+        default => array_merge($overview, $market, $account),
     };
+}
+
+function render_workspace_navigation(string $role, string $active): void
+{
+    $currentGroup = null;
+    foreach (workspace_links($role) as [$label, $path, $key, $group]) {
+        if ($group !== $currentGroup) {
+            echo '<span class="workspace-nav-group">' . e($group) . '</span>';
+            $currentGroup = $group;
+        }
+        echo '<a class="' . ($active === $key ? 'is-active' : '') . '" href="' . e(app_url($path)) . '">' . e($label) . '</a>';
+    }
 }
 
 function workspace_shortcuts(string $role): array
@@ -220,7 +251,7 @@ function workspace_open(string $title, string $active): array
     $pageTitle = $title;
     require __DIR__ . '/header.php';
     ?>
-    <section class="workspace"><aside class="workspace-sidebar"><h2><?= e($user['full_name']) ?></h2><nav aria-label="Workspace navigation"><?php foreach (workspace_links($user['role_slug']) as [$label, $path, $key]): ?><a class="<?= $active === $key ? 'is-active' : '' ?>" href="<?= e(app_url($path)) ?>"><?= e($label) ?></a><?php endforeach; ?></nav><form class="workspace-signout" method="post" action="<?= e(app_url('auth/logout.php')) ?>"><input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>"><button type="submit">Sign out</button></form></aside><main class="workspace-main"><header class="workspace-topbar"><div><h1><?= e($title) ?></h1><p><?= e($user['role_name']) ?> account</p></div><div class="workspace-user">Signed in as<br><strong><?= e($user['role_name']) ?></strong></div></header><?php if ($active === 'dashboard'): ?><section class="workspace-focus"><div><h2><?= e($focus[0]) ?></h2><p><?= e($focus[1]) ?></p></div><a class="button button-primary" href="<?= e(app_url($focus[2])) ?>"><?= e($focus[3]) ?></a></section><details class="workspace-activity-summary"><summary>Recent account activity</summary><div class="activity-summary-list"><?php foreach ($activitySummary as $entry): ?><article><strong><?= e($entry['label']) ?></strong><span><?= e($entry['detail']) ?></span></article><?php endforeach; ?></div></details><?php if (!onboarding_is_complete((int) $user['id'])): ?><details class="workspace-onboarding"><summary>First time in this workspace?</summary><div><p>Review the record that needs a response, confirm the visible terms, then update the record when the status changes.</p><form method="post" action="<?= e(app_url('ajax/onboarding/complete.php')) ?>"><input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>"><button class="button button-quiet" type="submit">Hide this guide</button></form></div></details><?php endif; ?><?php endif; ?>
+    <section class="workspace"><aside class="workspace-sidebar"><span class="role-label"><?= e($user['role_name']) ?> workspace</span><h2><?= e($user['full_name']) ?></h2><nav aria-label="Workspace navigation"><?php render_workspace_navigation($user['role_slug'], $active); ?></nav><form class="workspace-signout" method="post" action="<?= e(app_url('auth/logout.php')) ?>"><input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>"><button type="submit">Sign out securely</button></form></aside><main class="workspace-main"><header class="workspace-topbar"><div><p class="desk-kicker"><?= e($user['role_name']) ?> workspace</p><h1><?= e($title) ?></h1><p>Account-scoped records and actions for your current operational role.</p></div><div class="workspace-user"><span>Account role</span><strong><?= e($user['role_name']) ?></strong></div></header><?php if ($active === 'dashboard'): ?><section class="workspace-focus"><div><span>Recommended next action</span><h2><?= e($focus[0]) ?></h2><p><?= e($focus[1]) ?></p></div><a class="button button-primary" href="<?= e(app_url($focus[2])) ?>"><?= e($focus[3]) ?></a></section><details class="workspace-activity-summary"><summary>Recent account activity</summary><div class="activity-summary-list"><?php foreach ($activitySummary as $entry): ?><article><strong><?= e($entry['label']) ?></strong><span><?= e($entry['detail']) ?></span></article><?php endforeach; ?></div></details><?php if (!onboarding_is_complete((int) $user['id'])): ?><details class="workspace-onboarding"><summary>First time in this workspace?</summary><div><p>Review the record that needs a response, confirm the visible terms, then update the record when the status changes.</p><form method="post" action="<?= e(app_url('ajax/onboarding/complete.php')) ?>"><input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>"><button class="button button-quiet" type="submit">Hide this guide</button></form></div></details><?php endif; ?><?php endif; ?>
     <?php
     return $user;
 }

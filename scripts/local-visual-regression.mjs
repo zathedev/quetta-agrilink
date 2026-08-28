@@ -186,19 +186,23 @@ async function stopBrowser(browser) {
 }
 
 const desktop = { width: 1440, height: 1200, mobile: false };
+const tablet = { width: 834, height: 1112, mobile: false };
 const mobile = { width: 403, height: 874, mobile: true };
 const publicCaptures = [
-  { name: "public-home-desktop", path: "", selector: ".desk-home", text: "Manage produce after harvest", viewport: desktop },
+  { name: "public-home-desktop", path: "", selector: ".desk-home", text: "Move produce from farm to market", viewport: desktop },
   { name: "sign-in-desktop", path: "auth/login.php", selector: ".auth-page", text: "Enter the email address", viewport: desktop },
   { name: "sign-up-desktop", path: "auth/register.php", selector: ".auth-page", text: "Account details", viewport: desktop },
   { name: "marketplace-desktop", path: "marketplace/index.php", selector: ".market-layout", text: "Compare available produce", viewport: desktop },
+  { name: "marketplace-mobile", path: "marketplace/index.php", selector: ".market-layout", text: "Compare available produce", viewport: mobile },
   { name: "storage-desktop", path: "storage/index.php", selector: ".storage-discovery-layout", text: "Find storage that fits the harvest", viewport: desktop },
   { name: "transport-desktop", path: "transport/index.php", selector: ".service-hero", text: "Match the crop", viewport: desktop },
   { name: "market-prices-desktop", path: "market-prices.php", selector: ".price-register-layout", text: "Reference, not a quote", viewport: desktop },
   { name: "how-it-works-desktop", path: "how-it-works.php", selector: ".guide-workflow-section", text: "Each handover makes the next decision more specific", viewport: desktop },
-  { name: "about-desktop", path: "about.php", selector: ".about-context-section", text: "One platform for everything after harvest", viewport: desktop },
+  { name: "about-desktop", path: "about.php", selector: ".about-context-section", text: "One accountable record across the post-harvest chain", viewport: desktop },
   { name: "contact-desktop", path: "contact.php", selector: ".contact-context-section", text: "Keep operational support inside the workspace", viewport: desktop },
-  { name: "public-home-mobile", path: "", selector: ".desk-home", text: "Manage produce after harvest", viewport: mobile },
+  { name: "public-home-mobile", path: "", selector: ".desk-home", text: "Move produce from farm to market", viewport: mobile },
+  { name: "public-home-tablet", path: "", selector: ".desk-home", text: "Move produce from farm to market", viewport: tablet },
+  { name: "marketplace-tablet", path: "marketplace/index.php", selector: ".market-layout", text: "Compare available produce", viewport: tablet },
   { name: "sign-up-mobile", path: "auth/register.php", selector: ".auth-page", text: "Account details", viewport: mobile },
   { name: "storage-mobile", path: "storage/index.php", selector: ".storage-discovery-layout", text: "Find storage that fits the harvest", viewport: mobile },
   { name: "transport-mobile", path: "transport/index.php", selector: ".service-hero", text: "Match the crop", viewport: mobile },
@@ -208,6 +212,7 @@ const publicCaptures = [
 const buyerCaptures = [
   { name: "buyer-workspace-desktop", path: "buyer/dashboard.php", selector: ".workspace", text: "Buyer dashboard", viewport: desktop },
   { name: "buyer-workspace-mobile", path: "buyer/dashboard.php", selector: ".workspace", text: "Buyer dashboard", viewport: mobile },
+  { name: "buyer-workspace-tablet", path: "buyer/dashboard.php", selector: ".workspace", text: "Buyer dashboard", viewport: tablet },
   { name: "buyer-support-desktop", path: "support.php", selector: ".support-intro", text: "Keep support work in the accountable workspace", viewport: desktop },
   { name: "buyer-support-mobile", path: "support.php", selector: ".support-intro", text: "Keep support work in the accountable workspace", viewport: mobile },
 ];

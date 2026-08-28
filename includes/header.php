@@ -1,15 +1,7 @@
 <?php
-/** Market Desk public shell: short task navigation keeps the local PHP app approachable before users know its workflows. */
+/** Shared product shell for the public marketplace and authenticated workspaces. */
 declare(strict_types=1);
 require_once __DIR__ . '/bootstrap.php';
-
-if (!defined('QUETTA_WORKBENCH_OUTPUT_FILTER')) {
-    define('QUETTA_WORKBENCH_OUTPUT_FILTER', true);
-    ob_start(static function (string $html): string {
-        $html = preg_replace('#/manus-storage/[^"\')]+#', '', $html) ?? $html;
-        return preg_replace('/<[^>]+class=("|\')[^"\']*\b(?:eyebrow|desk-kicker)\b[^"\']*\1[^>]*>.*?<\/[^>]+>/si', '', $html) ?? $html;
-    });
-}
 
 $pageTitle = $pageTitle ?? APP_NAME;
 $pageDescription = $pageDescription ?? 'The practical post-harvest marketplace for Balochistan growers and trade partners.';
@@ -35,44 +27,44 @@ $stylesheet_url = static function (string $relativePath): string {
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/app.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/market-desk.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/workspace-mobile-menu.css')) ?>">
-    <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/preview-parity.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/public-information-parity.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/operator-transition.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/market-data-import.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/support-desk.css')) ?>">
-    <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/quetta-workbench.css')) ?>">
-    <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/quetta-workbench-refinement.css')) ?>">
+    <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/product-system.css')) ?>">
 </head>
 <body>
-<div class="site-notice"><div class="site-container">Serving Quetta first. Built for Balochistan’s post-harvest trade.</div></div>
+<a class="skip-link" href="#main-content">Skip to main content</a>
 <header class="site-header">
     <div class="site-container header-inner">
         <a class="brand" href="<?= e(app_url()) ?>" aria-label="Quetta AgriLink home">
             <span class="brand-mark" aria-hidden="true"></span>
-            <span><strong>Quetta</strong><b>AgriLink</b></span>
+            <span class="brand-wordmark"><strong>Quetta AgriLink</strong><small>Agricultural commerce</small></span>
         </a>
-        <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" data-menu-toggle>Menu</button>
-        <nav class="primary-nav" data-primary-nav aria-label="Primary navigation">
-            <a class="<?= nav_active('/marketplace') ?>" href="<?= e(app_url('marketplace/index.php')) ?>">Find produce</a>
-            <a class="<?= nav_active('/storage') ?>" href="<?= e(app_url('storage/index.php')) ?>">Storage</a>
-            <a class="<?= nav_active('/transport') ?>" href="<?= e(app_url('transport/index.php')) ?>">Transport</a>
-            <a class="<?= nav_active('/market-prices') ?>" href="<?= e(app_url('market-prices.php')) ?>">Market prices</a>
-            <a class="<?= nav_active('/how-it-works') ?>" href="<?= e(app_url('how-it-works.php')) ?>">Guides</a>
-        </nav>
-        <div class="header-actions">
-            <?php if ($user !== null): ?>
-                <a class="notification-link" href="<?= e(app_url('notifications.php')) ?>" aria-label="Notifications" data-notification-link data-notification-latest-id="<?= (int) $notificationSummary['latest_id'] ?>" data-notification-endpoint="<?= e(app_url('ajax/notifications/unread-summary.php')) ?>">
-                    Alerts<span data-notification-count<?= $notificationSummary['count'] > 0 ? '' : ' hidden' ?>><?= $notificationSummary['count'] > 9 ? '9+' : (int) $notificationSummary['count'] ?></span>
-                </a>
-                <button class="notification-chime-toggle" type="button" data-notification-chime data-notification-chime-enabled="<?= (int) $notificationPreferences['browser_chime_enabled'] ?>" data-notification-chime-endpoint="<?= e(app_url('ajax/notifications/preferences.php')) ?>" aria-pressed="false" title="Enable notification sound">Sound off</button>
-                <a class="button button-primary" href="<?= e(app_url(dashboard_path($user['role_slug']))) ?>">My workspace</a>
-            <?php else: ?>
-                <a class="button button-quiet" href="<?= e(app_url('auth/login.php')) ?>">Sign in</a>
-                <a class="button button-primary" href="<?= e(app_url('auth/register.php')) ?>">Create account</a>
-            <?php endif; ?>
+        <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="site-navigation" data-menu-toggle>Navigation</button>
+        <div class="header-navigation" id="site-navigation" data-primary-nav>
+            <nav class="primary-nav" aria-label="Primary navigation">
+                <a class="<?= nav_active('/marketplace') ?>" href="<?= e(app_url('marketplace/index.php')) ?>">Produce</a>
+                <a class="<?= nav_active('/storage') ?>" href="<?= e(app_url('storage/index.php')) ?>">Storage</a>
+                <a class="<?= nav_active('/transport') ?>" href="<?= e(app_url('transport/index.php')) ?>">Transport</a>
+                <a class="<?= nav_active('/market-prices') ?>" href="<?= e(app_url('market-prices.php')) ?>">Market intelligence</a>
+                <a class="<?= nav_active('/how-it-works') ?>" href="<?= e(app_url('how-it-works.php')) ?>">How it works</a>
+            </nav>
+            <div class="header-actions">
+                <?php if ($user !== null): ?>
+                    <a class="notification-link" href="<?= e(app_url('notifications.php')) ?>" aria-label="Notifications" data-notification-link data-notification-latest-id="<?= (int) $notificationSummary['latest_id'] ?>" data-notification-endpoint="<?= e(app_url('ajax/notifications/unread-summary.php')) ?>">
+                        Alerts<span data-notification-count<?= $notificationSummary['count'] > 0 ? '' : ' hidden' ?>><?= $notificationSummary['count'] > 9 ? '9+' : (int) $notificationSummary['count'] ?></span>
+                    </a>
+                    <button class="notification-chime-toggle" type="button" data-notification-chime data-notification-chime-enabled="<?= (int) $notificationPreferences['browser_chime_enabled'] ?>" data-notification-chime-endpoint="<?= e(app_url('ajax/notifications/preferences.php')) ?>" aria-pressed="false" title="Enable notification sound">Sound off</button>
+                    <a class="button button-primary" href="<?= e(app_url(dashboard_path($user['role_slug']))) ?>">Open workspace</a>
+                <?php else: ?>
+                    <a class="button button-quiet" href="<?= e(app_url('auth/login.php')) ?>">Sign in</a>
+                    <a class="button button-primary" href="<?= e(app_url('auth/register.php')) ?>">Create account</a>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 </header>
-<main>
+<div id="main-content">
 <?php if ($notice = flash('success')): ?><div class="site-container flash flash-success"><?= e($notice) ?></div><?php endif; ?>
 <?php if ($notice = flash('error')): ?><div class="site-container flash flash-error"><?= e($notice) ?></div><?php endif; ?>

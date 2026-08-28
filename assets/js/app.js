@@ -1,5 +1,6 @@
-/** Orchard Ledger interactions: concise feedback, protected JSON actions, and accessible mobile navigation. */
+/** Shared product interactions: protected actions, responsive navigation, and accessible data views. */
 (() => {
+  document.documentElement.classList.add('js');
   const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
   const toggle = document.querySelector('[data-menu-toggle]');
   const nav = document.querySelector('[data-primary-nav]');
@@ -7,6 +8,59 @@
   toggle?.addEventListener('click', () => {
     const open = nav.classList.toggle('is-open');
     toggle.setAttribute('aria-expanded', String(open));
+    toggle.textContent = open ? 'Close' : 'Navigation';
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && nav?.classList.contains('is-open')) {
+      nav.classList.remove('is-open');
+      toggle?.setAttribute('aria-expanded', 'false');
+      if (toggle) { toggle.textContent = 'Navigation'; toggle.focus(); }
+    }
+  });
+
+  const marketLayout = document.querySelector('.market-layout');
+  const marketFilterRail = marketLayout?.querySelector('.market-filter-rail');
+  if (marketLayout && marketFilterRail) {
+    marketFilterRail.id ||= 'marketplace-filter-drawer';
+    const filterToggle = document.createElement('button');
+    filterToggle.type = 'button';
+    filterToggle.className = 'filter-drawer-toggle';
+    filterToggle.textContent = 'Filters and sorting';
+    filterToggle.setAttribute('aria-controls', marketFilterRail.id);
+    filterToggle.setAttribute('aria-expanded', 'false');
+    marketLayout.insertBefore(filterToggle, marketFilterRail);
+    filterToggle.addEventListener('click', () => {
+      const open = marketFilterRail.classList.toggle('is-open');
+      filterToggle.setAttribute('aria-expanded', String(open));
+      filterToggle.textContent = open ? 'Hide filters' : 'Filters and sorting';
+    });
+  }
+
+  const storageLayout = document.querySelector('.storage-discovery-layout');
+  const storageFilterRail = storageLayout?.querySelector('.storage-filter-rail');
+  if (storageLayout && storageFilterRail) {
+    storageFilterRail.id ||= 'storage-filter-drawer';
+    const storageFilterToggle = document.createElement('button');
+    storageFilterToggle.type = 'button';
+    storageFilterToggle.className = 'filter-drawer-toggle';
+    storageFilterToggle.textContent = 'Storage filters and sorting';
+    storageFilterToggle.setAttribute('aria-controls', storageFilterRail.id);
+    storageFilterToggle.setAttribute('aria-expanded', 'false');
+    storageLayout.insertBefore(storageFilterToggle, storageFilterRail);
+    storageFilterToggle.addEventListener('click', () => {
+      const open = storageFilterRail.classList.toggle('is-open');
+      storageFilterToggle.setAttribute('aria-expanded', String(open));
+      storageFilterToggle.textContent = open ? 'Hide storage filters' : 'Storage filters and sorting';
+    });
+  }
+
+  document.querySelectorAll('.data-table').forEach((table) => {
+    const labels = [...table.querySelectorAll('thead th')].map((heading) => heading.textContent.trim());
+    table.querySelectorAll('tbody tr').forEach((row) => {
+      [...row.children].forEach((cell, index) => {
+        if (cell.tagName === 'TD' && !cell.hasAttribute('colspan')) cell.dataset.label = labels[index] || 'Record detail';
+      });
+    });
   });
 
   document.querySelectorAll('.workspace-sidebar').forEach((sidebar, index) => {
