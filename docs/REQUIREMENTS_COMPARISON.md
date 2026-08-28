@@ -23,4 +23,4 @@ The application does not pretend to send external support/reset messages or move
 
 ## Removed or superseded excess
 
-The React/Vite/Express preview is not referenced by or required for the PHP application. It should be deleted once repository-level deletion is explicitly approved; the current execution policy did not permit bulk removal during this audit.
+The unreferenced React/Vite/Express preview, its package/build configuration, and its obsolete preview-only notes were removed. The repository now contains one authoritative application: the PHP/MySQL/XAMPP implementation.

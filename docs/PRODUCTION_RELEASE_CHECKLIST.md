@@ -1,6 +1,6 @@
 # Quetta AgriLink Production Release Checklist
 
-This checklist governs release of the authoritative **PHP/MySQL/Apache/XAMPP** application. The React/Vite managed preview is a workflow and visual reference; it is not a release artifact. Complete each gate in order, keep the completed record with the release ticket, and do not treat an unchecked item as a waiver.
+This checklist governs release of the authoritative **PHP/MySQL/Apache/XAMPP** application. Complete each gate in order, keep the completed record with the release ticket, and do not treat an unchecked item as a waiver.
 
 > **Public-launch rule:** A public release is blocked until every applicable **Blocker** is resolved, including an owned support channel, named operational owner, approved data source, backups, security configuration, and final acceptance evidence. A local demonstration may remain intentionally unconfigured only when it has no live customer data and is not represented as production-ready.
 
@@ -45,7 +45,7 @@ Take a restorable backup before any schema or data migration. A backup that has 
 
 ## Gate 3 — Apache, PHP, configuration, and file handling
 
-The release environment must serve the PHP application from the configured folder and protect both configuration and upload storage. Do not copy the managed preview bundle into the XAMPP application directory.
+The release environment must serve the PHP application from the configured folder and protect both configuration and upload storage.
 
 | Check | Required evidence | Release status |
 |---|---|---|
@@ -86,9 +86,9 @@ Run automated checks in an isolated development database before the release wind
 
 | Check | Required evidence | Release status |
 |---|---|---|
-| Code checks pass | PHP syntax checks, `pnpm check`, `pnpm build`, and `git diff --check` pass for the release commit. | Blocker |
-| Local visual regression passes | Run `pnpm visual:local` against a same-machine reviewed baseline; investigate every intended or unexpected difference. | Required |
-| Controlled acceptance passes | Run `pnpm acceptance:local` against an isolated test database and retain its JSON evidence. | Required |
+| Code checks pass | PHP syntax checks, `node --check assets/js/app.js`, checks of the local `.mjs` runners, and `git diff --check` pass for the release commit. | Blocker |
+| Local visual regression passes | Run `node scripts/local-visual-regression.mjs` against a same-machine reviewed baseline; investigate every intended or unexpected difference. | Required |
+| Controlled acceptance passes | Run `node scripts/local-xampp-acceptance.mjs` against an isolated test database and retain its JSON evidence. | Required |
 | Manual route verification passes | Fresh-cache desktop and mobile checks cover public routes, sign-in, account workspaces, marketplace controls, keyboard focus, and administrative exports. | Blocker |
 | Accessibility checks pass | Keyboard focus is visible, navigation is reachable without a pointer, labels describe inputs, and destructive actions are not triggered by incidental keyboard focus. | Blocker |
 

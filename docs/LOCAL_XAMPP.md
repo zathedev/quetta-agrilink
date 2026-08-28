@@ -1,6 +1,6 @@
 # Local XAMPP Runbook
 
-Quetta AgriLink’s deployable application is the PHP/MySQL package in this repository. The React managed preview is a design and workflow reference only; do **not** copy its `client/` bundle into the XAMPP document root as a replacement for the PHP app.
+Quetta AgriLink’s deployable application is the PHP/MySQL package in this repository. It runs directly through Apache and does not require a frontend build step.
 
 ## Local installation
 
@@ -35,7 +35,7 @@ Attachments are stored beneath `uploads/attachments/YYYY/MM/`. The server accept
 
 Before attaching files, open XAMPP’s `php/php.ini` and set `upload_max_filesize = 6M` and `post_max_size = 8M` or higher, then restart **Apache**. PHP rejects oversize bodies before the application can inspect them, so its limits must be larger than the application’s 5 MB policy.
 
-> For a local XAMPP install, `http://localhost` is sufficient for development. HTTPS is needed only when placing this same PHP application behind a local certificate or a later public reverse proxy. The managed preview cannot execute the PHP runtime; local XAMPP remains the authoritative application runtime.
+> For a local XAMPP install, `http://localhost` is sufficient for development. HTTPS is needed only when placing this same PHP application behind a local certificate or a later public reverse proxy. Local XAMPP is the authoritative application runtime.
 
 After pulling a visual update, refresh the browser with **Ctrl+F5** once. The PHP header adds the local stylesheet modification time to every CSS URL, so Apache serves the current Orchard Ledger fonts, navigation, and visual-style files rather than an older browser-cached stylesheet.
 
@@ -67,8 +67,8 @@ Start Apache and MySQL first, confirm the imported local database contains the d
 $env:VISUAL_REGRESSION_PASSWORD = 'AgriLinkDemo2026!'
 $env:VISUAL_REGRESSION_ALLOW_AUTH = '1'
 $env:CHROMIUM_BIN = 'C:\Program Files\Google\Chrome\Application\chrome.exe' # only if chromium is not on PATH
-pnpm visual:local -- --base-url http://localhost/quetta-agrilink/ --out artifacts/visual-regression/baseline
-pnpm visual:local -- --base-url http://localhost/quetta-agrilink/ --out artifacts/visual-regression/current --compare artifacts/visual-regression/baseline
+node scripts/local-visual-regression.mjs --base-url http://localhost/quetta-agrilink/ --out artifacts/visual-regression/baseline
+node scripts/local-visual-regression.mjs --base-url http://localhost/quetta-agrilink/ --out artifacts/visual-regression/current --compare artifacts/visual-regression/baseline
 ```
 
 The second command exits unsuccessfully when a PNG differs from its same-machine baseline. To avoid false differences, the runner normalizes the live account-activity text inside protected dashboard screenshots; it still captures the full dashboard structure, status cards, navigation, task framing, and protected page layout. Review the image pair before deciding whether the interface changed intentionally; refresh the baseline only after that review. You can override `VISUAL_REGRESSION_BUYER_EMAIL` and `VISUAL_REGRESSION_ADMIN_EMAIL` for alternative local development accounts. When those accounts use different passwords, set `VISUAL_REGRESSION_BUYER_PASSWORD` and `VISUAL_REGRESSION_ADMIN_PASSWORD`; otherwise, the existing shared `VISUAL_REGRESSION_PASSWORD` is used for both.
@@ -81,7 +81,7 @@ Run the final acceptance command only after Apache and MySQL are running, the mi
 $env:LOCAL_ACCEPTANCE_PASSWORD = 'AgriLinkDemo2026!'
 $env:LOCAL_ACCEPTANCE_ALLOW_AUTH = '1'
 $env:CHROMIUM_BIN = 'C:\Program Files\Google\Chrome\Application\chrome.exe' # only if chromium is not on PATH
-pnpm acceptance:local -- --base-url http://localhost/quetta-agrilink/
+node scripts/local-xampp-acceptance.mjs --base-url http://localhost/quetta-agrilink/
 ```
 
 The command exits unsuccessfully if any access, responsive-layout, focus, local-font, or protected-export check fails. Its JSON evidence is written below `artifacts/acceptance/` and is intentionally ignored by Git.
