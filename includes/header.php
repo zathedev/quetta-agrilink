@@ -66,5 +66,8 @@ $stylesheet_url = static function (string $relativePath): string {
     </div>
 </header>
 <div id="main-content">
-<?php if ($notice = flash('success')): ?><div class="site-container flash flash-success"><?= e($notice) ?></div><?php endif; ?>
-<?php if ($notice = flash('error')): ?><div class="site-container flash flash-error"><?= e($notice) ?></div><?php endif; ?>
+<?php $successNotice = flash('success'); $errorNotice = flash('error'); ?>
+<div class="toast-region" data-toast-region aria-live="polite" aria-relevant="additions removals">
+    <?php if ($successNotice): ?><div class="flash flash-success toast" role="status" aria-atomic="true" data-toast data-toast-timeout="7000"><span class="toast-symbol" aria-hidden="true">✓</span><div class="toast-message"><strong>Action completed</strong><p><?= e($successNotice) ?></p></div><button class="toast-dismiss" type="button" data-toast-dismiss aria-label="Dismiss notification">×</button><span class="toast-progress" aria-hidden="true"></span></div><?php endif; ?>
+    <?php if ($errorNotice): ?><div class="flash flash-error toast" role="alert" aria-atomic="true" data-toast data-toast-timeout="9000"><span class="toast-symbol" aria-hidden="true">!</span><div class="toast-message"><strong>Action needs attention</strong><p><?= e($errorNotice) ?></p></div><button class="toast-dismiss" type="button" data-toast-dismiss aria-label="Dismiss notification">×</button><span class="toast-progress" aria-hidden="true"></span></div><?php endif; ?>
+</div>

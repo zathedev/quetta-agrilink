@@ -18,6 +18,94 @@
     }
   });
 
+  const toastRegion = document.querySelector('[data-toast-region]');
+  const closeToast = (toast, reason = 'dismissed') => {
+    if (!toast || toast.classList.contains('is-leaving')) return;
+    window.clearTimeout(toast.qliTimer);
+    toast.classList.remove('is-paused');
+    toast.classList.add('is-leaving');
+    toast.dataset.closeReason = reason;
+    window.setTimeout(() => toast.remove(), 280);
+  };
+  const initialiseToast = (toast) => {
+    if (!toast || toast.dataset.toastReady === 'true') return toast;
+    toast.dataset.toastReady = 'true';
+    const timeout = Math.max(1000, Number(toast.dataset.toastTimeout || 7000));
+    let remaining = timeout;
+    let startedAt = performance.now();
+    const progress = toast.querySelector('.toast-progress');
+    toast.style.setProperty('--toast-duration', `${timeout}ms`);
+    const resume = () => {
+      if (toast.classList.contains('is-leaving') || remaining <= 0) return;
+      startedAt = performance.now();
+      toast.classList.remove('is-paused');
+      window.clearTimeout(toast.qliTimer);
+      toast.qliTimer = window.setTimeout(() => closeToast(toast, 'timeout'), remaining);
+    };
+    const pause = () => {
+      if (toast.classList.contains('is-leaving') || toast.classList.contains('is-paused')) return;
+      remaining = Math.max(0, remaining - (performance.now() - startedAt));
+      window.clearTimeout(toast.qliTimer);
+      toast.classList.add('is-paused');
+    };
+    toast.qliPause = pause;
+    toast.qliResume = resume;
+    toast.querySelector('[data-toast-dismiss]')?.addEventListener('click', () => closeToast(toast, 'manual'));
+    toast.addEventListener('mouseenter', pause);
+    toast.addEventListener('mouseleave', resume);
+    toast.addEventListener('focusin', pause);
+    toast.addEventListener('focusout', (event) => { if (!toast.contains(event.relatedTarget)) resume(); });
+    if (progress) progress.addEventListener('animationend', () => { if (!toast.classList.contains('is-paused')) closeToast(toast, 'timeout'); });
+    window.requestAnimationFrame(() => {
+      toast.classList.add('is-visible');
+      resume();
+    });
+    return toast;
+  };
+  window.QuettaToast = {
+    show(message, type = 'success', options = {}) {
+      if (!toastRegion || !message) return null;
+      const tone = type === 'error' ? 'error' : 'success';
+      const toast = document.createElement('div');
+      toast.className = `flash flash-${tone} toast`;
+      toast.dataset.toast = '';
+      toast.dataset.toastTimeout = String(options.timeout || (tone === 'error' ? 9000 : 7000));
+      toast.setAttribute('role', tone === 'error' ? 'alert' : 'status');
+      toast.setAttribute('aria-atomic', 'true');
+      const symbol = document.createElement('span');
+      symbol.className = 'toast-symbol';
+      symbol.setAttribute('aria-hidden', 'true');
+      symbol.textContent = tone === 'error' ? '!' : '✓';
+      const copy = document.createElement('div');
+      copy.className = 'toast-message';
+      const title = document.createElement('strong');
+      title.textContent = options.title || (tone === 'error' ? 'Action needs attention' : 'Action completed');
+      const body = document.createElement('p');
+      body.textContent = message;
+      copy.append(title, body);
+      const dismiss = document.createElement('button');
+      dismiss.className = 'toast-dismiss';
+      dismiss.type = 'button';
+      dismiss.dataset.toastDismiss = '';
+      dismiss.setAttribute('aria-label', 'Dismiss notification');
+      dismiss.textContent = '×';
+      const progress = document.createElement('span');
+      progress.className = 'toast-progress';
+      progress.setAttribute('aria-hidden', 'true');
+      toast.append(symbol, copy, dismiss, progress);
+      toastRegion.append(toast);
+      return initialiseToast(toast);
+    },
+    dismiss(toast) { closeToast(toast, 'manual'); },
+  };
+  toastRegion?.querySelectorAll('[data-toast]').forEach(initialiseToast);
+  document.addEventListener('visibilitychange', () => {
+    toastRegion?.querySelectorAll('[data-toast]').forEach((toast) => {
+      if (document.hidden) toast.qliPause?.();
+      else toast.qliResume?.();
+    });
+  });
+
   const marketLayout = document.querySelector('.market-layout');
   const marketFilterRail = marketLayout?.querySelector('.market-filter-rail');
   if (marketLayout && marketFilterRail) {
@@ -110,9 +198,11 @@
       try {
         const payload = await window.qliFetch(form.action, { method: form.method || 'POST', body: new FormData(form) });
         if (feedback) { feedback.textContent = payload.message; feedback.className = 'flash flash-success'; }
+        window.QuettaToast?.show(payload.message, 'success');
         if (payload.data?.redirect) window.location.assign(payload.data.redirect);
       } catch (error) {
         if (feedback) { feedback.textContent = error.message; feedback.className = 'flash flash-error'; }
+        window.QuettaToast?.show(error.message, 'error');
       } finally {
         submit.disabled = false;
         submit.textContent = submit.dataset.originalText;
@@ -352,7 +442,8 @@
         soundEnabled = next;
         updateSoundToggle();
         if (soundEnabled) playBell();
-      } catch (_) { /* The page remains usable when optional preference storage is temporarily unavailable. */ }
+        window.QuettaToast?.show(`Notification sound ${soundEnabled ? 'enabled' : 'disabled'}.`, 'success', { title: 'Preference updated', timeout: 5000 });
+      } catch (error) { window.QuettaToast?.show(error.message, 'error'); }
       finally { notificationChime.disabled = false; }
     });
     const refreshNotificationSummary = async () => {
@@ -364,7 +455,10 @@
         const newest = Number(payload.data?.latest_id || 0);
         const badge = notificationLink.querySelector('[data-notification-count]');
         if (badge) { badge.hidden = count === 0; badge.textContent = count > 9 ? '9+' : String(count); }
-        if (newest > latestNotificationId) playBell();
+        if (newest > latestNotificationId) {
+          playBell();
+          window.QuettaToast?.show('A new workspace notification is ready to review.', 'success', { title: 'New notification', timeout: 8000 });
+        }
         latestNotificationId = Math.max(latestNotificationId, newest);
       } catch (_) { /* Header polling is optional feedback; no visual error is needed. */ }
     };

@@ -185,6 +185,31 @@ async function assertAccountFormFeedback(cdp, sessionId) {
   }
 }
 
+async function assertToastInteractions(cdp, sessionId) {
+  await visit(cdp, sessionId, "auth/login.php", desktop);
+  const result = await evaluate(cdp, sessionId, `(() => new Promise(async (resolve) => {
+    document.getElementById('qli-visual-regression-freeze')?.remove();
+    const wait = (milliseconds) => new Promise((done) => setTimeout(done, milliseconds));
+    const toast = window.QuettaToast?.show('Interactive lifecycle check', 'success', { title: 'Toast check', timeout: 1000 });
+    await wait(60);
+    const visible = Boolean(toast?.classList.contains('is-visible') && toast.querySelector('[data-toast-dismiss]'));
+    toast?.dispatchEvent(new Event('mouseenter'));
+    await wait(340);
+    const paused = Boolean(toast?.isConnected && toast.classList.contains('is-paused'));
+    toast?.dispatchEvent(new Event('mouseleave'));
+    await wait(1350);
+    const autoClosed = Boolean(toast && !toast.isConnected);
+    const manual = window.QuettaToast?.show('Manual dismissal check', 'error', { timeout: 5000 });
+    await wait(40);
+    manual?.querySelector('[data-toast-dismiss]')?.click();
+    await wait(340);
+    resolve({ api: Boolean(window.QuettaToast?.show), visible, paused, autoClosed, manualClosed: Boolean(manual && !manual.isConnected) });
+  }))()`);
+  if (!result?.api || !result.visible || !result.paused || !result.autoClosed || !result.manualClosed) {
+    throw new Error(`Toast interaction check failed: ${JSON.stringify(result)}`);
+  }
+}
+
 async function stopBrowser(browser) {
   if (browser.exitCode !== null) return;
   browser.kill("SIGTERM");
@@ -224,27 +249,42 @@ const publicCaptures = [
   { name: "how-it-works-mobile", path: "how-it-works.php", selector: ".guide-workflow-section", text: "Each handover makes the next decision more specific", viewport: mobile },
 ];
 const buyerCaptures = [
-  { name: "buyer-workspace-desktop", path: "buyer/dashboard.php", selector: ".workspace", text: "Buyer dashboard", viewport: desktop },
-  { name: "buyer-workspace-mobile", path: "buyer/dashboard.php", selector: ".workspace", text: "Buyer dashboard", viewport: mobile },
-  { name: "buyer-workspace-tablet", path: "buyer/dashboard.php", selector: ".workspace", text: "Buyer dashboard", viewport: tablet },
+  { name: "buyer-workspace-desktop", path: "buyer/dashboard.php", selector: ".workspace-role-buyer", text: "Buyer dashboard", viewport: desktop },
+  { name: "buyer-workspace-mobile", path: "buyer/dashboard.php", selector: ".workspace-role-buyer", text: "Buyer dashboard", viewport: mobile },
+  { name: "buyer-workspace-tablet", path: "buyer/dashboard.php", selector: ".workspace-role-buyer", text: "Buyer dashboard", viewport: tablet },
+  { name: "buyer-offers-desktop", path: "buyer/offers.php", selector: ".workspace-role-buyer", text: "Offer status and counter terms", viewport: desktop },
+  { name: "buyer-offers-mobile", path: "buyer/offers.php", selector: ".workspace-role-buyer", text: "Offer status and counter terms", viewport: mobile },
+  { name: "buyer-notifications-desktop", path: "notifications.php", selector: ".notification-list", text: "Operational alerts", viewport: desktop },
+  { name: "buyer-notifications-mobile", path: "notifications.php", selector: ".notification-list", text: "Operational alerts", viewport: mobile },
+  { name: "buyer-profile-desktop", path: "account/profile.php", selector: ".profile-section", text: "Account details", viewport: desktop },
+  { name: "buyer-settings-mobile", path: "account/settings.php", selector: ".workspace-role-buyer", text: "Notification preferences", viewport: mobile },
   { name: "buyer-support-desktop", path: "support.php", selector: ".support-intro", text: "Keep support work in the accountable workspace", viewport: desktop },
   { name: "buyer-support-mobile", path: "support.php", selector: ".support-intro", text: "Keep support work in the accountable workspace", viewport: mobile },
 ];
 const farmerCaptures = [
-  { name: "farmer-workspace-desktop", path: "farmer/dashboard.php", selector: ".workspace", text: "Farmer dashboard", viewport: desktop },
-  { name: "farmer-workspace-mobile", path: "farmer/dashboard.php", selector: ".workspace", text: "Farmer dashboard", viewport: mobile },
+  { name: "farmer-workspace-desktop", path: "farmer/dashboard.php", selector: ".workspace-role-farmer", text: "Farmer dashboard", viewport: desktop },
+  { name: "farmer-workspace-mobile", path: "farmer/dashboard.php", selector: ".workspace-role-farmer", text: "Farmer dashboard", viewport: mobile },
+  { name: "farmer-listings-desktop", path: "farmer/listings.php", selector: ".farmer-publication-layout", text: "Publish an accountable supply record", viewport: desktop },
+  { name: "farmer-listings-mobile", path: "farmer/listings.php", selector: ".farmer-publication-layout", text: "Publish an accountable supply record", viewport: mobile },
+  { name: "farmer-offers-desktop", path: "farmer/offers.php", selector: ".workspace-role-farmer", text: "Buyer proposals", viewport: desktop },
 ];
 const storageProviderCaptures = [
-  { name: "storage-provider-workspace-desktop", path: "storage/dashboard.php", selector: ".workspace", text: "Storage provider dashboard", viewport: desktop },
-  { name: "storage-provider-workspace-mobile", path: "storage/dashboard.php", selector: ".workspace", text: "Storage provider dashboard", viewport: mobile },
+  { name: "storage-provider-workspace-desktop", path: "storage/dashboard.php", selector: ".workspace-role-storage_provider", text: "Storage provider dashboard", viewport: desktop },
+  { name: "storage-provider-workspace-mobile", path: "storage/dashboard.php", selector: ".workspace-role-storage_provider", text: "Storage provider dashboard", viewport: mobile },
+  { name: "storage-facilities-desktop", path: "storage/facilities.php", selector: ".workspace-role-storage_provider", text: "Your facility records", viewport: desktop },
+  { name: "storage-facilities-mobile", path: "storage/facilities.php", selector: ".workspace-role-storage_provider", text: "Your facility records", viewport: mobile },
 ];
 const transportProviderCaptures = [
-  { name: "transport-provider-workspace-desktop", path: "transport/dashboard.php", selector: ".workspace", text: "Transport provider dashboard", viewport: desktop },
-  { name: "transport-provider-workspace-mobile", path: "transport/dashboard.php", selector: ".workspace", text: "Transport provider dashboard", viewport: mobile },
+  { name: "transport-provider-workspace-desktop", path: "transport/dashboard.php", selector: ".workspace-role-transport_provider", text: "Transport provider dashboard", viewport: desktop },
+  { name: "transport-provider-workspace-mobile", path: "transport/dashboard.php", selector: ".workspace-role-transport_provider", text: "Transport provider dashboard", viewport: mobile },
+  { name: "transport-fleet-desktop", path: "transport/fleet.php", selector: ".workspace-role-transport_provider", text: "Your fleet records", viewport: desktop },
+  { name: "transport-fleet-mobile", path: "transport/fleet.php", selector: ".workspace-role-transport_provider", text: "Your fleet records", viewport: mobile },
 ];
 const administratorCaptures = [
-  { name: "administrator-workspace-desktop", path: "admin/dashboard.php", selector: ".workspace", text: "Administrator dashboard", viewport: desktop },
-  { name: "administrator-workspace-mobile", path: "admin/dashboard.php", selector: ".workspace", text: "Administrator dashboard", viewport: mobile },
+  { name: "administrator-workspace-desktop", path: "admin/dashboard.php", selector: ".workspace-role-admin", text: "Administrator dashboard", viewport: desktop },
+  { name: "administrator-workspace-mobile", path: "admin/dashboard.php", selector: ".workspace-role-admin", text: "Administrator dashboard", viewport: mobile },
+  { name: "administrator-operations-desktop", path: "admin/management.php", selector: ".workspace-role-admin", text: "Produce categories", viewport: desktop },
+  { name: "administrator-operations-mobile", path: "admin/management.php", selector: ".workspace-role-admin", text: "Produce categories", viewport: mobile },
   { name: "local-operator-transition-desktop", path: "admin/operator-accounts.php", selector: ".operator-transition-intro", text: "Create a named operator account", viewport: desktop },
   { name: "local-operator-transition-mobile", path: "admin/operator-accounts.php", selector: ".operator-transition-intro", text: "Create a named operator account", viewport: mobile },
   { name: "market-data-import-desktop", path: "admin/market-price-import.php", selector: ".market-import-intro", text: "Import approved local price references", viewport: desktop },
@@ -270,6 +310,7 @@ try {
 
   const records = [];
   await assertAccountFormFeedback(cdp, sessionId);
+  await assertToastInteractions(cdp, sessionId);
   for (const definition of publicCaptures) await capture(cdp, sessionId, definition, records);
   await authenticate(cdp, sessionId, farmerEmail, farmerPassword);
   for (const definition of farmerCaptures) await capture(cdp, sessionId, definition, records);
