@@ -26,7 +26,6 @@ $stylesheet_url = static function (string $relativePath): string {
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/local-fonts.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/app.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/market-desk.css')) ?>">
-    <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/workspace-mobile-menu.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/public-information-parity.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/operator-transition.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/market-data-import.css')) ?>">

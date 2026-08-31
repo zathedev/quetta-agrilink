@@ -210,6 +210,65 @@ async function assertToastInteractions(cdp, sessionId) {
   }
 }
 
+async function assertWorkspaceSidebarInteractions(cdp, sessionId) {
+  await visit(cdp, sessionId, "farmer/dashboard.php", desktop);
+  const desktopResult = await evaluate(cdp, sessionId, `(() => {
+    const workspace = document.querySelector('.workspace');
+    const sidebar = document.querySelector('.workspace-sidebar');
+    const toggle = document.querySelector('.workspace-sidebar-toggle');
+    const signout = document.querySelector('.workspace-signout button');
+    const externalLinks = [...document.querySelectorAll('.workspace-nav-external')];
+    if (!workspace || !sidebar || !toggle || !signout) return { ready: false };
+    if (workspace.classList.contains('is-sidebar-collapsed')) toggle.click();
+    const expandedWidth = sidebar.getBoundingClientRect().width;
+    toggle.click();
+    const collapsedWidth = sidebar.getBoundingClientRect().width;
+    const collapsed = workspace.classList.contains('is-sidebar-collapsed') && toggle.getAttribute('aria-expanded') === 'false';
+    toggle.click();
+    return {
+      ready: true,
+      expandedWidth,
+      collapsedWidth,
+      collapsed,
+      restored: !workspace.classList.contains('is-sidebar-collapsed'),
+      signoutIcon: Boolean(signout.querySelector('.workspace-signout-icon')),
+      signoutBackground: getComputedStyle(signout).backgroundColor,
+      externalCount: externalLinks.length,
+      externalSafe: externalLinks.every((link) => link.target === '_blank' && link.relList.contains('noopener') && link.relList.contains('noreferrer') && Boolean(link.querySelector('.workspace-external-icon'))),
+    };
+  })()`);
+  if (!desktopResult?.ready || desktopResult.expandedWidth < 220 || desktopResult.collapsedWidth > 100 || !desktopResult.collapsed || !desktopResult.restored || !desktopResult.signoutIcon || desktopResult.signoutBackground === 'rgba(0, 0, 0, 0)' || desktopResult.externalCount < 3 || !desktopResult.externalSafe) {
+    throw new Error(`Desktop workspace sidebar interaction check failed: ${JSON.stringify(desktopResult)}`);
+  }
+
+  await visit(cdp, sessionId, "farmer/dashboard.php", tablet);
+  const compactResult = await evaluate(cdp, sessionId, `(() => new Promise(async (resolve) => {
+    const wait = (milliseconds) => new Promise((done) => setTimeout(done, milliseconds));
+    const workspace = document.querySelector('.workspace');
+    const sidebar = document.querySelector('.workspace-sidebar');
+    const opener = document.querySelector('.workspace-sidebar-opener');
+    const closer = document.querySelector('.workspace-sidebar-toggle');
+    const backdrop = document.querySelector('.workspace-sidebar-backdrop');
+    if (!workspace || !sidebar || !opener || !closer || !backdrop) return resolve({ ready: false });
+    const initiallyClosed = !workspace.classList.contains('is-sidebar-open') && sidebar.getAttribute('aria-hidden') === 'true' && getComputedStyle(opener).display !== 'none';
+    opener.click();
+    await wait(70);
+    const opened = workspace.classList.contains('is-sidebar-open') && sidebar.getAttribute('aria-hidden') === 'false' && document.body.classList.contains('workspace-navigation-open') && document.activeElement === closer;
+    backdrop.click();
+    await wait(20);
+    const backdropClosed = !workspace.classList.contains('is-sidebar-open') && document.activeElement === opener;
+    opener.click();
+    await wait(70);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await wait(20);
+    const escapeClosed = !workspace.classList.contains('is-sidebar-open') && opener.getAttribute('aria-expanded') === 'false' && document.activeElement === opener;
+    resolve({ ready: true, initiallyClosed, opened, backdropClosed, escapeClosed });
+  }))()`);
+  if (!compactResult?.ready || !compactResult.initiallyClosed || !compactResult.opened || !compactResult.backdropClosed || !compactResult.escapeClosed) {
+    throw new Error(`Compact workspace sidebar interaction check failed: ${JSON.stringify(compactResult)}`);
+  }
+}
+
 async function stopBrowser(browser) {
   if (browser.exitCode !== null) return;
   browser.kill("SIGTERM");
@@ -313,6 +372,7 @@ try {
   await assertToastInteractions(cdp, sessionId);
   for (const definition of publicCaptures) await capture(cdp, sessionId, definition, records);
   await authenticate(cdp, sessionId, farmerEmail, farmerPassword);
+  await assertWorkspaceSidebarInteractions(cdp, sessionId);
   for (const definition of farmerCaptures) await capture(cdp, sessionId, definition, records);
   await authenticate(cdp, sessionId, buyerEmail, buyerPassword);
   for (const definition of buyerCaptures) await capture(cdp, sessionId, definition, records);

@@ -152,28 +152,130 @@
   });
 
   document.querySelectorAll('.workspace-sidebar').forEach((sidebar, index) => {
+    const workspace = sidebar.closest('.workspace');
+    const workspaceMain = workspace?.querySelector('.workspace-main');
     const workspaceNav = sidebar.querySelector('nav[aria-label="Workspace navigation"]');
     const roleLabel = sidebar.querySelector('.role-label');
     const roleName = sidebar.querySelector('h2');
-    if (!workspaceNav || !roleLabel || !roleName) return;
-    const summary = document.createElement('div');
-    summary.className = 'workspace-nav-summary';
-    workspaceNav.id = `workspace-task-menu-${index}`;
-    const taskToggle = document.createElement('button');
-    taskToggle.type = 'button';
-    taskToggle.className = 'workspace-menu-toggle';
-    taskToggle.setAttribute('aria-controls', workspaceNav.id);
-    taskToggle.setAttribute('aria-expanded', 'false');
-    taskToggle.textContent = 'Tasks';
-    sidebar.insertBefore(summary, sidebar.firstChild);
-    summary.append(roleLabel, roleName, taskToggle);
-    const setTaskMenu = (open) => {
-      workspaceNav.classList.toggle('is-open', open);
-      taskToggle.setAttribute('aria-expanded', String(open));
-      taskToggle.textContent = open ? 'Close tasks' : 'Tasks';
+    if (!workspace || !workspaceMain || !workspaceNav || !roleLabel || !roleName) return;
+
+    const storageKey = 'qli-workspace-sidebar-collapsed';
+    const compactViewport = window.matchMedia('(max-width: 960px)');
+    workspaceNav.id = `workspace-navigation-${index}`;
+    sidebar.id = `workspace-sidebar-${index}`;
+
+    const identity = document.createElement('div');
+    identity.className = 'workspace-sidebar-identity';
+    identity.append(roleLabel, roleName);
+
+    const sidebarHeader = document.createElement('div');
+    sidebarHeader.className = 'workspace-sidebar-header workspace-nav-summary';
+
+    const sidebarToggle = document.createElement('button');
+    sidebarToggle.type = 'button';
+    sidebarToggle.className = 'workspace-sidebar-toggle';
+    sidebarToggle.setAttribute('aria-controls', sidebar.id);
+    sidebarToggle.innerHTML = '<span class="workspace-sidebar-toggle-icon" aria-hidden="true"></span><span class="workspace-sidebar-toggle-label">Collapse</span>';
+    sidebarHeader.append(identity, sidebarToggle);
+    sidebar.insertBefore(sidebarHeader, workspaceNav);
+
+    const mobileOpener = document.createElement('button');
+    mobileOpener.type = 'button';
+    mobileOpener.className = 'workspace-sidebar-opener';
+    mobileOpener.setAttribute('aria-controls', sidebar.id);
+    mobileOpener.setAttribute('aria-expanded', 'false');
+    const openerIcon = document.createElement('span');
+    openerIcon.className = 'workspace-sidebar-opener-icon';
+    openerIcon.setAttribute('aria-hidden', 'true');
+    const openerCopy = document.createElement('span');
+    openerCopy.className = 'workspace-sidebar-opener-copy';
+    const openerEyebrow = document.createElement('small');
+    openerEyebrow.textContent = roleLabel.textContent;
+    const openerLabel = document.createElement('strong');
+    openerLabel.textContent = 'Open workspace navigation';
+    openerCopy.append(openerEyebrow, openerLabel);
+    mobileOpener.append(openerIcon, openerCopy);
+    workspaceMain.insertBefore(mobileOpener, workspaceMain.firstChild);
+
+    const backdrop = document.createElement('button');
+    backdrop.type = 'button';
+    backdrop.className = 'workspace-sidebar-backdrop';
+    backdrop.tabIndex = -1;
+    backdrop.setAttribute('aria-label', 'Close workspace navigation');
+    workspace.insertBefore(backdrop, workspaceMain);
+
+    workspaceNav.querySelectorAll('a').forEach((link) => {
+      const label = link.querySelector('.workspace-link-label')?.textContent?.trim() || link.textContent.trim();
+      link.title = link.target === '_blank' ? `${label} (opens in a new tab)` : label;
+    });
+
+    const readStoredCollapse = () => {
+      try { return window.localStorage.getItem(storageKey) === 'true'; }
+      catch (_) { return false; }
     };
-    taskToggle.addEventListener('click', () => setTaskMenu(!workspaceNav.classList.contains('is-open')));
-    document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && workspaceNav.classList.contains('is-open')) { setTaskMenu(false); taskToggle.focus(); } });
+    const storeCollapse = (collapsed) => {
+      try { window.localStorage.setItem(storageKey, String(collapsed)); }
+      catch (_) { /* Sidebar persistence is an optional enhancement. */ }
+    };
+    const setDesktopCollapsed = (collapsed, persist = true) => {
+      workspace.classList.toggle('is-sidebar-collapsed', collapsed);
+      sidebarToggle.setAttribute('aria-expanded', String(!collapsed));
+      sidebarToggle.setAttribute('aria-label', collapsed ? 'Expand workspace navigation' : 'Collapse workspace navigation');
+      sidebarToggle.querySelector('.workspace-sidebar-toggle-label').textContent = collapsed ? 'Expand' : 'Collapse';
+      if (persist) storeCollapse(collapsed);
+    };
+    const setMobileOpen = (open, returnFocus = false) => {
+      workspace.classList.toggle('is-sidebar-open', open);
+      document.body.classList.toggle('workspace-navigation-open', open);
+      mobileOpener.setAttribute('aria-expanded', String(open));
+      sidebarToggle.setAttribute('aria-expanded', String(open));
+      sidebarToggle.setAttribute('aria-label', 'Close workspace navigation');
+      sidebarToggle.querySelector('.workspace-sidebar-toggle-label').textContent = 'Close';
+      sidebar.setAttribute('aria-hidden', String(!open));
+      sidebar.inert = !open;
+      if (open) window.setTimeout(() => sidebarToggle.focus(), 40);
+      else if (returnFocus) mobileOpener.focus();
+    };
+    const syncViewport = () => {
+      if (compactViewport.matches) {
+        workspace.classList.remove('is-sidebar-collapsed');
+        setMobileOpen(false);
+      } else {
+        workspace.classList.remove('is-sidebar-open');
+        document.body.classList.remove('workspace-navigation-open');
+        sidebar.removeAttribute('aria-hidden');
+        sidebar.inert = false;
+        mobileOpener.setAttribute('aria-expanded', 'false');
+        setDesktopCollapsed(readStoredCollapse(), false);
+      }
+    };
+
+    sidebarToggle.addEventListener('click', () => {
+      if (compactViewport.matches) setMobileOpen(false, true);
+      else setDesktopCollapsed(!workspace.classList.contains('is-sidebar-collapsed'));
+    });
+    mobileOpener.addEventListener('click', () => setMobileOpen(true));
+    backdrop.addEventListener('click', () => setMobileOpen(false, true));
+    workspaceNav.addEventListener('click', (event) => {
+      if (compactViewport.matches && event.target.closest('a')) setMobileOpen(false);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (!compactViewport.matches || !workspace.classList.contains('is-sidebar-open')) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setMobileOpen(false, true);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = [...sidebar.querySelectorAll('a[href], button:not([disabled]), input:not([type="hidden"])')].filter((element) => !element.inert && element.offsetParent !== null);
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    });
+    compactViewport.addEventListener?.('change', syncViewport);
+    syncViewport();
   });
 
   window.qliFetch = async (url, options = {}) => {
