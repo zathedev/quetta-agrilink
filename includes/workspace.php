@@ -236,10 +236,10 @@ function workspace_open_legacy(string $title, string $active): array
     return $user;
 }
 
-function workspace_open(string $title, string $active): array
+function workspace_open(string $title, string $active, array $options = []): array
 {
     $user = require_login();
-    $focus = match ($user['role_slug']) {
+    $defaultFocus = match ($user['role_slug']) {
         'farmer' => ['Publish current produce', 'Add a produce listing with the quantity, grade and expected price.', 'farmer/listings.php', 'Publish produce'],
         'buyer' => ['Browse available produce', 'Compare active local listings before sending an offer.', 'marketplace/index.php', 'Browse produce'],
         'storage_provider' => ['Review storage requests', 'Check requested dates, produce and quantity before you respond.', 'storage/dashboard.php', 'Review requests'],
@@ -247,18 +247,62 @@ function workspace_open(string $title, string $active): array
         'admin' => ['Review platform records', 'Check the records that need an administrator decision.', 'admin/dashboard.php', 'Open records'],
         default => ['Browse the marketplace', 'Review the active records in the local marketplace.', 'marketplace/index.php', 'Open marketplace'],
     };
+    $defaultSubtitle = match ($user['role_slug']) {
+        'farmer' => 'Manage produce availability, buyer interest, fulfilment, storage and transport from one operating view.',
+        'buyer' => 'Track sourcing decisions, open offers and purchase commitments against current market supply.',
+        'storage_provider' => 'Balance available capacity with incoming booking requests and active storage commitments.',
+        'transport_provider' => 'Coordinate incoming loads, fleet availability, driver assignments and delivery milestones.',
+        'admin' => 'Monitor platform activity, operational records and governance queues across every participant role.',
+        default => 'Account-scoped records and actions for your current operational role.',
+    };
+    $focus = $options['focus'] ?? $defaultFocus;
+    $subtitle = (string) ($options['subtitle'] ?? $defaultSubtitle);
     $activitySummary = $active === 'dashboard' ? workspace_activity_summary((int) $user['id'], $user['role_name']) : [];
     $pageTitle = $title;
     require __DIR__ . '/header.php';
     ?>
-    <section class="workspace"><aside class="workspace-sidebar"><span class="role-label"><?= e($user['role_name']) ?> workspace</span><h2><?= e($user['full_name']) ?></h2><nav aria-label="Workspace navigation"><?php render_workspace_navigation($user['role_slug'], $active); ?></nav><form class="workspace-signout" method="post" action="<?= e(app_url('auth/logout.php')) ?>"><input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>"><button type="submit">Sign out securely</button></form></aside><main class="workspace-main"><header class="workspace-topbar"><div><p class="desk-kicker"><?= e($user['role_name']) ?> workspace</p><h1><?= e($title) ?></h1><p>Account-scoped records and actions for your current operational role.</p></div><div class="workspace-user"><span>Account role</span><strong><?= e($user['role_name']) ?></strong></div></header><?php if ($active === 'dashboard'): ?><section class="workspace-focus"><div><span>Recommended next action</span><h2><?= e($focus[0]) ?></h2><p><?= e($focus[1]) ?></p></div><a class="button button-primary" href="<?= e(app_url($focus[2])) ?>"><?= e($focus[3]) ?></a></section><details class="workspace-activity-summary"><summary>Recent account activity</summary><div class="activity-summary-list"><?php foreach ($activitySummary as $entry): ?><article><strong><?= e($entry['label']) ?></strong><span><?= e($entry['detail']) ?></span></article><?php endforeach; ?></div></details><?php if (!onboarding_is_complete((int) $user['id'])): ?><details class="workspace-onboarding"><summary>First time in this workspace?</summary><div><p>Review the record that needs a response, confirm the visible terms, then update the record when the status changes.</p><form method="post" action="<?= e(app_url('ajax/onboarding/complete.php')) ?>"><input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>"><button class="button button-quiet" type="submit">Hide this guide</button></form></div></details><?php endif; ?><?php endif; ?>
+    <section class="workspace">
+        <aside class="workspace-sidebar">
+            <span class="role-label"><?= e($user['role_name']) ?> workspace</span>
+            <h2><?= e($user['full_name']) ?></h2>
+            <nav aria-label="Workspace navigation"><?php render_workspace_navigation($user['role_slug'], $active); ?></nav>
+            <form class="workspace-signout" method="post" action="<?= e(app_url('auth/logout.php')) ?>">
+                <input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>">
+                <button type="submit">Sign out securely</button>
+            </form>
+        </aside>
+        <main class="workspace-main">
+            <header class="workspace-topbar">
+                <div>
+                    <p class="desk-kicker"><?= e($user['role_name']) ?> workspace</p>
+                    <h1><?= e($title) ?></h1>
+                    <p><?= e($subtitle) ?></p>
+                </div>
+                <div class="workspace-user"><span>Account role</span><strong><?= e($user['role_name']) ?></strong></div>
+            </header>
+            <?php if ($active === 'dashboard'): ?>
+                <section class="workspace-focus" aria-labelledby="workspace-focus-title">
+                    <div><span>Priority action</span><h2 id="workspace-focus-title"><?= e($focus[0]) ?></h2><p><?= e($focus[1]) ?></p></div>
+                    <a class="button button-primary" href="<?= e(app_url($focus[2])) ?>"><?= e($focus[3]) ?></a>
+                </section>
+                <details class="workspace-activity-summary">
+                    <summary>Recent account activity</summary>
+                    <div class="activity-summary-list"><?php foreach ($activitySummary as $entry): ?><article><strong><?= e($entry['label']) ?></strong><span><?= e($entry['detail']) ?></span></article><?php endforeach; ?></div>
+                </details>
+                <?php if (!onboarding_is_complete((int) $user['id'])): ?>
+                    <details class="workspace-onboarding">
+                        <summary>First time in this workspace?</summary>
+                        <div><p>Review the record that needs a response, confirm the visible terms, then update the record when its status changes.</p><form method="post" action="<?= e(app_url('ajax/onboarding/complete.php')) ?>"><input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>"><button class="button button-quiet" type="submit">Hide this guide</button></form></div>
+                    </details>
+                <?php endif; ?>
+            <?php endif; ?>
     <?php
     return $user;
 }
 
 function workspace_close(): void
 {
-    echo '</div></section>';
+    echo '</main></section>';
     require __DIR__ . '/footer.php';
 }
 
@@ -271,13 +315,28 @@ function workspace_summary_window(): array
     return ['from' => $start->format('Y-m-d 00:00:00'), 'to' => $end->modify('+1 day')->format('Y-m-d 00:00:00'), 'from_input' => $start->format('Y-m-d'), 'to_input' => $end->format('Y-m-d')];
 }
 
-function render_status_cards(array $cards, ?array $summaryWindow = null): void
+function render_status_cards(array $cards, ?array $summaryWindow = null, array $options = []): void
 {
-    echo '<section class="workspace-overview" aria-labelledby="workspace-overview-title"><header><div><h2 id="workspace-overview-title">At a glance</h2><p>Current records for this account.</p></div>';
-    if ($summaryWindow !== null) echo '<form method="get" class="summary-date-filter"><label>From <input type="date" name="summary_from" value="' . e($summaryWindow['from_input']) . '"></label><label>To <input type="date" name="summary_to" value="' . e($summaryWindow['to_input']) . '"></label><button class="button button-quiet" type="submit">Apply dates</button><a class="button button-outline" href="' . e(app_url('dashboard/export-summary.php?summary_from=' . rawurlencode($summaryWindow['from_input']) . '&summary_to=' . rawurlencode($summaryWindow['to_input']))) . '">Export CSV</a></form>';
+    $heading = (string) ($options['heading'] ?? 'Operational overview');
+    $description = (string) ($options['description'] ?? 'Live workload alongside results from the selected reporting period.');
+    echo '<section class="workspace-overview" aria-labelledby="workspace-overview-title"><header><div><p class="desk-kicker">Dashboard summary</p><h2 id="workspace-overview-title">' . e($heading) . '</h2><p>' . e($description) . '</p></div>';
+    if ($summaryWindow !== null) {
+        $periodLabel = date('j M', strtotime($summaryWindow['from_input'])) . '–' . date('j M Y', strtotime($summaryWindow['to_input']));
+        echo '<div class="dashboard-period"><span>Reporting period</span><strong>' . e($periodLabel) . '</strong><form method="get" class="summary-date-filter"><label>From <input type="date" name="summary_from" value="' . e($summaryWindow['from_input']) . '"></label><label>To <input type="date" name="summary_to" value="' . e($summaryWindow['to_input']) . '"></label><button class="button button-quiet" type="submit">Apply</button><a class="button button-outline" href="' . e(app_url('dashboard/export-summary.php?summary_from=' . rawurlencode($summaryWindow['from_input']) . '&summary_to=' . rawurlencode($summaryWindow['to_input']))) . '">Export CSV</a></form></div>';
+    }
     echo '</header><div class="status-grid">';
     foreach ($cards as $card) {
-        echo '<article class="status-card"><span>' . e($card['label']) . '</span><strong>' . e((string) $card['value']) . '</strong><small>' . e($card['detail']) . '</small></article>';
+        $tone = in_array(($card['tone'] ?? ''), ['attention', 'positive'], true) ? ' status-card-' . $card['tone'] : '';
+        echo '<article class="status-card' . $tone . '"><div class="status-card-heading"><span class="status-card-label">' . e($card['label']) . '</span><span class="status-card-scope">' . e((string) ($card['scope'] ?? 'Current')) . '</span></div><strong>' . e((string) $card['value']) . '</strong><small>' . e($card['detail']) . '</small></article>';
     }
     echo '</div></section>';
+}
+
+function render_dashboard_shortcuts(string $role, string $heading = 'Frequent actions', string $description = 'Open the records used most often in this role.'): void
+{
+    echo '<aside class="dashboard-action-panel" aria-labelledby="dashboard-actions-title"><div class="workspace-section-header"><div><p class="desk-kicker">Action centre</p><h2 id="dashboard-actions-title">' . e($heading) . '</h2><p>' . e($description) . '</p></div></div><div class="quick-links">';
+    foreach (workspace_shortcuts($role) as [$label, $shortcutDescription, $path]) {
+        echo '<a class="quick-link" href="' . e(app_url($path)) . '"><strong>' . e($label) . '</strong><span>' . e($shortcutDescription) . '</span><em>Open</em></a>';
+    }
+    echo '</div></aside>';
 }

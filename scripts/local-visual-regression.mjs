@@ -26,13 +26,19 @@ if (!allowedHosts.has(baseUrl.hostname.toLowerCase())) {
   throw new Error("Visual regression captures are limited to localhost. Set --base-url to your local XAMPP URL.");
 }
 
+const farmerEmail = process.env.VISUAL_REGRESSION_FARMER_EMAIL || "farmer.demo@quettaagrilink.test";
 const buyerEmail = process.env.VISUAL_REGRESSION_BUYER_EMAIL || "buyer.demo@quettaagrilink.test";
+const storageEmail = process.env.VISUAL_REGRESSION_STORAGE_EMAIL || "storage.demo@quettaagrilink.test";
+const transportEmail = process.env.VISUAL_REGRESSION_TRANSPORT_EMAIL || "transport.demo@quettaagrilink.test";
 const administratorEmail = process.env.VISUAL_REGRESSION_ADMIN_EMAIL || "admin.demo@quettaagrilink.test";
 const password = process.env.VISUAL_REGRESSION_PASSWORD || "";
+const farmerPassword = process.env.VISUAL_REGRESSION_FARMER_PASSWORD || password;
 const buyerPassword = process.env.VISUAL_REGRESSION_BUYER_PASSWORD || password;
+const storagePassword = process.env.VISUAL_REGRESSION_STORAGE_PASSWORD || password;
+const transportPassword = process.env.VISUAL_REGRESSION_TRANSPORT_PASSWORD || password;
 const administratorPassword = process.env.VISUAL_REGRESSION_ADMIN_PASSWORD || password;
-if (process.env.VISUAL_REGRESSION_ALLOW_AUTH !== "1" || buyerPassword === "" || administratorPassword === "") {
-  throw new Error("Set VISUAL_REGRESSION_ALLOW_AUTH=1 plus VISUAL_REGRESSION_PASSWORD, or role-specific buyer and administrator passwords, before capturing authenticated local workspaces.");
+if (process.env.VISUAL_REGRESSION_ALLOW_AUTH !== "1" || [farmerPassword, buyerPassword, storagePassword, transportPassword, administratorPassword].some((value) => value === "")) {
+  throw new Error("Set VISUAL_REGRESSION_ALLOW_AUTH=1 plus VISUAL_REGRESSION_PASSWORD, or every role-specific password, before capturing authenticated local workspaces.");
 }
 
 const browserCommand = process.env.CHROMIUM_BIN || "chromium";
@@ -139,13 +145,14 @@ async function visit(cdp, sessionId, relativePath, viewport) {
   await waitForReady(cdp, sessionId);
   await evaluate(cdp, sessionId, freezeMotion);
   await evaluate(cdp, sessionId, normalizeRuntimeContent);
+  await evaluate(cdp, sessionId, "window.scrollTo(0, 0); true");
 }
 
 async function capture(cdp, sessionId, definition, records) {
   await visit(cdp, sessionId, definition.path, definition.viewport);
-  const check = await evaluate(cdp, sessionId, `(() => ({ selector: Boolean(document.querySelector(${JSON.stringify(definition.selector)})), text: document.body.innerText.includes(${JSON.stringify(definition.text)}), path: location.pathname, title: document.title }))()`);
+  const check = await evaluate(cdp, sessionId, `(() => ({ selector: Boolean(document.querySelector(${JSON.stringify(definition.selector)})), text: document.body.innerText.includes(${JSON.stringify(definition.text)}), path: location.pathname, title: document.title, horizontalOverflow: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - window.innerWidth }))()`);
   const expectedPath = new URL(definition.path, baseUrl).pathname;
-  if (!check?.selector || !check?.text || check.path !== expectedPath) {
+  if (!check?.selector || !check?.text || check.path !== expectedPath || check.horizontalOverflow > 1) {
     throw new Error(`Capture assertion failed for ${definition.name}: ${JSON.stringify({ expectedPath, check })}`);
   }
   const screenshot = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: true, fromSurface: true }, sessionId);
@@ -216,6 +223,18 @@ const buyerCaptures = [
   { name: "buyer-support-desktop", path: "support.php", selector: ".support-intro", text: "Keep support work in the accountable workspace", viewport: desktop },
   { name: "buyer-support-mobile", path: "support.php", selector: ".support-intro", text: "Keep support work in the accountable workspace", viewport: mobile },
 ];
+const farmerCaptures = [
+  { name: "farmer-workspace-desktop", path: "farmer/dashboard.php", selector: ".workspace", text: "Farmer dashboard", viewport: desktop },
+  { name: "farmer-workspace-mobile", path: "farmer/dashboard.php", selector: ".workspace", text: "Farmer dashboard", viewport: mobile },
+];
+const storageProviderCaptures = [
+  { name: "storage-provider-workspace-desktop", path: "storage/dashboard.php", selector: ".workspace", text: "Storage provider dashboard", viewport: desktop },
+  { name: "storage-provider-workspace-mobile", path: "storage/dashboard.php", selector: ".workspace", text: "Storage provider dashboard", viewport: mobile },
+];
+const transportProviderCaptures = [
+  { name: "transport-provider-workspace-desktop", path: "transport/dashboard.php", selector: ".workspace", text: "Transport provider dashboard", viewport: desktop },
+  { name: "transport-provider-workspace-mobile", path: "transport/dashboard.php", selector: ".workspace", text: "Transport provider dashboard", viewport: mobile },
+];
 const administratorCaptures = [
   { name: "administrator-workspace-desktop", path: "admin/dashboard.php", selector: ".workspace", text: "Administrator dashboard", viewport: desktop },
   { name: "administrator-workspace-mobile", path: "admin/dashboard.php", selector: ".workspace", text: "Administrator dashboard", viewport: mobile },
@@ -245,8 +264,14 @@ try {
   const records = [];
   await assertAccountFormFeedback(cdp, sessionId);
   for (const definition of publicCaptures) await capture(cdp, sessionId, definition, records);
+  await authenticate(cdp, sessionId, farmerEmail, farmerPassword);
+  for (const definition of farmerCaptures) await capture(cdp, sessionId, definition, records);
   await authenticate(cdp, sessionId, buyerEmail, buyerPassword);
   for (const definition of buyerCaptures) await capture(cdp, sessionId, definition, records);
+  await authenticate(cdp, sessionId, storageEmail, storagePassword);
+  for (const definition of storageProviderCaptures) await capture(cdp, sessionId, definition, records);
+  await authenticate(cdp, sessionId, transportEmail, transportPassword);
+  for (const definition of transportProviderCaptures) await capture(cdp, sessionId, definition, records);
   await authenticate(cdp, sessionId, administratorEmail, administratorPassword);
   for (const definition of administratorCaptures) await capture(cdp, sessionId, definition, records);
 
