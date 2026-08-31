@@ -1,0 +1,1143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A three-page project report for Quetta AgriLink, prepared by Zubair Ahmed.">
+  <title>Quetta AgriLink — Project Report</title>
+  <style>
+    @font-face {
+      font-family: "DM Sans";
+      src: url("../assets/fonts/dm-sans-400.ttf") format("truetype");
+      font-style: normal;
+      font-weight: 400;
+    }
+
+    @font-face {
+      font-family: "DM Sans";
+      src: url("../assets/fonts/dm-sans-600.ttf") format("truetype");
+      font-style: normal;
+      font-weight: 600;
+    }
+
+    @font-face {
+      font-family: "DM Sans";
+      src: url("../assets/fonts/dm-sans-700.ttf") format("truetype");
+      font-style: normal;
+      font-weight: 700;
+    }
+
+    @font-face {
+      font-family: "Playfair Display";
+      src: url("../assets/fonts/playfair-display-600.ttf") format("truetype");
+      font-style: normal;
+      font-weight: 600;
+    }
+
+    :root {
+      --forest: #173f2d;
+      --forest-deep: #0e3024;
+      --leaf: #5f8b55;
+      --gold: #d2a044;
+      --gold-soft: #f7ecd3;
+      --teal: #55a19a;
+      --teal-soft: #e1f0ee;
+      --earth: #c97546;
+      --earth-soft: #f5e5db;
+      --canvas: #f6f5ef;
+      --surface: #ffffff;
+      --ink: #1d2621;
+      --muted: #627068;
+      --border: #d7ddd7;
+      --soft-green: #e8f0ea;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: #dfe4df;
+      color: var(--ink);
+      font-family: "DM Sans", Arial, sans-serif;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    body {
+      display: grid;
+      gap: 18px;
+      justify-content: center;
+      padding: 24px 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    svg {
+      display: block;
+    }
+
+    .report-page {
+      position: relative;
+      width: 210mm;
+      height: 297mm;
+      overflow: hidden;
+      padding: 14mm 16mm 15mm;
+      background: var(--canvas);
+      box-shadow: 0 16px 50px rgba(17, 45, 32, .15);
+      page-break-after: always;
+    }
+
+    .report-page:last-child {
+      page-break-after: auto;
+    }
+
+    .page-accent {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--leaf) 0 27%, var(--gold) 27% 54%, var(--teal) 54% 77%, var(--earth) 77%);
+    }
+
+    .page-orb {
+      position: absolute;
+      z-index: 0;
+      width: 92mm;
+      height: 92mm;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(210, 160, 68, .13), rgba(210, 160, 68, 0) 68%);
+      pointer-events: none;
+    }
+
+    .page-orb.top-right {
+      top: -32mm;
+      right: -22mm;
+    }
+
+    .page-orb.bottom-left {
+      bottom: -40mm;
+      left: -32mm;
+      background: radial-gradient(circle, rgba(85, 161, 154, .13), rgba(85, 161, 154, 0) 70%);
+    }
+
+    .page-header,
+    .page-footer,
+    .page-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 13mm;
+      margin-bottom: 7mm;
+      padding-bottom: 4mm;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 35px;
+      height: 35px;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--forest);
+      color: #fff;
+      box-shadow: inset 0 -3px 0 rgba(210, 160, 68, .75);
+    }
+
+    .brand-mark svg {
+      width: 21px;
+      height: 21px;
+    }
+
+    .brand-copy strong {
+      display: block;
+      color: var(--forest);
+      font-size: 13px;
+      letter-spacing: -.02em;
+    }
+
+    .brand-copy span,
+    .document-meta {
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .document-meta {
+      text-align: right;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 7px;
+      color: var(--earth);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      width: 18px;
+      height: 2px;
+      background: currentColor;
+      content: "";
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1,
+    h2 {
+      font-family: "Playfair Display", Georgia, serif;
+      font-weight: 600;
+      letter-spacing: -.035em;
+    }
+
+    h1 {
+      max-width: 145mm;
+      margin-bottom: 5mm;
+      color: #fff;
+      font-size: 39px;
+      line-height: 1.03;
+    }
+
+    h2 {
+      margin-bottom: 3mm;
+      color: var(--forest);
+      font-size: 27px;
+      line-height: 1.08;
+    }
+
+    h3 {
+      margin-bottom: 5px;
+      color: var(--forest);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    p {
+      color: var(--muted);
+      font-size: 10.2px;
+      line-height: 1.55;
+    }
+
+    .lead {
+      max-width: 155mm;
+      margin-bottom: 7mm;
+      color: #3f4c45;
+      font-size: 12.2px;
+      line-height: 1.55;
+    }
+
+    .cover-panel {
+      position: relative;
+      overflow: hidden;
+      min-height: 91mm;
+      margin-bottom: 9mm;
+      padding: 13mm 12mm;
+      border-radius: 7mm 7mm 2mm 7mm;
+      background:
+        radial-gradient(circle at 88% 20%, rgba(210, 160, 68, .24), transparent 27%),
+        linear-gradient(132deg, var(--forest) 0%, var(--forest-deep) 73%, #173827 100%);
+      box-shadow: 0 15px 35px rgba(14, 48, 36, .16);
+    }
+
+    .cover-panel::after {
+      position: absolute;
+      right: -18mm;
+      bottom: -29mm;
+      width: 84mm;
+      height: 84mm;
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 50%;
+      box-shadow: 0 0 0 12mm rgba(255, 255, 255, .025), 0 0 0 25mm rgba(255, 255, 255, .018);
+      content: "";
+    }
+
+    .cover-panel .eyebrow {
+      color: #efc470;
+    }
+
+    .cover-summary {
+      max-width: 128mm;
+      margin: 0;
+      color: #c9d8cf;
+      font-size: 12px;
+      line-height: 1.62;
+    }
+
+    .cover-meta {
+      display: flex;
+      gap: 7mm;
+      align-items: center;
+      margin-top: 9mm;
+      color: #fff;
+    }
+
+    .cover-meta div {
+      padding-left: 4mm;
+      border-left: 2px solid var(--gold);
+    }
+
+    .cover-meta span {
+      display: block;
+      margin-bottom: 2px;
+      color: #aebfb5;
+      font-size: 7.5px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .cover-meta strong {
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .section-heading {
+      display: grid;
+      grid-template-columns: 13mm 1fr;
+      gap: 4mm;
+      align-items: start;
+      margin-bottom: 5mm;
+    }
+
+    .section-number {
+      display: grid;
+      width: 12mm;
+      height: 12mm;
+      place-items: center;
+      border-radius: 4mm;
+      background: var(--gold-soft);
+      color: var(--earth);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .section-heading p {
+      max-width: 145mm;
+      margin-bottom: 0;
+    }
+
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 3.5mm;
+    }
+
+    .problem-card,
+    .solution-card,
+    .challenge-card,
+    .tool-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, .88);
+    }
+
+    .problem-card {
+      display: grid;
+      grid-template-columns: 10mm 1fr;
+      gap: 3mm;
+      min-height: 30mm;
+      padding: 4.5mm;
+      border-radius: 3mm;
+    }
+
+    .card-icon,
+    .section-icon {
+      display: grid;
+      place-items: center;
+      color: var(--forest);
+    }
+
+    .card-icon {
+      width: 9mm;
+      height: 9mm;
+      border-radius: 2.5mm;
+      background: var(--soft-green);
+    }
+
+    .card-icon svg,
+    .section-icon svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .problem-card:nth-child(2) .card-icon {
+      background: var(--gold-soft);
+      color: #88631f;
+    }
+
+    .problem-card:nth-child(3) .card-icon {
+      background: var(--teal-soft);
+      color: #34756f;
+    }
+
+    .problem-card:nth-child(4) .card-icon {
+      background: var(--earth-soft);
+      color: #a35431;
+    }
+
+    .problem-card p,
+    .solution-card p,
+    .challenge-card p,
+    .tool-card p {
+      margin-bottom: 0;
+      font-size: 8.9px;
+      line-height: 1.48;
+    }
+
+    .insight-band {
+      display: grid;
+      grid-template-columns: 29mm 1fr;
+      gap: 5mm;
+      align-items: center;
+      margin-top: 4mm;
+      padding: 4mm 5mm;
+      border-left: 4px solid var(--gold);
+      background: var(--forest);
+      color: #fff;
+    }
+
+    .insight-band strong {
+      color: #efc470;
+      font-size: 8px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .insight-band p {
+      margin: 0;
+      color: #d7e4dc;
+      font-size: 9px;
+      line-height: 1.48;
+    }
+
+    .page-title-row {
+      margin-bottom: 7mm;
+    }
+
+    .page-title-row .lead {
+      margin: 0;
+    }
+
+    .ecosystem {
+      display: grid;
+      grid-template-columns: 1fr 36mm 1fr;
+      gap: 4mm;
+      align-items: stretch;
+      margin-bottom: 6mm;
+    }
+
+    .role-stack {
+      display: grid;
+      gap: 2.5mm;
+    }
+
+    .role-chip {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      min-height: 15mm;
+      padding: 3mm 4mm;
+      border: 1px solid var(--border);
+      border-radius: 2.5mm;
+      background: var(--surface);
+      color: var(--forest);
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .role-chip span {
+      display: grid;
+      width: 7mm;
+      height: 7mm;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--soft-green);
+      color: var(--leaf);
+    }
+
+    .role-chip svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .platform-core {
+      display: grid;
+      place-items: center;
+      min-height: 68mm;
+      padding: 6mm 4mm;
+      border-radius: 4mm;
+      background: linear-gradient(155deg, var(--forest), var(--forest-deep));
+      text-align: center;
+      box-shadow: 0 12px 25px rgba(23, 63, 45, .15);
+    }
+
+    .platform-core .core-icon {
+      display: grid;
+      width: 14mm;
+      height: 14mm;
+      place-items: center;
+      margin: 0 auto 3mm;
+      border: 1px solid rgba(255, 255, 255, .22);
+      border-radius: 4mm;
+      background: rgba(255, 255, 255, .08);
+      color: #efc470;
+    }
+
+    .platform-core svg {
+      width: 25px;
+      height: 25px;
+    }
+
+    .platform-core strong {
+      display: block;
+      margin-bottom: 2mm;
+      color: #fff;
+      font-family: "Playfair Display", Georgia, serif;
+      font-size: 16px;
+      line-height: 1.05;
+    }
+
+    .platform-core p {
+      margin: 0;
+      color: #bdd0c4;
+      font-size: 8px;
+      line-height: 1.45;
+    }
+
+    .solution-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3mm;
+      margin-bottom: 6mm;
+    }
+
+    .solution-card {
+      min-height: 34mm;
+      padding: 4mm;
+      border-top: 3px solid var(--leaf);
+      border-radius: 2.5mm;
+    }
+
+    .solution-card:nth-child(2),
+    .solution-card:nth-child(5) {
+      border-top-color: var(--gold);
+    }
+
+    .solution-card:nth-child(3),
+    .solution-card:nth-child(6) {
+      border-top-color: var(--teal);
+    }
+
+    .solution-card .mini-label {
+      display: block;
+      margin-bottom: 2mm;
+      color: var(--earth);
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      overflow: hidden;
+      border: 1px solid #cbd6ce;
+      border-radius: 3mm;
+      background: #fff;
+    }
+
+    .workflow-step {
+      position: relative;
+      min-height: 25mm;
+      padding: 4mm 3.5mm;
+      border-right: 1px solid var(--border);
+    }
+
+    .workflow-step:last-child {
+      border-right: 0;
+    }
+
+    .workflow-step span {
+      display: block;
+      margin-bottom: 2mm;
+      color: var(--gold);
+      font-size: 8px;
+      font-weight: 700;
+    }
+
+    .workflow-step strong {
+      display: block;
+      color: var(--forest);
+      font-size: 8.6px;
+      line-height: 1.28;
+    }
+
+    .tech-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4mm;
+      padding: 3.5mm 4mm;
+      border-radius: 2.5mm;
+      background: var(--gold-soft);
+    }
+
+    .tech-bar strong {
+      color: #6e5018;
+      font-size: 8px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .tech-list {
+      display: flex;
+      gap: 2mm;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .tech-list span {
+      padding: 1.3mm 2.5mm;
+      border-radius: 99px;
+      background: #fff;
+      color: #4d432d;
+      font-size: 7.4px;
+      font-weight: 700;
+    }
+
+    .third-page-layout {
+      display: grid;
+      grid-template-columns: .87fr 1.13fr;
+      gap: 6mm;
+      margin-top: 3mm;
+    }
+
+    .column-title {
+      display: flex;
+      gap: 3mm;
+      align-items: center;
+      margin-bottom: 4mm;
+    }
+
+    .section-icon {
+      width: 10mm;
+      height: 10mm;
+      flex: 0 0 auto;
+      border-radius: 3mm;
+      background: var(--gold-soft);
+      color: #88631f;
+    }
+
+    .column-title h2 {
+      margin: 0;
+      font-size: 21px;
+    }
+
+    .tool-stack,
+    .challenge-stack {
+      display: grid;
+      gap: 3mm;
+    }
+
+    .tool-card {
+      padding: 5mm;
+      border-radius: 3mm;
+    }
+
+    .tool-card.manus {
+      border-top: 4px solid var(--teal);
+    }
+
+    .tool-card.chatgpt {
+      border-top: 4px solid var(--forest);
+    }
+
+    .tool-head {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      margin-bottom: 3mm;
+    }
+
+    .tool-logo {
+      display: grid;
+      width: 9mm;
+      height: 9mm;
+      place-items: center;
+      border-radius: 2.5mm;
+      background: var(--teal-soft);
+      color: #34756f;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .chatgpt .tool-logo {
+      background: var(--soft-green);
+      color: var(--forest);
+    }
+
+    .tool-head h3 {
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .tool-card ul {
+      margin: 3mm 0 0;
+      padding-left: 4mm;
+      color: var(--muted);
+      font-size: 8.6px;
+      line-height: 1.6;
+    }
+
+    .ai-note {
+      margin-top: 3mm;
+      padding: 4mm;
+      border-left: 3px solid var(--gold);
+      background: var(--gold-soft);
+    }
+
+    .ai-note p {
+      margin: 0;
+      color: #625332;
+      font-size: 8.5px;
+    }
+
+    .challenge-card {
+      display: grid;
+      grid-template-columns: 8mm 1fr;
+      gap: 3mm;
+      min-height: 22mm;
+      padding: 3.5mm 4mm;
+      border-radius: 2.5mm;
+    }
+
+    .challenge-index {
+      color: var(--earth);
+      font-family: "Playfair Display", Georgia, serif;
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .challenge-card h3 {
+      font-size: 10px;
+    }
+
+    .challenge-card p {
+      font-size: 8.2px;
+    }
+
+    .outcome-panel {
+      display: grid;
+      grid-template-columns: 32mm 1fr;
+      gap: 5mm;
+      align-items: center;
+      margin-top: 6mm;
+      padding: 5mm;
+      border-radius: 3mm;
+      background: linear-gradient(125deg, var(--forest), var(--forest-deep));
+    }
+
+    .outcome-panel strong {
+      color: #efc470;
+      font-size: 9px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .outcome-panel p {
+      margin: 0;
+      color: #d6e3db;
+      font-size: 9px;
+    }
+
+    .profile-strip {
+      display: grid;
+      grid-template-columns: 36mm 1fr;
+      gap: 5mm;
+      align-items: center;
+      margin-top: 5mm;
+    }
+
+    .author-block span {
+      display: block;
+      margin-bottom: 1mm;
+      color: var(--muted);
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .author-block strong {
+      color: var(--forest);
+      font-family: "Playfair Display", Georgia, serif;
+      font-size: 16px;
+    }
+
+    .profile-links {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2.5mm;
+    }
+
+    .profile-link {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: 2.5mm;
+      padding: 3mm;
+      border: 1px solid var(--border);
+      border-radius: 2.5mm;
+      background: #fff;
+    }
+
+    .profile-link .link-icon {
+      display: grid;
+      width: 7mm;
+      height: 7mm;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 2mm;
+      background: var(--soft-green);
+      color: var(--forest);
+    }
+
+    .profile-link.linkedin .link-icon {
+      background: #e4eef6;
+      color: #0a66c2;
+    }
+
+    .profile-link.repository .link-icon {
+      background: var(--gold-soft);
+      color: #7a5a20;
+    }
+
+    .link-icon svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .profile-link span:last-child {
+      min-width: 0;
+    }
+
+    .profile-link strong,
+    .profile-link small {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .profile-link strong {
+      color: var(--forest);
+      font-size: 7.5px;
+    }
+
+    .profile-link small {
+      margin-top: 1px;
+      color: var(--muted);
+      font-size: 6.5px;
+    }
+
+    .page-footer {
+      position: absolute;
+      right: 16mm;
+      bottom: 6mm;
+      left: 16mm;
+      display: flex;
+      justify-content: space-between;
+      padding-top: 3mm;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
+    @media print {
+      html,
+      body {
+        background: #fff;
+      }
+
+      body {
+        display: block;
+        padding: 0;
+      }
+
+      .report-page {
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="report-page" aria-label="Page 1: Business problem">
+    <div class="page-accent"></div>
+    <div class="page-orb top-right"></div>
+    <header class="page-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 21v-9"></path><path d="M12 13C8.5 13 6 10.7 6 7c3.5 0 6 2.3 6 6Z"></path><path d="M12 11c0-3.7 2.5-6 6-6 0 3.7-2.5 6-6 6Z"></path><path d="M5 21h14"></path>
+          </svg>
+        </span>
+        <span class="brand-copy"><strong>Quetta AgriLink</strong><span>Orchard Ledger platform</span></span>
+      </div>
+      <span class="document-meta">Project report · August 2026</span>
+    </header>
+
+    <main class="page-content">
+      <section class="cover-panel">
+        <p class="eyebrow">Agricultural commerce platform</p>
+        <h1>One connected marketplace for everything after harvest.</h1>
+        <p class="cover-summary">A production-style PHP and MySQL platform designed to connect Balochistan’s farmers, buyers, cold-storage operators, and transport providers through transparent, role-aware digital workflows.</p>
+        <div class="cover-meta">
+          <div><span>Prepared by</span><strong>Zubair Ahmed</strong></div>
+          <div><span>Platform</span><strong>Web · PHP · MySQL</strong></div>
+          <div><span>Project stage</span><strong>Commercial MVP</strong></div>
+        </div>
+      </section>
+
+      <section aria-labelledby="business-problem-title">
+        <div class="section-heading">
+          <span class="section-number">01</span>
+          <div>
+            <p class="eyebrow">Business Problem</p>
+            <h2 id="business-problem-title">Agricultural trade is fragmented after the crop leaves the farm.</h2>
+            <p>Farmers and buyers often coordinate produce, pricing, storage, and delivery through disconnected channels. That fragmentation makes commercial decisions slower, records harder to trace, and available services more difficult to discover.</p>
+          </div>
+        </div>
+
+        <div class="problem-grid">
+          <article class="problem-card">
+            <span class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18"></path><path d="m5 11 1-6h12l1 6"></path><path d="M5 11v8h14v-8"></path><path d="M9 19v-5h6v5"></path></svg>
+            </span>
+            <div><h3>Limited market access</h3><p>Growers need a structured way to publish available produce, while buyers need consistent discovery by crop, grade, origin, quantity, and price.</p></div>
+          </article>
+          <article class="problem-card">
+            <span class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16"></path><path d="M6 16V9"></path><path d="M11 16V5"></path><path d="M16 16v-4"></path><path d="m5 7 5-4 5 4 4-3"></path></svg>
+            </span>
+            <div><h3>Weak price visibility</h3><p>Scattered reference prices make comparison difficult and reduce confidence when farmers and buyers negotiate commercial terms.</p></div>
+          </article>
+          <article class="problem-card">
+            <span class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V8l8-5 8 5v13"></path><path d="M8 21v-6h8v6"></path><path d="M8 10h.01M12 10h.01M16 10h.01"></path></svg>
+            </span>
+            <div><h3>Post-harvest coordination</h3><p>Cold-storage capacity and transport availability are separate operational problems, increasing the risk of delays and product deterioration.</p></div>
+          </article>
+          <article class="problem-card">
+            <span class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12h8"></path><path d="M12 8v8"></path><path d="M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"></path></svg>
+            </span>
+            <div><h3>Low workflow traceability</h3><p>Informal messages and manual follow-ups provide limited visibility into offers, orders, bookings, delivery stages, and responsibility.</p></div>
+          </article>
+        </div>
+
+        <div class="insight-band">
+          <strong>Core opportunity</strong>
+          <p>Bring discovery, negotiation, storage, transport, and accountable status records into one locally relevant platform—without pretending that unconfigured payment or external delivery services already exist.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer"><span>Quetta AgriLink · Project Report</span><span>01 / 03</span></footer>
+  </section>
+
+  <section class="report-page" aria-label="Page 2: Proposed solution">
+    <div class="page-accent"></div>
+    <div class="page-orb bottom-left"></div>
+    <header class="page-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-9"></path><path d="M12 13C8.5 13 6 10.7 6 7c3.5 0 6 2.3 6 6Z"></path><path d="M12 11c0-3.7 2.5-6 6-6 0 3.7-2.5 6-6 6Z"></path><path d="M5 21h14"></path></svg>
+        </span>
+        <span class="brand-copy"><strong>Quetta AgriLink</strong><span>Connected operating model</span></span>
+      </div>
+      <span class="document-meta">Prepared by Zubair Ahmed</span>
+    </header>
+
+    <main class="page-content">
+      <section class="page-title-row" aria-labelledby="solution-title">
+        <p class="eyebrow">02 · Proposed Solution</p>
+        <h2 id="solution-title">A role-aware digital trade desk for the complete post-harvest journey.</h2>
+        <p class="lead">Quetta AgriLink combines a public agricultural marketplace with protected workspaces, lifecycle records, local market intelligence, cold-storage discovery, and transport coordination.</p>
+      </section>
+
+      <section class="ecosystem" aria-label="Platform ecosystem">
+        <div class="role-stack">
+          <div class="role-chip"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3"></circle><path d="M5 21c0-4 3-7 7-7s7 3 7 7"></path></svg></span>Farmers</div>
+          <div class="role-chip"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9h16l-1-5H5L4 9Z"></path><path d="M5 9v11h14V9M9 20v-6h6v6"></path></svg></span>Buyers</div>
+        </div>
+
+        <div class="platform-core">
+          <div>
+            <span class="core-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-9"></path><path d="M12 13C8.5 13 6 10.7 6 7c3.5 0 6 2.3 6 6Z"></path><path d="M12 11c0-3.7 2.5-6 6-6 0 3.7-2.5 6-6 6Z"></path></svg></span>
+            <strong>Quetta<br>AgriLink</strong>
+            <p>Shared records<br>Role-based actions<br>Local accountability</p>
+          </div>
+        </div>
+
+        <div class="role-stack">
+          <div class="role-chip"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 21V8l8-5 8 5v13"></path><path d="M8 21v-6h8v6"></path></svg></span>Storage providers</div>
+          <div class="role-chip"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h12v10H3z"></path><path d="M15 11h4l2 3v3h-6"></path><circle cx="7" cy="18" r="2"></circle><circle cx="18" cy="18" r="2"></circle></svg></span>Transport providers</div>
+          <div class="role-chip"><span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"></path></svg></span>Administrators</div>
+        </div>
+      </section>
+
+      <section class="solution-grid" aria-label="Solution capabilities">
+        <article class="solution-card"><span class="mini-label">Discover</span><h3>Produce marketplace</h3><p>Searchable listings organize grade, origin, quantity, availability, and expected price for faster buyer discovery.</p></article>
+        <article class="solution-card"><span class="mini-label">Negotiate</span><h3>Offers and orders</h3><p>Buyers and farmers can submit, counter, accept, reject, and convert agreed offers into traceable orders.</p></article>
+        <article class="solution-card"><span class="mini-label">Preserve</span><h3>Cold-storage workflows</h3><p>Facility discovery, capacity visibility, cost estimates, booking decisions, and lifecycle history are unified.</p></article>
+        <article class="solution-card"><span class="mini-label">Deliver</span><h3>Transport coordination</h3><p>Requests progress from quote and vehicle assignment through pickup, transit, and recorded delivery.</p></article>
+        <article class="solution-card"><span class="mini-label">Understand</span><h3>Market intelligence</h3><p>Administrator-managed price ranges retain source context and give users a clearer reference point.</p></article>
+        <article class="solution-card"><span class="mini-label">Control</span><h3>Role-based workspaces</h3><p>Five dashboards surface only the records, decisions, alerts, and actions appropriate to each account.</p></article>
+      </section>
+
+      <section aria-label="Commercial workflow">
+        <div class="workflow">
+          <div class="workflow-step"><span>01</span><strong>Publish produce availability</strong></div>
+          <div class="workflow-step"><span>02</span><strong>Discover and negotiate terms</strong></div>
+          <div class="workflow-step"><span>03</span><strong>Create accountable order</strong></div>
+          <div class="workflow-step"><span>04</span><strong>Arrange storage and delivery</strong></div>
+          <div class="workflow-step"><span>05</span><strong>Track status to completion</strong></div>
+        </div>
+        <div class="tech-bar">
+          <strong>Technical foundation</strong>
+          <div class="tech-list"><span>PHP 8+</span><span>MySQL / MariaDB</span><span>PDO</span><span>Vanilla JavaScript</span><span>Protected AJAX</span><span>XAMPP</span></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer"><span>Quetta AgriLink · Project Report</span><span>02 / 03</span></footer>
+  </section>
+
+  <section class="report-page" aria-label="Page 3: AI tools and challenges">
+    <div class="page-accent"></div>
+    <div class="page-orb top-right"></div>
+    <header class="page-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-9"></path><path d="M12 13C8.5 13 6 10.7 6 7c3.5 0 6 2.3 6 6Z"></path><path d="M12 11c0-3.7 2.5-6 6-6 0 3.7-2.5 6-6 6Z"></path><path d="M5 21h14"></path></svg>
+        </span>
+        <span class="brand-copy"><strong>Quetta AgriLink</strong><span>Build process and learning</span></span>
+      </div>
+      <span class="document-meta">Prepared by Zubair Ahmed</span>
+    </header>
+
+    <main class="page-content">
+      <section class="page-title-row">
+        <p class="eyebrow">03 · Delivery Perspective</p>
+        <h2>AI-assisted execution, guided by product judgment and technical validation.</h2>
+        <p class="lead">The project used AI tools to accelerate exploration and implementation. Architecture, feature selection, security boundaries, testing, and final decisions remained part of the developer’s review process.</p>
+      </section>
+
+      <div class="third-page-layout">
+        <section aria-labelledby="ai-tools-title">
+          <div class="column-title">
+            <span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"></path><circle cx="12" cy="12" r="5"></circle><path d="m5.6 5.6 2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"></path></svg></span>
+            <h2 id="ai-tools-title">AI tools used</h2>
+          </div>
+
+          <div class="tool-stack">
+            <article class="tool-card manus">
+              <div class="tool-head"><span class="tool-logo">M</span><h3>Manus AI</h3></div>
+              <p>Supported early-stage exploration and helped turn a broad agricultural marketplace idea into a structured product direction.</p>
+              <ul><li>Requirements organization</li><li>Feature and workflow ideation</li><li>Initial project planning support</li></ul>
+            </article>
+            <article class="tool-card chatgpt">
+              <div class="tool-head"><span class="tool-logo">AI</span><h3>ChatGPT</h3></div>
+              <p>Assisted throughout implementation and refinement as a collaborative coding, debugging, and design-review tool.</p>
+              <ul><li>PHP, SQL, CSS, and JavaScript assistance</li><li>Debugging and edge-case analysis</li><li>Interface copy and usability refinement</li><li>Validation and test-scenario support</li></ul>
+            </article>
+          </div>
+
+          <aside class="ai-note"><p><strong>Responsible use:</strong> AI output was reviewed, adapted, and validated before inclusion. Sensitive business actions continue to rely on server-side rules and database records.</p></aside>
+        </section>
+
+        <section aria-labelledby="challenges-title">
+          <div class="column-title">
+            <span class="section-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2.8 20h18.4L12 3Z"></path><path d="M12 9v5M12 17.5h.01"></path></svg></span>
+            <h2 id="challenges-title">Challenges faced</h2>
+          </div>
+
+          <div class="challenge-stack">
+            <article class="challenge-card"><span class="challenge-index">1</span><div><h3>Designing for five distinct roles</h3><p>Each role required focused permissions and dashboards without fragmenting the experience into separate products.</p></div></article>
+            <article class="challenge-card"><span class="challenge-index">2</span><div><h3>Maintaining trustworthy workflow state</h3><p>Offers, orders, storage bookings, and transport requests needed controlled transitions and permanent history.</p></div></article>
+            <article class="challenge-card"><span class="challenge-index">3</span><div><h3>Protecting ownership and actions</h3><p>Role checks, record ownership, prepared statements, CSRF protection, secure sessions, and output escaping had to work together.</p></div></article>
+            <article class="challenge-card"><span class="challenge-index">4</span><div><h3>Keeping one coherent design language</h3><p>Public pages, authentication, role dashboards, responsive navigation, alerts, and dense operational tables needed one professional system.</p></div></article>
+            <article class="challenge-card"><span class="challenge-index">5</span><div><h3>Aligning schema and migrations</h3><p>A growing normalized database required careful reconciliation between fresh-install SQL and incremental migrations.</p></div></article>
+            <article class="challenge-card"><span class="challenge-index">6</span><div><h3>Respecting production boundaries</h3><p>The local MVP had to remain honest about unconfigured external support, password delivery, live market data, and regulated payments.</p></div></article>
+          </div>
+        </section>
+      </div>
+
+      <section class="outcome-panel" aria-label="Project outcome">
+        <strong>Project outcome</strong>
+        <p>A unified, responsive agricultural commerce application with role-based dashboards, secure transactional workflows, local support, notifications, market-price records, storage discovery, and transport coordination—built as one maintainable PHP/MySQL codebase.</p>
+      </section>
+
+      <section class="profile-strip" aria-label="Author and project links">
+        <div class="author-block"><span>Designed &amp; developed by</span><strong>Zubair Ahmed</strong></div>
+        <div class="profile-links">
+          <a class="profile-link github" href="https://github.com/zathedev" aria-label="Zubair Ahmed on GitHub">
+            <span class="link-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .7a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.2.8-.6v-2.2c-3.4.7-4.1-1.4-4.1-1.4-.5-1.4-1.4-1.8-1.4-1.8-1.1-.8.1-.8.1-.8 1.2.1 1.9 1.3 1.9 1.3 1.1 1.9 2.9 1.4 3.6 1.1.1-.8.4-1.4.8-1.7-2.7-.3-5.5-1.3-5.5-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.6.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.9 0C17 4.8 18 5.1 18 5.1c.6 1.5.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.8 5.4-5.5 5.7.4.4.8 1.1.8 2.2v3.3c0 .4.2.7.8.6A11.5 11.5 0 0 0 12 .7Z"></path></svg></span>
+            <span><strong>GitHub Profile</strong><small>github.com/zathedev</small></span>
+          </a>
+          <a class="profile-link repository" href="https://github.com/zathedev/quetta-agrilink.git" aria-label="Quetta AgriLink GitHub repository">
+            <span class="link-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"></path><path d="M8 7h8M8 11h6"></path></svg></span>
+            <span><strong>Project Repository</strong><small>quetta-agrilink.git</small></span>
+          </a>
+          <a class="profile-link linkedin" href="https://www.linkedin.com/in/zubair-ahmed-b94008215/" aria-label="Zubair Ahmed on LinkedIn">
+            <span class="link-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.3 7.8H1.7V22h3.6V7.8ZM3.5 2A2.1 2.1 0 1 0 3.5 6.2 2.1 2.1 0 0 0 3.5 2ZM22.3 13.9c0-4.3-2.3-6.3-5.4-6.3-2.5 0-3.6 1.4-4.2 2.3V7.8H9.1V22h3.6v-7c0-1.8.4-3.6 2.7-3.6 2.3 0 2.3 2.1 2.3 3.7V22h3.6l1-8.1Z"></path></svg></span>
+            <span><strong>LinkedIn Profile</strong><small>linkedin.com/in/zubair-ahmed</small></span>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer"><span>Quetta AgriLink · Project Report</span><span>03 / 03</span></footer>
+  </section>
+</body>
+</html>

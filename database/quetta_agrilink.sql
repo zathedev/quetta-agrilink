@@ -2,8 +2,8 @@
 -- Import this file through phpMyAdmin to create the local development database.
 -- Demo data is fictional and is only for local demonstration. No reviews, ratings, or testimonials are seeded.
 
-CREATE DATABASE IF NOT EXISTS quetta_agrilink CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE quetta_agrilink;
+-- CREATE DATABASE IF NOT EXISTS quetta_agrilink CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- USE quetta_agrilink;
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;

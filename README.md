@@ -4,6 +4,8 @@
 
 Quetta AgriLink is a PHP and MySQL agricultural marketplace designed for Quetta and the wider Balochistan supply chain. It connects farmers with buyers while providing integrated discovery and workflow support for cold-storage and transport providers. The design system, **Orchard Ledger**, treats product grade, origin, quantity, capacity, price, and status as the primary interface elements.
 
+🌐 **Live preview:** [quetta-agrilink.gt.tc](https://quetta-agrilink.gt.tc/)
+
 ## Product scope
 
 The current codebase is a direct XAMPP-compatible PHP application. It does not require Docker, Composer, Node.js, npm, a CDN, or a frontend build process. It uses HTML5, project-local CSS3, vanilla JavaScript, protected AJAX endpoints, PHP 8+, PDO, and MySQL/MariaDB.
@@ -22,6 +24,49 @@ The current codebase is a direct XAMPP-compatible PHP application. It does not r
 | Local support | Authenticated, role-routed support requests, conversations, accountable assignment, status history, and dashboard alerts with no external delivery. |
 
 The database includes the broader normalized foundation for messages, announcements, reviews, payments, audit logs, password-reset tokens, and all specified role/profile relationships. **No review, rating, testimonial, or customer-logo data is seeded or displayed.**
+
+## Screenshots
+
+Representative desktop views of the Orchard Ledger interface. Select any screenshot to open the full-size image.
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="docs/screenshots/homepage.jpg"><img src="docs/screenshots/homepage.jpg" alt="Quetta AgriLink public homepage showing the agricultural commerce overview"></a><br>
+      <strong>Public homepage</strong><br>
+      <sub>Network availability, core workflows, current produce, storage capacity, and market intelligence.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="docs/screenshots/marketplace.jpg"><img src="docs/screenshots/marketplace.jpg" alt="Quetta AgriLink produce marketplace with trade-ready listings and filters"></a><br>
+      <strong>Produce marketplace</strong><br>
+      <sub>Trade-ready produce discovery with crop, district, grade, price, quantity, and date filters.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="docs/screenshots/storage-marketplace.jpg"><img src="docs/screenshots/storage-marketplace.jpg" alt="Quetta AgriLink cold-storage marketplace showing facility capacity and rates"></a><br>
+      <strong>Cold-storage marketplace</strong><br>
+      <sub>Facility discovery with compatible produce, available capacity, storage type, and daily rates.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="docs/screenshots/transport-network.jpg"><img src="docs/screenshots/transport-network.jpg" alt="Quetta AgriLink agricultural transport network and provider discovery page"></a><br>
+      <strong>Transport network</strong><br>
+      <sub>Provider discovery and practical logistics context for post-harvest movement.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="docs/screenshots/farmer-dashboard.jpg"><img src="docs/screenshots/farmer-dashboard.jpg" alt="Quetta AgriLink farmer dashboard with role-specific metrics and actions"></a><br>
+      <strong>Farmer workspace</strong><br>
+      <sub>Role-specific listings, offers, orders, storage, transport, reporting, and next actions.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="docs/screenshots/administrator-dashboard.jpg"><img src="docs/screenshots/administrator-dashboard.jpg" alt="Quetta AgriLink administrator dashboard with governance and platform metrics"></a><br>
+      <strong>Administrator workspace</strong><br>
+      <sub>Platform operations, governance records, reporting, support, and accountable administration.</sub>
+    </td>
+  </tr>
+</table>
 
 ## Requirements
 
