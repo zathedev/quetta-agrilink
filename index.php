@@ -15,7 +15,7 @@ $metrics = [
 ];
 require __DIR__ . '/includes/header.php';
 ?>
-<main class="desk-home">
+<main class="desk-home flagship-home">
     <section class="commerce-hero">
         <div class="desk-wrap commerce-hero-grid">
             <div class="commerce-hero-copy">

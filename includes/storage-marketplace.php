@@ -122,11 +122,14 @@ function storage_facility_cards_html(array $facilities, ?array $user = null): st
         return '<div class="listing-empty"><h2>No active storage facilities match these filters.</h2><p>Clear one or more filters, or return later when a provider publishes available capacity.</p></div>';
     }
     ob_start();
-    foreach ($facilities as $facility): ?>
-        <article class="service-card">
-            <span class="badge"><?= e(ucwords(str_replace('_', ' ', (string) $facility['storage_type']))) ?></span>
+    foreach ($facilities as $facility):
+        $availabilityPercent = (float) $facility['total_capacity_kg'] > 0 ? max(0, min(100, ((float) $facility['available_capacity_kg'] / (float) $facility['total_capacity_kg']) * 100)) : 0;
+        ?>
+        <article class="service-card storage-facility-card">
+            <div class="service-card-accent"><span class="badge"><?= e(ucwords(str_replace('_', ' ', (string) $facility['storage_type']))) ?></span><span><?= number_format($availabilityPercent, 0) ?>% available</span></div>
             <h2><?= e((string) $facility['name']) ?></h2>
             <p><?= e((string) $facility['district']) ?>, Balochistan · <?= e((string) ($facility['business_name'] ?: $facility['contact_name'])) ?></p>
+            <div class="capacity-meter" role="img" aria-label="<?= number_format($availabilityPercent, 0) ?> percent of facility capacity available"><span style="width:<?= e(number_format($availabilityPercent, 2, '.', '')) ?>%"></span></div>
             <ul class="service-specs">
                 <li><span>Available capacity</span><strong><?= number_format((float) $facility['available_capacity_kg'], 0) ?> kg</strong></li>
                 <li><span>Total capacity</span><strong><?= number_format((float) $facility['total_capacity_kg'], 0) ?> kg</strong></li>

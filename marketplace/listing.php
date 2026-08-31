@@ -39,21 +39,27 @@ $ratingLabel = (int) $farmerRating['review_count'] > 0
 $pageTitle = $listing['title'];
 require __DIR__ . '/../includes/header.php';
 ?>
-<section class="page-intro">
-    <div class="site-container">
-        <a class="eyebrow" href="<?= e(app_url('marketplace/index.php')) ?>">Back to marketplace</a>
-        <h1><?= e($listing['title']) ?></h1>
-        <p><?= e($listing['district']) ?>, Balochistan · Listed by <?= e($listing['farmer_name']) ?><?= $listing['farm_name'] ? ' · ' . e($listing['farm_name']) : '' ?> · <?= e($ratingLabel) ?></p>
+<div class="public-commerce-page marketplace-page listing-detail-page">
+<section class="commerce-page-hero commerce-page-hero-compact">
+    <div class="site-container commerce-page-hero-grid">
+        <div class="commerce-page-hero-copy">
+            <a class="eyebrow" href="<?= e(app_url('marketplace/index.php')) ?>">← Produce marketplace</a>
+            <h1><?= e($listing['title']) ?></h1>
+            <p><?= e($listing['district']) ?>, Balochistan · Listed by <?= e($listing['farmer_name']) ?><?= $listing['farm_name'] ? ' · ' . e($listing['farm_name']) : '' ?></p>
+            <div class="commerce-hero-tags"><span>Grade <?= e($listing['grade']) ?></span><span><?= e($listing['category_name']) ?></span><span><?= e($ratingLabel) ?></span></div>
+        </div>
+        <aside class="commerce-hero-register listing-hero-register" aria-label="Listing commercial summary"><div class="commerce-register-heading"><span>Active produce record</span><strong>Terms at a glance</strong></div><div class="commerce-register-metrics"><article><strong>Rs. <?= number_format((float) $listing['expected_price'], 0) ?></strong><span>Expected / <?= e($listing['unit']) ?></span></article><article><strong><?= number_format((float) $listing['quantity_available'], 0) ?></strong><span><?= e($listing['unit']) ?> available</span></article><article><strong><?= number_format((float) $listing['minimum_order_quantity'], 0) ?></strong><span>Minimum <?= e($listing['unit']) ?></span></article></div></aside>
     </div>
 </section>
-<section class="section">
-    <div class="site-container detail-layout <?= empty($listing['image_path']) ? 'detail-layout-no-media' : '' ?>">
-        <?php if (!empty($listing['image_path'])): ?>
-            <div class="detail-media" style="background-image:url('<?= e($listing['image_path']) ?>')" aria-label="Produce image for <?= e($listing['title']) ?>"></div>
-        <?php endif; ?>
+<section class="section listing-detail-section">
+    <div class="site-container detail-layout">
+        <aside class="listing-visual-panel <?= !empty($listing['image_path']) ? 'has-listing-image' : '' ?>"<?php if (!empty($listing['image_path'])): ?> style="background-image:url('<?= e($listing['image_path']) ?>')"<?php endif; ?> aria-label="Produce record context for <?= e($listing['title']) ?>">
+            <div class="listing-visual-content"><span>Produce record</span><strong><?= e($listing['category_name']) ?></strong><p>Grade <?= e($listing['grade']) ?> · <?= e($listing['district']) ?> origin</p></div>
+            <div class="listing-visual-status"><span>Current availability</span><strong><?= number_format((float) $listing['quantity_available'], 0) ?> <?= e($listing['unit']) ?></strong></div>
+        </aside>
         <div class="detail-summary">
             <span class="badge">Grade <?= e($listing['grade']) ?></span>
-            <h1><?= e($listing['title']) ?></h1>
+            <h2><?= e($listing['title']) ?></h2>
             <p><?= e($listing['description'] ?: 'The farmer has not added a description for this listing.') ?></p>
             <div class="detail-facts">
                 <div><span>Expected price</span><strong>Rs. <?= number_format((float) $listing['expected_price'], 0) ?>/<?= e($listing['unit']) ?></strong></div>
@@ -87,4 +93,5 @@ require __DIR__ . '/../includes/header.php';
         </div>
     </div>
 </section>
+</div>
 <?php require __DIR__ . '/../includes/footer.php'; ?>
