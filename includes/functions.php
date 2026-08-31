@@ -873,6 +873,18 @@ function unread_notification_summary(int $userId): array
     return ['count' => (int) ($row['count'] ?? 0), 'latest_id' => (int) ($row['latest_id'] ?? 0)];
 }
 
+function latest_notifications_for_user(int $userId, int $limit = 5): array
+{
+    if ($userId < 1) {
+        return [];
+    }
+    $safeLimit = max(1, min(10, $limit));
+    return fetch_all(
+        'SELECT id, type, title, body, action_url, read_at, created_at FROM notifications WHERE user_id = :user_id ORDER BY created_at DESC, id DESC LIMIT ' . $safeLimit,
+        ['user_id' => $userId]
+    );
+}
+
 function create_notification(int $userId, string $type, string $title, string $body, ?string $actionUrl = null, ?string $entityType = null, ?int $entityId = null): void
 {
     execute_query(
@@ -942,7 +954,9 @@ function mark_notification_read(int $userId, int $notificationId): bool
     if ($notification === null) {
         throw new RuntimeException('That notification is not available in your account.');
     }
-    $affected = execute_query('UPDATE notifications SET read_at = COALESCE(read_at, NOW()) WHERE id = :id AND user_id = :user_id', ['id' => $notificationId, 'user_id' => $userId]);
+    $statement = db()->prepare('UPDATE notifications SET read_at = NOW() WHERE id = :id AND user_id = :user_id AND read_at IS NULL');
+    $statement->execute(['id' => $notificationId, 'user_id' => $userId]);
+    $affected = $statement->rowCount();
     if ($affected > 0) {
         audit_log($userId, 'notification_read', 'notifications', $notificationId);
     }
@@ -954,7 +968,9 @@ function mark_all_notifications_read(int $userId): int
     if ($userId < 1) {
         return 0;
     }
-    $affected = execute_query('UPDATE notifications SET read_at = NOW() WHERE user_id = :user_id AND read_at IS NULL', ['user_id' => $userId]);
+    $statement = db()->prepare('UPDATE notifications SET read_at = NOW() WHERE user_id = :user_id AND read_at IS NULL');
+    $statement->execute(['user_id' => $userId]);
+    $affected = $statement->rowCount();
     if ($affected > 0) {
         audit_log($userId, 'notifications_read_all', 'notifications', null, ['count' => $affected]);
     }

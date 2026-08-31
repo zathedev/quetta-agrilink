@@ -4,17 +4,60 @@
   const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
   const toggle = document.querySelector('[data-menu-toggle]');
   const nav = document.querySelector('[data-primary-nav]');
+  const toggleLabel = toggle?.querySelector('[data-menu-label]');
 
   toggle?.addEventListener('click', () => {
     const open = nav.classList.toggle('is-open');
+    document.querySelector('.site-header')?.classList.toggle('is-navigation-open', open);
     toggle.setAttribute('aria-expanded', String(open));
-    toggle.textContent = open ? 'Close' : 'Navigation';
+    toggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+    if (toggleLabel) toggleLabel.textContent = open ? 'Close' : 'Menu';
   });
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && nav?.classList.contains('is-open')) {
       nav.classList.remove('is-open');
+      document.querySelector('.site-header')?.classList.remove('is-navigation-open');
       toggle?.setAttribute('aria-expanded', 'false');
-      if (toggle) { toggle.textContent = 'Navigation'; toggle.focus(); }
+      toggle?.setAttribute('aria-label', 'Open navigation');
+      if (toggleLabel) toggleLabel.textContent = 'Menu';
+      toggle?.focus();
+    }
+  });
+
+  const headerMenus = [...document.querySelectorAll('[data-header-menu]')];
+  const closeHeaderMenu = (menu, returnFocus = false) => {
+    const menuToggle = menu?.querySelector('[data-header-menu-toggle]');
+    const panel = menu?.querySelector('[data-header-menu-panel]');
+    if (!menuToggle || !panel) return;
+    menu.classList.remove('is-open');
+    menuToggle.setAttribute('aria-expanded', 'false');
+    panel.hidden = true;
+    if (returnFocus) menuToggle.focus();
+  };
+  const closeAllHeaderMenus = (except = null) => headerMenus.forEach((menu) => { if (menu !== except) closeHeaderMenu(menu); });
+  headerMenus.forEach((menu) => {
+    const menuToggle = menu.querySelector('[data-header-menu-toggle]');
+    const panel = menu.querySelector('[data-header-menu-panel]');
+    if (!menuToggle || !panel) return;
+    menuToggle.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const open = !menu.classList.contains('is-open');
+      closeAllHeaderMenus(menu);
+      menu.classList.toggle('is-open', open);
+      menuToggle.setAttribute('aria-expanded', String(open));
+      panel.hidden = !open;
+      if (open) menu.dispatchEvent(new CustomEvent('header-menu-open'));
+    });
+  });
+  document.addEventListener('pointerdown', (event) => {
+    headerMenus.forEach((menu) => { if (menu.classList.contains('is-open') && !menu.contains(event.target)) closeHeaderMenu(menu); });
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    const activeMenu = headerMenus.find((menu) => menu.classList.contains('is-open'));
+    if (activeMenu) {
+      event.preventDefault();
+      closeHeaderMenu(activeMenu, true);
     }
   });
 
@@ -505,10 +548,25 @@
 
   const notificationLink = document.querySelector('[data-notification-link]');
   const notificationChime = document.querySelector('[data-notification-chime]');
+  const notificationDropdown = document.querySelector('[data-notification-dropdown]');
   if (notificationLink && notificationChime) {
     let latestNotificationId = Number(notificationLink.dataset.notificationLatestId || 0);
     let audioContext = null;
     let soundEnabled = notificationChime.dataset.notificationChimeEnabled === '1';
+    const notificationList = notificationDropdown?.querySelector('[data-notification-list]');
+    const markAllForm = notificationDropdown?.querySelector('[data-notification-mark-all-form]');
+    const markAllButton = markAllForm?.querySelector('button[type="submit"]');
+    const notificationBadge = notificationLink.querySelector('[data-notification-count]');
+    const updateNotificationSummary = (summary = {}) => {
+      const count = Number(summary.count || 0);
+      const newest = Number(summary.latest_id || 0);
+      if (notificationBadge) {
+        notificationBadge.hidden = count === 0;
+        notificationBadge.textContent = count > 9 ? '9+' : String(count);
+      }
+      if (markAllButton) markAllButton.hidden = count === 0;
+      return { count, newest };
+    };
     const updateSoundToggle = () => {
       notificationChime.setAttribute('aria-pressed', String(soundEnabled));
       notificationChime.textContent = soundEnabled ? 'Sound on' : 'Sound off';
@@ -548,18 +606,119 @@
       } catch (error) { window.QuettaToast?.show(error.message, 'error'); }
       finally { notificationChime.disabled = false; }
     });
+    const createNotificationItem = (item) => {
+      const article = document.createElement('article');
+      article.className = `header-notification-item${item.is_unread ? ' is-unread' : ''}`;
+      article.dataset.notificationItem = '';
+      article.dataset.notificationId = String(item.id);
+      const status = document.createElement('span');
+      status.className = 'header-notification-status';
+      status.setAttribute('aria-hidden', 'true');
+      const copy = document.createElement('div');
+      copy.className = 'header-notification-copy';
+      const content = item.action_url ? document.createElement('a') : document.createElement('div');
+      if (item.action_url) content.href = item.action_url;
+      const title = document.createElement('strong');
+      title.textContent = item.title;
+      const body = document.createElement('p');
+      body.textContent = item.body;
+      content.append(title, body);
+      const time = document.createElement('time');
+      time.dateTime = item.created_at;
+      time.textContent = item.created_label;
+      copy.append(content, time);
+      article.append(status, copy);
+      if (item.is_unread) {
+        const form = document.createElement('form');
+        form.dataset.notificationReadForm = '';
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'notification_id';
+        input.value = String(item.id);
+        const button = document.createElement('button');
+        button.type = 'submit';
+        button.title = 'Mark as read';
+        button.setAttribute('aria-label', `Mark ${item.title} as read`);
+        button.innerHTML = '<span aria-hidden="true">✓</span>';
+        form.append(input, button);
+        article.append(form);
+      }
+      return article;
+    };
+    const renderNotifications = (items) => {
+      if (!notificationList) return;
+      notificationList.replaceChildren();
+      if (!Array.isArray(items) || items.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'header-notification-empty';
+        empty.innerHTML = '<span class="notification-bell-icon" aria-hidden="true"></span><strong>You’re all caught up</strong><p>New account activity will appear here.</p>';
+        notificationList.append(empty);
+        return;
+      }
+      items.forEach((item) => notificationList.append(createNotificationItem(item)));
+    };
+    const loadLatestNotifications = async () => {
+      if (!notificationDropdown?.dataset.notificationLatestEndpoint) return;
+      notificationDropdown.classList.add('is-loading');
+      try {
+        const payload = await window.qliFetch(notificationDropdown.dataset.notificationLatestEndpoint);
+        renderNotifications(payload.data?.items || []);
+        updateNotificationSummary(payload.data?.summary);
+      } catch (error) {
+        window.QuettaToast?.show(error.message, 'error', { title: 'Notifications unavailable' });
+      } finally {
+        notificationDropdown.classList.remove('is-loading');
+      }
+    };
+    notificationLink.closest('[data-header-menu]')?.addEventListener('header-menu-open', loadLatestNotifications);
+    notificationList?.addEventListener('submit', async (event) => {
+      const form = event.target.closest('[data-notification-read-form]');
+      if (!form) return;
+      event.preventDefault();
+      const button = form.querySelector('button[type="submit"]');
+      const notificationId = form.querySelector('[name="notification_id"]')?.value || form.closest('[data-notification-item]')?.dataset.notificationId;
+      if (!notificationId) return;
+      if (button) button.disabled = true;
+      try {
+        const body = new FormData();
+        body.append('notification_id', notificationId);
+        const payload = await window.qliFetch(notificationDropdown.dataset.notificationMarkReadEndpoint, { method: 'POST', body });
+        const item = form.closest('[data-notification-item]');
+        item?.classList.remove('is-unread');
+        form.remove();
+        updateNotificationSummary(payload.data?.summary);
+      } catch (error) {
+        if (button) button.disabled = false;
+        window.QuettaToast?.show(error.message, 'error', { title: 'Could not update notification' });
+      }
+    });
+    markAllForm?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (markAllButton) markAllButton.disabled = true;
+      try {
+        const payload = await window.qliFetch(notificationDropdown.dataset.notificationMarkAllEndpoint, { method: 'POST', body: new FormData() });
+        notificationList?.querySelectorAll('[data-notification-item]').forEach((item) => {
+          item.classList.remove('is-unread');
+          item.querySelector('[data-notification-read-form]')?.remove();
+        });
+        updateNotificationSummary(payload.data?.summary);
+        window.QuettaToast?.show(payload.message, 'success', { title: 'Notifications updated', timeout: 4500 });
+      } catch (error) {
+        window.QuettaToast?.show(error.message, 'error', { title: 'Could not update notifications' });
+      } finally {
+        if (markAllButton) markAllButton.disabled = false;
+      }
+    });
     const refreshNotificationSummary = async () => {
       try {
         const response = await fetch(notificationLink.dataset.notificationEndpoint, { credentials: 'same-origin', headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
         const payload = await response.json();
         if (!payload.success) return;
-        const count = Number(payload.data?.count || 0);
-        const newest = Number(payload.data?.latest_id || 0);
-        const badge = notificationLink.querySelector('[data-notification-count]');
-        if (badge) { badge.hidden = count === 0; badge.textContent = count > 9 ? '9+' : String(count); }
+        const { newest } = updateNotificationSummary(payload.data);
         if (newest > latestNotificationId) {
           playBell();
           window.QuettaToast?.show('A new workspace notification is ready to review.', 'success', { title: 'New notification', timeout: 8000 });
+          if (notificationLink.getAttribute('aria-expanded') === 'true') loadLatestNotifications();
         }
         latestNotificationId = Math.max(latestNotificationId, newest);
       } catch (_) { /* Header polling is optional feedback; no visual error is needed. */ }

@@ -35,6 +35,35 @@ function workspace_links(string $role): array
     };
 }
 
+function workspace_navigation_icon(string $key): string
+{
+    $icon = match ($key) {
+        'dashboard' => '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+        'marketplace' => '<path d="M4 10h16l-1-5H5l-1 5Z"/><path d="M5 10v9h14v-9M9 19v-5h6v5"/>',
+        'listings', 'facilities', 'management' => '<path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+        'offers' => '<path d="m4 8 4-4 4 4M8 4v11M20 16l-4 4-4-4M16 20V9"/>',
+        'orders' => '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/>',
+        'messages' => '<path d="M4 5h16v11H9l-5 4V5Z"/><path d="M8 9h8M8 12h5"/>',
+        'payments' => '<path d="M3 7h18v12H3z"/><path d="M3 10h18M16 15h2"/>',
+        'reviews' => '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-2.9-5.6 2.9 1.1-6.2L3 9.6l6.2-.9L12 3Z"/>',
+        'media', 'attachments' => '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m5 18 5-5 3 3 2-2 4 4"/>',
+        'storage' => '<path d="M3 10 12 4l9 6v10H3V10Z"/><path d="M7 13h10v7H7zM10 13v7M14 13v7"/>',
+        'transport', 'fleet' => '<path d="M3 6h11v11H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>',
+        'notifications' => '<path d="M6 16h12l-2-3V9a4 4 0 0 0-8 0v4l-2 3Z"/><path d="M10 19h4"/>',
+        'support' => '<circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.4 2.4 0 1 1 3.5 2.1c-.9.5-1.3 1-1.3 2M12 17h.01"/>',
+        'profile' => '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+        'settings' => '<circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/>',
+        'prices' => '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+        'market_price_import' => '<path d="M12 16V4M7 9l5-5 5 5M4 15v5h16v-5"/>',
+        'operator_accounts' => '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2"/><path d="M3 20a6 6 0 0 1 12 0M14 15a5 5 0 0 1 7 5"/>',
+        'recovery' => '<circle cx="8" cy="15" r="4"/><path d="m11 12 8-8M16 7l2 2M14 9l2 2"/>',
+        'contact_verification' => '<path d="M12 3 5 6v5c0 4.6 2.8 8.2 7 10 4.2-1.8 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-5"/>',
+        'dashboard_export_audit' => '<path d="M6 3h9l3 3v15H6z"/><path d="M15 3v4h4M9 12h6M9 16h6"/>',
+        default => '<circle cx="12" cy="12" r="8"/><path d="M8 12h8M12 8v8"/>',
+    };
+    return '<svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">' . $icon . '</svg>';
+}
+
 function render_workspace_navigation(string $role, string $active): void
 {
     $currentGroup = null;
@@ -46,7 +75,7 @@ function render_workspace_navigation(string $role, string $active): void
         $opensNewTab = in_array($path, ['marketplace/index.php', 'storage/index.php', 'transport/index.php', 'market-prices.php'], true);
         $classes = trim(($active === $key ? 'is-active ' : '') . ($opensNewTab ? 'workspace-nav-external' : ''));
         $newTabAttributes = $opensNewTab ? ' target="_blank" rel="noopener noreferrer" aria-label="' . e($label) . ' (opens in a new tab)"' : '';
-        echo '<a class="' . e($classes) . '" href="' . e(app_url($path)) . '"' . $newTabAttributes . '><span class="workspace-link-label">' . e($label) . '</span>';
+        echo '<a class="' . e($classes) . '" href="' . e(app_url($path)) . '" data-nav-label="' . e($label) . '"' . $newTabAttributes . '><span class="workspace-nav-icon" aria-hidden="true">' . workspace_navigation_icon($key) . '</span><span class="workspace-link-label">' . e($label) . '</span>';
         if ($opensNewTab) {
             echo '<span class="workspace-external-icon" aria-hidden="true">&#8599;</span>';
         }

@@ -218,6 +218,7 @@ async function assertWorkspaceSidebarInteractions(cdp, sessionId) {
     const toggle = document.querySelector('.workspace-sidebar-toggle');
     const signout = document.querySelector('.workspace-signout button');
     const externalLinks = [...document.querySelectorAll('.workspace-nav-external')];
+    const navigationLinks = [...document.querySelectorAll('.workspace-sidebar nav a')];
     if (!workspace || !sidebar || !toggle || !signout) return { ready: false };
     if (workspace.classList.contains('is-sidebar-collapsed')) toggle.click();
     const expandedWidth = sidebar.getBoundingClientRect().width;
@@ -235,9 +236,10 @@ async function assertWorkspaceSidebarInteractions(cdp, sessionId) {
       signoutBackground: getComputedStyle(signout).backgroundColor,
       externalCount: externalLinks.length,
       externalSafe: externalLinks.every((link) => link.target === '_blank' && link.relList.contains('noopener') && link.relList.contains('noreferrer') && Boolean(link.querySelector('.workspace-external-icon'))),
+      meaningfulIcons: navigationLinks.length > 8 && navigationLinks.every((link) => Boolean(link.querySelector('.workspace-nav-icon svg')) && link.title.length > 0) && new Set(navigationLinks.map((link) => link.querySelector('.workspace-nav-icon svg')?.innerHTML)).size > 8,
     };
   })()`);
-  if (!desktopResult?.ready || desktopResult.expandedWidth < 220 || desktopResult.collapsedWidth > 100 || !desktopResult.collapsed || !desktopResult.restored || !desktopResult.signoutIcon || desktopResult.signoutBackground === 'rgba(0, 0, 0, 0)' || desktopResult.externalCount < 3 || !desktopResult.externalSafe) {
+  if (!desktopResult?.ready || desktopResult.expandedWidth < 220 || desktopResult.collapsedWidth > 100 || !desktopResult.collapsed || !desktopResult.restored || !desktopResult.signoutIcon || desktopResult.signoutBackground === 'rgba(0, 0, 0, 0)' || desktopResult.externalCount < 3 || !desktopResult.externalSafe || !desktopResult.meaningfulIcons) {
     throw new Error(`Desktop workspace sidebar interaction check failed: ${JSON.stringify(desktopResult)}`);
   }
 
@@ -266,6 +268,135 @@ async function assertWorkspaceSidebarInteractions(cdp, sessionId) {
   }))()`);
   if (!compactResult?.ready || !compactResult.initiallyClosed || !compactResult.opened || !compactResult.backdropClosed || !compactResult.escapeClosed) {
     throw new Error(`Compact workspace sidebar interaction check failed: ${JSON.stringify(compactResult)}`);
+  }
+}
+
+async function assertHeaderMenuInteractions(cdp, sessionId) {
+  await visit(cdp, sessionId, "farmer/dashboard.php", desktop);
+  const desktopResult = await evaluate(cdp, sessionId, `(() => new Promise(async (resolve) => {
+    const wait = (milliseconds) => new Promise((done) => setTimeout(done, milliseconds));
+    const bell = document.querySelector('[data-notification-link]');
+    const notificationMenu = bell?.closest('[data-header-menu]');
+    const notificationPanel = document.querySelector('[data-notification-dropdown]');
+    const profile = document.querySelector('.profile-menu-toggle');
+    const profileMenu = profile?.closest('[data-header-menu]');
+    const profilePanel = document.querySelector('.profile-dropdown');
+    if (!bell || !notificationMenu || !notificationPanel || !profile || !profileMenu || !profilePanel) return resolve({ ready: false });
+    bell.click();
+    for (let attempt = 0; attempt < 20 && notificationPanel.classList.contains('is-loading'); attempt += 1) await wait(50);
+    const unreadItems = [...notificationPanel.querySelectorAll('[data-notification-item].is-unread')];
+    const notificationOpen = notificationMenu.classList.contains('is-open') && !notificationPanel.hidden && bell.getAttribute('aria-expanded') === 'true';
+    const notificationContent = Boolean(notificationPanel.querySelector('[data-notification-list]') && notificationPanel.querySelector('[data-notification-mark-all-form]') && notificationPanel.querySelector('a[href*="notifications.php"]'));
+    const oneByOneControls = unreadItems.every((item) => Boolean(item.querySelector('[data-notification-read-form]')));
+    profile.click();
+    const exclusive = !notificationMenu.classList.contains('is-open') && notificationPanel.hidden && profileMenu.classList.contains('is-open') && !profilePanel.hidden;
+    const profileActions = profilePanel.querySelectorAll('nav a').length === 2 && Boolean(profilePanel.querySelector('a[href*="dashboard.php"]')) && Boolean(profilePanel.querySelector('a[href*="account/profile.php"]')) && Boolean(profilePanel.querySelector('form[action*="auth/logout.php"]'));
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    const escapeClosed = profilePanel.hidden && document.activeElement === profile;
+    bell.click();
+    document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    const outsideClosed = notificationPanel.hidden;
+    const footer = document.querySelector('.site-footer');
+    resolve({
+      ready: true,
+      bellOnly: Boolean(bell.querySelector('.notification-bell-icon') && !bell.textContent.includes('Alerts')),
+      notificationOpen,
+      notificationContent,
+      oneByOneControls,
+      exclusive,
+      profileActions,
+      escapeClosed,
+      outsideClosed,
+      footer: Boolean(footer?.querySelector('.footer-callout') && footer.querySelectorAll('.footer-links').length === 4),
+    });
+  }))()`);
+  if (!desktopResult?.ready || !desktopResult.bellOnly || !desktopResult.notificationOpen || !desktopResult.notificationContent || !desktopResult.oneByOneControls || !desktopResult.exclusive || !desktopResult.profileActions || !desktopResult.escapeClosed || !desktopResult.outsideClosed || !desktopResult.footer) {
+    throw new Error(`Desktop header menu interaction check failed: ${JSON.stringify(desktopResult)}`);
+  }
+
+  await visit(cdp, sessionId, "farmer/dashboard.php", mobile);
+  const mobileResult = await evaluate(cdp, sessionId, `(() => new Promise(async (resolve) => {
+    const wait = (milliseconds) => new Promise((done) => setTimeout(done, milliseconds));
+    const bell = document.querySelector('[data-notification-link]');
+    const panel = document.querySelector('[data-notification-dropdown]');
+    const profile = document.querySelector('.profile-menu-toggle');
+    if (!bell || !panel || !profile) return resolve({ ready: false });
+    bell.click();
+    await wait(120);
+    const bounds = panel.getBoundingClientRect();
+    const contained = bounds.left >= 0 && bounds.right <= innerWidth && bounds.top >= 0 && bounds.bottom <= innerHeight + 1;
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    resolve({ ready: true, controlsVisible: getComputedStyle(bell).display !== 'none' && getComputedStyle(profile).display !== 'none', contained, closed: panel.hidden, horizontalOverflow: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - innerWidth });
+  }))()`);
+  if (!mobileResult?.ready || !mobileResult.controlsVisible || !mobileResult.contained || !mobileResult.closed || mobileResult.horizontalOverflow > 1) {
+    throw new Error(`Mobile header menu interaction check failed: ${JSON.stringify(mobileResult)}`);
+  }
+}
+
+async function captureHeaderMenuStates(cdp, sessionId, records) {
+  const states = [
+    { name: "authenticated-notification-menu-desktop", viewport: desktop, selector: "[data-notification-link]", panel: "[data-notification-dropdown]" },
+    { name: "authenticated-profile-menu-desktop", viewport: desktop, selector: ".profile-menu-toggle", panel: ".profile-dropdown" },
+    { name: "authenticated-notification-menu-mobile", viewport: mobile, selector: "[data-notification-link]", panel: "[data-notification-dropdown]" },
+  ];
+  for (const state of states) {
+    await visit(cdp, sessionId, "farmer/dashboard.php", state.viewport);
+    const opened = await evaluate(cdp, sessionId, `(() => new Promise(async (resolve) => {
+      document.querySelector(${JSON.stringify(state.selector)})?.click();
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        const panel = document.querySelector(${JSON.stringify(state.panel)});
+        if (panel && !panel.hidden && !panel.classList.contains('is-loading')) return resolve({ open: true, overflow: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - innerWidth });
+        await new Promise((done) => setTimeout(done, 50));
+      }
+      resolve({ open: false });
+    }))()`);
+    if (!opened?.open || opened.overflow > 1) throw new Error(`Interactive header capture failed for ${state.name}: ${JSON.stringify(opened)}`);
+    const screenshot = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false, fromSurface: true }, sessionId);
+    const image = Buffer.from(screenshot.data, "base64");
+    const fileName = `${state.name}.png`;
+    await writeFile(join(outputDirectory, fileName), image);
+    records.push({ name: state.name, file: fileName, path: "farmer/dashboard.php", viewport: state.viewport, title: "Authenticated header menu", bytes: image.length, sha256: sha256(image), interactiveState: true });
+  }
+}
+
+async function captureCollapsedSidebarState(cdp, sessionId, records) {
+  await visit(cdp, sessionId, "farmer/dashboard.php", desktop);
+  const check = await evaluate(cdp, sessionId, `(() => {
+    const workspace = document.querySelector('.workspace');
+    const toggle = document.querySelector('.workspace-sidebar-toggle');
+    if (!workspace || !toggle) return { ready: false };
+    if (!workspace.classList.contains('is-sidebar-collapsed')) toggle.click();
+    const links = [...document.querySelectorAll('.workspace-sidebar nav a')];
+    return { ready: true, collapsed: workspace.classList.contains('is-sidebar-collapsed'), icons: links.filter((link) => link.querySelector('.workspace-nav-icon svg')).length, links: links.length, width: document.querySelector('.workspace-sidebar')?.getBoundingClientRect().width };
+  })()`);
+  if (!check?.ready || !check.collapsed || check.icons !== check.links || check.width > 100) throw new Error(`Collapsed sidebar capture failed: ${JSON.stringify(check)}`);
+  const screenshot = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false, fromSurface: true }, sessionId);
+  const image = Buffer.from(screenshot.data, "base64");
+  const fileName = "authenticated-sidebar-collapsed-desktop.png";
+  await writeFile(join(outputDirectory, fileName), image);
+  records.push({ name: "authenticated-sidebar-collapsed-desktop", file: fileName, path: "farmer/dashboard.php", viewport: desktop, title: "Collapsed workspace sidebar", bytes: image.length, sha256: sha256(image), interactiveState: true });
+}
+
+async function assertNotificationDropdownMutations(cdp, sessionId) {
+  await visit(cdp, sessionId, "farmer/dashboard.php", desktop);
+  const result = await evaluate(cdp, sessionId, `(() => new Promise(async (resolve) => {
+    const panel = document.querySelector('[data-notification-dropdown]');
+    if (!panel || !window.qliFetch) return resolve({ ready: false });
+    try {
+      const latest = await window.qliFetch(panel.dataset.notificationLatestEndpoint);
+      const first = latest.data?.items?.[0];
+      let single = null;
+      if (first) {
+        const body = new FormData();
+        body.append('notification_id', String(first.id));
+        single = await window.qliFetch(panel.dataset.notificationMarkReadEndpoint, { method: 'POST', body });
+      }
+      const all = await window.qliFetch(panel.dataset.notificationMarkAllEndpoint, { method: 'POST', body: new FormData() });
+      resolve({ ready: true, latest: latest.success, single: first ? single?.success === true : null, all: all.success, remaining: Number(all.data?.summary?.count || 0) });
+    } catch (error) { resolve({ ready: true, error: error.message }); }
+  }))()`);
+  if (!result?.ready || !result.latest || result.single === false || !result.all || result.remaining !== 0 || result.error) {
+    throw new Error(`Notification dropdown mutation check failed: ${JSON.stringify(result)}`);
   }
 }
 
@@ -373,7 +504,11 @@ try {
   for (const definition of publicCaptures) await capture(cdp, sessionId, definition, records);
   await authenticate(cdp, sessionId, farmerEmail, farmerPassword);
   await assertWorkspaceSidebarInteractions(cdp, sessionId);
+  await assertHeaderMenuInteractions(cdp, sessionId);
+  await captureHeaderMenuStates(cdp, sessionId, records);
+  await captureCollapsedSidebarState(cdp, sessionId, records);
   for (const definition of farmerCaptures) await capture(cdp, sessionId, definition, records);
+  await assertNotificationDropdownMutations(cdp, sessionId);
   await authenticate(cdp, sessionId, buyerEmail, buyerPassword);
   for (const definition of buyerCaptures) await capture(cdp, sessionId, definition, records);
   await authenticate(cdp, sessionId, storageEmail, storagePassword);
