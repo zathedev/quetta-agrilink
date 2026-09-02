@@ -341,7 +341,9 @@
       submit.dataset.originalText ||= submit.textContent;
       submit.textContent = 'Working…';
       try {
-        const payload = await window.qliFetch(form.action, { method: form.method || 'POST', body: new FormData(form) });
+        const endpoint = form.getAttribute('action') || window.location.href;
+        const method = form.getAttribute('method') || 'POST';
+        const payload = await window.qliFetch(endpoint, { method, body: new FormData(form) });
         if (feedback) { feedback.textContent = payload.message; feedback.className = 'flash flash-success'; }
         window.QuettaToast?.show(payload.message, 'success');
         if (payload.data?.redirect) window.location.assign(payload.data.redirect);
@@ -354,6 +356,124 @@
       }
     });
   });
+
+  const messageWorkspace = document.querySelector('[data-message-workspace]');
+  if (messageWorkspace) {
+    const conversationList = messageWorkspace.querySelector('[data-conversation-list]');
+    const thread = messageWorkspace.querySelector('[data-message-thread]');
+    const messageForm = messageWorkspace.querySelector('[data-message-form]');
+    const currentUserId = Number(messageWorkspace.dataset.currentUserId || 0);
+    const activeKey = messageWorkspace.dataset.activeKey || '';
+    let latestMessageId = Number(messageWorkspace.dataset.latestMessageId || 0);
+    let syncPromise = null;
+
+    const conversationSignature = (items) => items.map((item) => `${item.key}:${item.activity_at}:${item.unread_count}`).join('|');
+    const renderedConversationSignature = () => [...(conversationList?.querySelectorAll('[data-context-key]') || [])]
+      .map((item) => `${item.dataset.contextKey}:${item.dataset.activityAt}:${item.dataset.unreadCount}`).join('|');
+    const renderConversations = (items) => {
+      if (!conversationList || !Array.isArray(items) || conversationSignature(items) === renderedConversationSignature()) return;
+      conversationList.replaceChildren();
+      if (items.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'muted';
+        empty.dataset.conversationEmpty = '';
+        empty.textContent = 'No eligible listing or order conversations yet.';
+        conversationList.append(empty);
+        return;
+      }
+      items.forEach((item) => {
+        const link = document.createElement('a');
+        link.className = `message-context${item.key === activeKey ? ' is-active' : ''}${Number(item.unread_count) > 0 ? ' is-unread' : ''}`;
+        link.href = item.url;
+        link.dataset.contextKey = item.key;
+        link.dataset.activityAt = item.activity_at;
+        link.dataset.unreadCount = String(item.unread_count);
+        const label = document.createElement('span');
+        label.className = 'message-context-label';
+        label.textContent = item.label;
+        link.append(label);
+        if (Number(item.unread_count) > 0) {
+          const unread = document.createElement('span');
+          unread.className = 'message-unread';
+          unread.textContent = Number(item.unread_count) > 99 ? '99+' : String(item.unread_count);
+          unread.setAttribute('aria-label', `${item.unread_count} unread messages`);
+          link.append(unread);
+        }
+        conversationList.append(link);
+      });
+    };
+    const appendMessages = (messages) => {
+      if (!thread || !Array.isArray(messages) || messages.length === 0) return;
+      const keepAtBottom = thread.scrollHeight - thread.scrollTop - thread.clientHeight < 80;
+      thread.querySelector('[data-message-empty]')?.remove();
+      messages.forEach((message) => {
+        if (thread.querySelector(`[data-message-id="${message.id}"]`)) return;
+        const article = document.createElement('article');
+        article.className = `support-message${Number(message.sender_id) === currentUserId ? ' is-own' : ''}`;
+        article.dataset.messageId = String(message.id);
+        const sender = document.createElement('strong');
+        sender.textContent = message.sender_name;
+        const body = document.createElement('p');
+        body.textContent = message.body;
+        const time = document.createElement('time');
+        time.dateTime = message.created_at;
+        time.textContent = message.created_label;
+        article.append(sender, body, time);
+        thread.append(article);
+        latestMessageId = Math.max(latestMessageId, Number(message.id));
+      });
+      messageWorkspace.dataset.latestMessageId = String(latestMessageId);
+      if (keepAtBottom) thread.scrollTop = thread.scrollHeight;
+    };
+    const syncMessages = () => {
+      if (syncPromise) return syncPromise;
+      syncPromise = (async () => {
+        const query = new URLSearchParams({
+          order_id: messageWorkspace.dataset.orderId || '0',
+          listing_id: messageWorkspace.dataset.listingId || '0',
+          peer_id: messageWorkspace.dataset.peerId || '0',
+          since_id: String(latestMessageId),
+        });
+        const payload = await window.qliFetch(`${messageWorkspace.dataset.syncEndpoint}?${query.toString()}`);
+        appendMessages(payload.data?.messages || []);
+        renderConversations(payload.data?.conversations || []);
+        return payload;
+      })().catch(() => null).finally(() => { syncPromise = null; });
+      return syncPromise;
+    };
+
+    if (thread) thread.scrollTop = thread.scrollHeight;
+    messageForm?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const submit = messageForm.querySelector('[type="submit"]');
+      const feedback = messageForm.querySelector('[data-form-feedback]');
+      const textarea = messageForm.querySelector('[name="body"]');
+      submit.disabled = true;
+      submit.dataset.originalText ||= submit.textContent;
+      submit.textContent = 'Sending…';
+      try {
+        const payload = await window.qliFetch(messageForm.getAttribute('action') || window.location.href, {
+          method: messageForm.getAttribute('method') || 'POST',
+          body: new FormData(messageForm),
+        });
+        textarea.value = '';
+        if (feedback) { feedback.textContent = payload.message; feedback.className = 'form-help'; }
+        window.QuettaToast?.show(payload.message, 'success');
+        await syncMessages();
+        if (latestMessageId < Number(payload.data?.message_id || 0)) await syncMessages();
+        textarea.focus();
+      } catch (error) {
+        if (feedback) { feedback.textContent = error.message; feedback.className = 'form-help is-error'; }
+        window.QuettaToast?.show(error.message, 'error');
+      } finally {
+        submit.disabled = false;
+        submit.textContent = submit.dataset.originalText;
+      }
+    });
+    window.setInterval(() => { if (!document.hidden) syncMessages(); }, 2000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) syncMessages(); });
+    syncMessages();
+  }
 
   document.querySelectorAll('[data-account-form]').forEach((form) => {
     const mode = form.dataset.accountForm;

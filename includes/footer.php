@@ -1,6 +1,11 @@
 <?php
 /** Product footer with a clear network proposition and role-aware next steps. */
 $footerUser = current_user();
+$scriptUrl = static function (string $relativePath): string {
+    $absolutePath = dirname(__DIR__) . '/' . ltrim($relativePath, '/');
+    $version = is_file($absolutePath) ? (string) filemtime($absolutePath) : '1';
+    return app_url($relativePath) . '?v=' . rawurlencode($version);
+};
 ?>
 </div>
 <footer class="site-footer">
@@ -35,7 +40,7 @@ $footerUser = current_user();
     </div>
     <div class="site-container footer-bottom"><span>© <?= date('Y') ?> Quetta AgriLink. All rights reserved.</span><div><span>Built for practical agricultural commerce</span><span class="footer-status"><i aria-hidden="true"></i> Local platform available</span></div></div>
 </footer>
-<script src="<?= e(app_url('assets/js/store.js')) ?>" defer></script>
-<script src="<?= e(app_url('assets/js/app.js')) ?>" defer></script>
+<script src="<?= e($scriptUrl('assets/js/store.js')) ?>" defer></script>
+<script src="<?= e($scriptUrl('assets/js/app.js')) ?>" defer></script>
 </body>
 </html>

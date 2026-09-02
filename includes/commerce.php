@@ -95,6 +95,79 @@ function commercial_context(int $listingId, int $orderId, array $actor, int $pee
     return ['listing_id' => $listingId, 'order_id' => null, 'recipient_id' => $recipient, 'label' => $listing['title']];
 }
 
+function commercial_conversations(array $actor): array
+{
+    if (!in_array($actor['role_slug'], ['farmer', 'buyer'], true)) {
+        return [];
+    }
+
+    $userId = (int) $actor['id'];
+    $orders = fetch_all(
+        'SELECT o.id AS order_id,NULL AS listing_id,IF(o.buyer_id=:order_peer_actor,o.farmer_id,o.buyer_id) AS peer_id,' .
+        'CONCAT("Order ",o.reference_code) AS label,' .
+        'GREATEST(o.updated_at,COALESCE(MAX(m.created_at),o.updated_at)) AS activity_at,' .
+        'COALESCE(SUM(CASE WHEN m.recipient_id=:order_unread_actor AND m.read_at IS NULL THEN 1 ELSE 0 END),0) AS unread_count,' .
+        'COALESCE(MAX(m.id),0) AS latest_message_id ' .
+        'FROM orders o LEFT JOIN messages m ON m.order_id=o.id ' .
+        'WHERE o.buyer_id=:order_buyer_actor OR o.farmer_id=:order_farmer_actor ' .
+        'GROUP BY o.id,o.buyer_id,o.farmer_id,o.reference_code,o.updated_at',
+        [
+            'order_peer_actor' => $userId,
+            'order_unread_actor' => $userId,
+            'order_buyer_actor' => $userId,
+            'order_farmer_actor' => $userId,
+        ]
+    );
+
+    $listings = fetch_all(
+        'SELECT NULL AS order_id,c.listing_id,IF(c.buyer_id=:listing_peer_actor,c.farmer_id,c.buyer_id) AS peer_id,' .
+        'CONCAT(pl.title," · ",peer.full_name) AS label,' .
+        'GREATEST(c.offer_updated_at,COALESCE(MAX(m.created_at),c.offer_updated_at)) AS activity_at,' .
+        'COALESCE(SUM(CASE WHEN m.recipient_id=:listing_unread_actor AND m.read_at IS NULL THEN 1 ELSE 0 END),0) AS unread_count,' .
+        'COALESCE(MAX(m.id),0) AS latest_message_id ' .
+        'FROM (SELECT listing_id,buyer_id,farmer_id,MAX(updated_at) AS offer_updated_at FROM offers ' .
+        'WHERE buyer_id=:listing_buyer_actor OR farmer_id=:listing_farmer_actor GROUP BY listing_id,buyer_id,farmer_id) c ' .
+        'JOIN produce_listings pl ON pl.id=c.listing_id ' .
+        'JOIN users peer ON peer.id=IF(c.buyer_id=:listing_peer_join_actor,c.farmer_id,c.buyer_id) ' .
+        'LEFT JOIN messages m ON m.listing_id=c.listing_id AND ' .
+        '((m.sender_id=:listing_sender_actor AND m.recipient_id=peer.id) OR (m.sender_id=peer.id AND m.recipient_id=:listing_recipient_actor)) ' .
+        'GROUP BY c.listing_id,c.buyer_id,c.farmer_id,c.offer_updated_at,pl.title,peer.full_name',
+        [
+            'listing_peer_actor' => $userId,
+            'listing_unread_actor' => $userId,
+            'listing_buyer_actor' => $userId,
+            'listing_farmer_actor' => $userId,
+            'listing_peer_join_actor' => $userId,
+            'listing_sender_actor' => $userId,
+            'listing_recipient_actor' => $userId,
+        ]
+    );
+
+    $conversations = array_merge($orders, $listings);
+    foreach ($conversations as &$conversation) {
+        $conversation['order_id'] = (int) ($conversation['order_id'] ?? 0);
+        $conversation['listing_id'] = (int) ($conversation['listing_id'] ?? 0);
+        $conversation['peer_id'] = (int) $conversation['peer_id'];
+        $conversation['unread_count'] = (int) $conversation['unread_count'];
+        $conversation['latest_message_id'] = (int) $conversation['latest_message_id'];
+        $conversation['key'] = $conversation['order_id'] > 0
+            ? 'order-' . $conversation['order_id']
+            : 'listing-' . $conversation['listing_id'] . '-peer-' . $conversation['peer_id'];
+        $query = $conversation['order_id'] > 0
+            ? 'order_id=' . $conversation['order_id']
+            : 'listing_id=' . $conversation['listing_id'] . '&peer_id=' . $conversation['peer_id'];
+        $conversation['url'] = app_url('messages.php?' . $query);
+    }
+    unset($conversation);
+
+    usort($conversations, static function (array $left, array $right): int {
+        $activity = strcmp((string) $right['activity_at'], (string) $left['activity_at']);
+        return $activity !== 0 ? $activity : $right['latest_message_id'] <=> $left['latest_message_id'];
+    });
+
+    return $conversations;
+}
+
 function send_commercial_message(array $actor, int $listingId, int $orderId, string $body, int $peerId = 0): int
 {
     $body = trim($body);
@@ -104,7 +177,7 @@ function send_commercial_message(array $actor, int $listingId, int $orderId, str
     $statement = db()->prepare('INSERT INTO messages (sender_id,recipient_id,listing_id,order_id,body) VALUES (:sender,:recipient,:listing,:order_id,:body)');
     $statement->execute(['sender' => (int) $actor['id'], 'recipient' => $context['recipient_id'], 'listing' => $context['listing_id'], 'order_id' => $context['order_id'], 'body' => $body]);
     $messageId = (int) db()->lastInsertId();
-    create_notification($context['recipient_id'], 'commercial_message', 'New commercial message', $actor['full_name'] . ' sent a message about ' . $context['label'] . '.', 'messages.php?' . ($context['order_id'] ? 'order_id=' . $context['order_id'] : 'listing_id=' . $context['listing_id']), 'message', $messageId);
+    create_notification($context['recipient_id'], 'commercial_message', 'New commercial message', $actor['full_name'] . ' sent a message about ' . $context['label'] . '.', 'messages.php?' . ($context['order_id'] ? 'order_id=' . $context['order_id'] : 'listing_id=' . $context['listing_id'] . '&peer_id=' . (int) $actor['id']), 'message', $messageId);
     audit_log((int) $actor['id'], 'commercial_message_sent', 'messages', $messageId, ['listing_id' => $context['listing_id'], 'order_id' => $context['order_id']]);
     return $messageId;
 }
