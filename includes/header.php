@@ -38,6 +38,12 @@ $stylesheet_url = static function (string $relativePath): string {
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/market-data-import.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/support-desk.css')) ?>">
     <link rel="stylesheet" href="<?= e($stylesheet_url('assets/css/product-system.css')) ?>">
+    <?php foreach (($pageStylesheets ?? []) as $pageStylesheet): ?>
+        <link rel="stylesheet" href="<?= e($stylesheet_url((string) $pageStylesheet)) ?>">
+    <?php endforeach; ?>
+    <?php if (!empty($preloadImage)): ?>
+        <link rel="preload" as="image" href="<?= e(app_url((string) $preloadImage)) ?>" fetchpriority="high">
+    <?php endif; ?>
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to main content</a>
